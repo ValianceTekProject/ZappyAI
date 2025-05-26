@@ -1,0 +1,41 @@
+name: continous-integration
+
+on:
+  push:
+    branches-ignore: [ga-ignore-*]
+  pull_request:
+    branches-ignore: [ga-ignore-*]
+
+env:
+  URL: EpitechPromo2028/B-YEP-400-BDX-4-1-zappy-florian.labadie.git
+
+jobs:
+    no-test-job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check github repo
+              uses: actions/checkout@master
+            - name: No test passed
+              run:  |
+                if [[ "${{ github.repository }}" == "${{ env.URL }}" ]]; then
+                  exit 1
+                else
+                  exit 0
+                fi
+
+    check-compilation:
+      needs: [no-test-job]
+      uses: ./.github/workflows/check-binary.yml
+      with:
+        executables: 'server gui ai'
+      secrets:
+        GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+
+    push-mirror:
+      if: github.ref == 'refs/heads/main'
+      needs: [check-compilation]
+      uses: ./.github/workflows/push-mirror.yml
+      with:
+        MIRROR_URL: git@github.com:EpitechPromo2028/B-YEP-400-BDX-4-1-zappy-florian.labadie.git
+      secrets:
+        GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
