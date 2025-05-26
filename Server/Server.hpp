@@ -14,11 +14,17 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+<<<<<<< HEAD
 #include <csignal>
 #include <algorithm>
 
 #include "Error/Error.hpp"
 #include "Client/Client.hpp"
+=======
+
+#include "Error.hpp"
+#include "Player.hpp"
+>>>>>>> c6e88e7 (add: Server Parsing)
 
 namespace zappy {
 
