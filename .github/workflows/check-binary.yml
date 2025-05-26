@@ -1,0 +1,28 @@
+name: Check binary
+on:
+  workflow_call:
+    inputs:
+      executables:
+        required: True
+        type: string
+    secrets:
+      GIT_SSH_PRIVATE_KEY:
+        required: true
+jobs:
+    check-compilation:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout Branch
+            uses: actions/checkout@v4
+          - name: Compile Repo
+            run:  |
+              ./build.sh
+          - name: Check binary presence
+            run: |
+                for executable in ${{ inputs.executables }}; do
+                  if [ ! -x "$executable" ]; then
+                    echo "::error title=Binary ERROR::Binary not found"
+                    exit 1
+                  fi
+                done
+                exit 0
