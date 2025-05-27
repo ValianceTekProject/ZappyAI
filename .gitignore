@@ -1,3 +1,6 @@
 assets/
 .vscode
 zappy_*
+
+build/
+zappy_server
