@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## pathfinding - CORРИГÉ - BFS amélioré avec validation de la grille
+## pathfinding
 ##
 
 from typing import Optional, List, Tuple, Dict, Set
@@ -123,7 +123,7 @@ class Pathfinder:
         commands = self._reconstruct_path(parent_map, start_state, found_state)
         return commands
 
-    def _get_valid_transitions(self, x: int, y: int, ori: int, 
+    def _get_valid_transitions(self, x: int, y: int, ori: int,
                               valid_positions: Set[Tuple[int, int]]) -> List[Tuple[Tuple[int,int,int], CommandType]]:
         """
         Génère toutes les transitions valides depuis un état donné.
@@ -141,7 +141,7 @@ class Pathfinder:
 
         return transitions
 
-    def _reconstruct_path(self, parent_map: Dict, start_state: Tuple[int,int,int], 
+    def _reconstruct_path(self, parent_map: Dict, start_state: Tuple[int,int,int],
                          end_state: Tuple[int,int,int]) -> List[CommandType]:
         """
         Reconstitue le chemin de commandes depuis la map des parents.
@@ -209,29 +209,3 @@ class Pathfinder:
             return safe_directions
 
         recent_dirs = set(self.exploration_history[-3:]) if len(self.exploration_history) >= 3 else set()
-
-        filtered = [d for d in safe_directions if d not in recent_dirs]
-
-        return filtered if filtered else safe_directions
-
-    def _update_exploration_history(self, direction: int):
-        """Met à jour l'historique des directions d'exploration."""
-        self.exploration_history.append(direction)
-        if len(self.exploration_history) > self.max_history_size:
-            self.exploration_history.pop(0)
-
-    def _get_rotation_command(self, current_orientation: int, target_orientation: int) -> CommandType:
-        if current_orientation == target_orientation:
-            return CommandType.FORWARD
-        diff = (target_orientation - current_orientation) % 4
-        if diff == 1:
-            return CommandType.RIGHT
-        if diff == 3:
-            return CommandType.LEFT
-        if diff == 2:
-            return CommandType.RIGHT
-        return CommandType.FORWARD
-
-    def clear_exploration_history(self):
-        """Vide l'historique d'exploration."""
-        self.exploration_history.clear()
