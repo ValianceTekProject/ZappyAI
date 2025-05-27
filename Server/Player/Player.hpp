@@ -43,14 +43,6 @@ namespace ZappyPlayer {
 
         void setName(const std::string &name) { this->_name = name; }
 
-        std::size_t getSize() const { return _size; }
-
-        void setSize(const std::size_t size) { this->_size = size; }
-
-        std::size_t getSizeMax() const { return _sizeMax; }
-
-        void setSizeMax(const std::size_t size) { this->_sizeMax = size; }
-
         const std::vector<std::reference_wrapper<User>> getUserList() const
         {
             return this->_userList;
@@ -60,8 +52,6 @@ namespace ZappyPlayer {
 
        private:
         std::string _name;
-        std::size_t _size;
-        std::size_t _sizeMax;
         std::vector<std::reference_wrapper<User>> _userList;
     };
 }
