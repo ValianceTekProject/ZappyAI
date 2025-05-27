@@ -34,6 +34,14 @@ void ZappyServer::Server::parsingName(int &index, char const *argv[])
 
     if (nameCount == 0)
         throw error::InvalidArg("Flag -n must have at least on argument !");
+
+    ZappyPlayer::Team team;
+
+    for (auto &name : _namesTeam) {
+        team.setName(name);
+        team.setSizeMax(_clientNb);
+        _teamList.push_back(team);
+    }
 }
 
 void ZappyServer::Server::parsing(int argc, char const *argv[])
@@ -58,11 +66,16 @@ void ZappyServer::Server::parsing(int argc, char const *argv[])
 
         int value = handlerFlag(argv, i, currentArg);
         if (value != -1) {
-            if (currentArg == "-p") _port = value;
-            else if (currentArg == "-x") _width = value;
-            else if (currentArg == "-y") _height = value;
-            else if (currentArg == "-c") _clientNb = value;
-            else if (currentArg == "-f") _freq = value;
+            if (currentArg == "-p")
+                _port = value;
+            else if (currentArg == "-x")
+                _width = value;
+            else if (currentArg == "-y")
+                _height = value;
+            else if (currentArg == "-c")
+                _clientNb = value;
+            else if (currentArg == "-f")
+                _freq = value;
             i += 1;
         } else
             throw error::InvalidArg("Unknown or badly formatted argument: " + currentArg);
@@ -71,4 +84,33 @@ void ZappyServer::Server::parsing(int argc, char const *argv[])
     if (_port == -1 || _width == -1 || _height == -1 ||
         _clientNb == -1 || _freq == -1 || _namesTeam.empty())
         throw error::InvalidArg("Missing arguments: -p -x -y -c -f -n <names>");
+}
+
+void ZappyServer::Server::serverLaunch()
+{
+    _servSocket = my_socket(AF_INET, SOCK_STREAM, 0);
+    if (_servSocket < 0)
+        throw ZappyServer::error::ServerConnection("Socket failed");
+
+    servAddr.sin_addr.s_addr = INADDR_ANY;
+    servAddr.sin_port = htons(_port);
+    servAddr.sin_family = AF_INET;
+
+    if (my_bind(_servSocket, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0) {
+        close(_servSocket);
+        if (errno == EADDRINUSE)
+            throw ZappyServer::error::ServerConnection("Port already used");
+        throw ZappyServer::error::ServerConnection("bind failed");
+    }
+    if (my_listen(_servSocket, (_clientNb * _namesTeam.size())) < 0) {
+        close(_servSocket);
+        throw ZappyServer::error::ServerConnection("listen failed");
+    }
+
+    std::cout << "Zappy Server listening on port " << _port << "...\n";
+    fds.push_back({_servSocket, POLLIN, 0});
+
+    serverLoop();
+
+    close(_servSocket);
 }
