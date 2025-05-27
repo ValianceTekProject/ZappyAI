@@ -39,7 +39,6 @@ void ZappyServer::Server::parsingName(int &index, char const *argv[])
 
     for (auto &name : _namesTeam) {
         team.setName(name);
-        team.setSizeMax(_clientNb);
         _teamList.push_back(team);
     }
 }
