@@ -14,19 +14,20 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-<<<<<<< HEAD
-#include <csignal>
 #include <algorithm>
 
 #include "Error/Error.hpp"
 #include "Client/Client.hpp"
-=======
+#include <csignal>
+#include <algorithm>
 
 #include "Error.hpp"
 #include "Player.hpp"
->>>>>>> c6e88e7 (add: Server Parsing)
 
 namespace zappy {
+
+    #define OK 0
+    #define KO 84
 
     #define OK 0
     #define KO 84
