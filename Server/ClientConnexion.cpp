@@ -59,12 +59,12 @@ void ZappyServer::Server::handleTeamJoin(int clientSocket, const std::string &te
         });
 
     if (it == _teamList.end()) {
-        sendMessage(clientSocket, "Team does notexist\n");
+        sendMessage(clientSocket, "ko\n");
         return;
     }
 
-    if (it->getUserList().size() >= it->getSizeMax()) {
-        sendMessage(clientSocket, "No more space in this team\n");
+    if (it->getUserList().size() >= static_cast<std::size_t>(_clientNb)) {
+        sendMessage(clientSocket, "ko\n");
         return;
     }
     ZappyPlayer::User newUser;
@@ -74,7 +74,7 @@ void ZappyServer::Server::handleTeamJoin(int clientSocket, const std::string &te
     _users[clientSocket] = newUser;
     it->addUser(newUser);
 
-    std::string msg = std::to_string(_clientNb) + "\n";
+    std::string msg = std::to_string(_clientNb - it->getUserList().size()) + "\n";
 
     sendMessage(clientSocket, msg.c_str());
     msg = std::to_string(_width) + " " + std::to_string(_height) + "\n";
