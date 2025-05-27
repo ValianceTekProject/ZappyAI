@@ -88,7 +88,7 @@ void ZappyServer::Server::serverLoop()
     my_signal(SIGINT, signalWrapper);
     while (_serverRun) {
         int poll_c = my_poll(fds.data(), fds.size(), 10);
-        if (poll_c < 0)
+        if (poll_c < 0 && _serverRun)
             throw ZappyServer::error::ServerConnection("Poll failed");
 
         for (std::size_t i = 0; i < fds.size(); i++) {
