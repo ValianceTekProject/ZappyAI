@@ -19,6 +19,7 @@ include_directories(
     Client
     EncapsuledFunction
     Game
+    Player
 )
 
 # Add executable
