@@ -14,11 +14,11 @@ int main(int argc, char const *argv[])
         ZappyServer::Server server;
 
         server.parsing(argc, argv);
-
-    } catch (const std::exception &e) {
-        std::cerr << "Fatal error: " << e.what() << std::endl;
-        return 84;
+        server.serverLaunch();
+    
+    } catch (const ZappyServer::error::Error &e) {
+        std::cerr << " Error: " << e.what() << std::endl;
+        return KO;
     }
-
-
+    return OK;
 }
