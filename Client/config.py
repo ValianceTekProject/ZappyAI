@@ -69,6 +69,7 @@ class GameStates(Enum):
     INCANTING = 'incanting'
     FLEEING = 'fleeing'
     DEAD = 'dead'
+    VICTORY = 'victory'
 
 class Orientation(Enum):
     NORTH = 0

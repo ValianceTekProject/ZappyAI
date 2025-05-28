@@ -8,7 +8,7 @@
 import random
 import math
 from typing import List, Dict, Any, Optional, Tuple
-from config import Constants
+from config import Constants, GameStates
 from utils.logger import logger
 
 class MCTSNode:
@@ -20,7 +20,11 @@ class MCTSNode:
         self.visits = 0
         self.value = 0.0
         self.untried_actions = []
+        for action in GameStates:
+            self.untried_actions.append(action)
 
+    def addAction(self, action):
+        self.untried_actions.append(action)
 
 class MCTSPlanner:
     def __init__(self):
