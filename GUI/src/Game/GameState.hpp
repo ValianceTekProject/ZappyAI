@@ -7,16 +7,18 @@
 
 #pragma once
 
-#include "GameMap.hpp"
+#include "Map.hpp"
 
-namespace gui {
-    class GameState
-    {
-        public:
-            GameState() = default;
-            ~GameState() = default;
+namespace zappy {
+    namespace game {
+        class GameState
+        {
+            public:
+                GameState() = default;
+                ~GameState() = default;
 
-        private:
-            GameMap _map;
-    };
+            private:
+                game::Map _map;
+        };
+    }
 }
