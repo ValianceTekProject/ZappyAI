@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2025
-** B-OOP-400-BDX-4-1-zappy::gui-baptiste.blambert
+** B-OOP-400-BDX-4-1-zappy-baptiste.blambert
 ** File description:
 ** IError
 */
