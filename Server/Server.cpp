@@ -19,7 +19,7 @@ int handlerFlag(char const *argv[], int i, std::string flag)
     return res;
 }
 
-void ZappyServer::Server::parsingName(int &index, char const *argv[])
+void zappy::Server::parsingName(int &index, char const *argv[])
 {
     int nameCount = 0;
 
@@ -35,7 +35,7 @@ void ZappyServer::Server::parsingName(int &index, char const *argv[])
     if (nameCount == 0)
         throw error::InvalidArg("Flag -n must have at least on argument !");
 
-    ZappyPlayer::Team team;
+    zappy::player::Team team;
 
     for (auto &name : _namesTeam) {
         team.setName(name);
@@ -43,7 +43,7 @@ void ZappyServer::Server::parsingName(int &index, char const *argv[])
     }
 }
 
-void ZappyServer::Server::parsing(int argc, char const *argv[])
+void zappy::Server::parsing(int argc, char const *argv[])
 {
     for (int i = 1; i < argc; ++i) {
         if (!argv[i])
@@ -80,11 +80,11 @@ void ZappyServer::Server::parsing(int argc, char const *argv[])
         throw error::InvalidArg("Missing arguments: -p -x -y -c -f -n <names>");
 }
 
-void ZappyServer::Server::serverLaunch()
+void zappy::Server::serverLaunch()
 {
     _servSocket = my_socket(AF_INET, SOCK_STREAM, 0);
     if (_servSocket < 0)
-        throw ZappyServer::error::ServerConnection("Socket failed");
+        throw zappy::error::ServerConnection("Socket failed");
 
     servAddr.sin_addr.s_addr = INADDR_ANY;
     servAddr.sin_port = htons(_port);
@@ -93,12 +93,12 @@ void ZappyServer::Server::serverLaunch()
     if (my_bind(_servSocket, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0) {
         close(_servSocket);
         if (errno == EADDRINUSE)
-            throw ZappyServer::error::ServerConnection("Port already used");
-        throw ZappyServer::error::ServerConnection("bind failed");
+            throw zappy::error::ServerConnection("Port already used");
+        throw zappy::error::ServerConnection("bind failed");
     }
     if (my_listen(_servSocket, (_clientNb * _namesTeam.size())) < 0) {
         close(_servSocket);
-        throw ZappyServer::error::ServerConnection("listen failed");
+        throw zappy::error::ServerConnection("listen failed");
     }
 
     std::cout << "Zappy Server listening on port " << _port << "...\n";
