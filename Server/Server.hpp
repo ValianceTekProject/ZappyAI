@@ -17,8 +17,8 @@
 #include <csignal>
 #include <algorithm>
 
-#include "Error.hpp"
-#include "Player.hpp"
+#include "Error/Error.hpp"
+#include "Player/Player.hpp"
 
 namespace ZappyServer {
 

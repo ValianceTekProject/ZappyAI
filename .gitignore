@@ -6,7 +6,6 @@
 .cache
 *.out
 vgcore*
-*.txt
 *.json
 test
 *.so
