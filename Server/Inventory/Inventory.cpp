@@ -38,3 +38,4 @@ void zappy::game::player::Inventory::clearInventory()
 {
     this->_items.clear();
 }
+
