@@ -15,13 +15,13 @@
 #include <string>
 #include <memory>
 
-namespace gui
-{
-    class ZappyGui
+namespace zappy {
+    namespace gui {
+    class GUI
     {
         public:
-            ZappyGui();
-            ~ZappyGui() = default;
+            GUI();
+            ~GUI() = default;
 
             void parseArgs(int argc, char const *argv[]);
 
@@ -35,7 +35,8 @@ namespace gui
 
             std::unique_ptr<IRenderer> _renderer;
 
-            GameState _gameState;
+            game::GameState _gameState;
     };
-} // namespace gui
+    }
+}
 
