@@ -11,13 +11,25 @@
 
 #include <GL/glew.h>
 
-namespace gui {
-    class OpenGLRenderer : public IRenderer
-    {
-        public:
-            OpenGLRenderer();
-            ~OpenGLRenderer();
+namespace zappy {
+    namespace gui {
+        class OpenGLRenderer : public IRenderer
+        {
+            public:
+                OpenGLRenderer();
+                ~OpenGLRenderer();
 
+                void init() override;
 
-    };
+                void handleInput() override;
+                void update() override;
+
+                void render() override;
+
+                void close() override;
+
+            private:
+                GLuint _program;
+        };
+    }
 }

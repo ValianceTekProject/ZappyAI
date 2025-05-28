@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2025
-** B-OOP-400-BDX-4-1-gui-baptiste.blambert
+** B-OOP-400-BDX-4-1-zappy::gui-baptiste.blambert
 ** File description:
 ** AError
 */
@@ -9,17 +9,19 @@
 
 #include "IError.hpp"
 
-namespace gui {
-    class AError : public IError
-    {
-        public:
-            AError(const std::string &msg, const std::string &where) noexcept;
+namespace zappy {
+    namespace gui {
+        class AError : public IError
+        {
+            public:
+                AError(const std::string &msg, const std::string &where) noexcept;
 
-            const char *what() const noexcept;
-            const char *where() const noexcept;
+                const char *what() const noexcept;
+                const char *where() const noexcept;
 
-        private:
-            std::string _msg;
-            std::string _where;
-    };
+            private:
+                std::string _msg;
+                std::string _where;
+        };
+    }
 }

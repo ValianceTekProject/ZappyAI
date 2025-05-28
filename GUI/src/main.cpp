@@ -10,11 +10,11 @@
 int main(int argc, char const *argv[])
 {
     try {
-        gui::ZappyGui gui;
+        zappy::gui::GUI gui;
         gui.parseArgs(argc, argv);
         gui.run();
     }
-    catch(const gui::GUIError& e) {
+    catch(const zappy::gui::GUIError& e) {
         std::cerr << e.where() << " Error: " << e.what() << std::endl;
     }
     return 0;
