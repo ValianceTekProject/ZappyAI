@@ -30,7 +30,6 @@ set(SOURCES
 
     ${ERRORS_DIR}/AError.cpp
 
-    ${GAME_DIR}/GameMap.cpp
     ${GAME_DIR}/GameState.cpp
     ${GAME_DIR}/Tile.cpp
 
