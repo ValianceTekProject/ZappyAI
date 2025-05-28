@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
         gui.parseArgs(argc, argv);
         gui.run();
     }
-    catch(const zappy::gui::GUIError& e) {
+    catch(const zappy::gui::IError& e) {
         std::cerr << e.where() << " Error: " << e.what() << std::endl;
     }
     return 0;
