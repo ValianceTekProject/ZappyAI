@@ -9,11 +9,13 @@
 
 #include "AError.hpp"
 
-namespace zappy::gui {
-    class NetworkError : public AError
-    {
-        public:
-            NetworkError(const std::string &msg, const std::string &where)
-                noexcept : AError(msg, where) {};
-    };
+namespace zappy {
+    namespace gui {
+        class NetworkError : public AError
+        {
+            public:
+                NetworkError(const std::string &msg, const std::string &where)
+                    noexcept : AError(msg, where) {};
+        };
+    }
 }
