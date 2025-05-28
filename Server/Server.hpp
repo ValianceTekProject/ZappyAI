@@ -20,7 +20,7 @@
 #include "Error/Error.hpp"
 #include "Player/Player.hpp"
 
-namespace ZappyServer {
+namespace zappy {
 
     #define OK 0
     #define KO 84
@@ -56,10 +56,10 @@ namespace ZappyServer {
             int _port;
             int _servSocket;
             sockaddr_in servAddr{};
-            std::vector<ZappyPlayer::Team> _teamList;
+            std::vector<player::Team> _teamList;
             std::vector<pollfd> fds;
 
-            std::unordered_map<int, ZappyPlayer::User> _users;
+            std::unordered_map<int, zappy::player::User> _users;
 
             int _width;
             int _height;

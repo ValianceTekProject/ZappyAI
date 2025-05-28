@@ -8,13 +8,13 @@
 #include "Error.hpp"
 
 // Fonction d'erreur, retour message
-char const *ZappyServer::error::Error::getMessage() const
+char const *zappy::error::Error::getMessage() const
 {
     return this->_errorMsg.c_str();
 }
 
 // Retourne le contexte de l'erreur
-const char *ZappyServer::error::Error::what() const throw()
+const char *zappy::error::Error::what() const throw()
 {
     return getMessage();
 }
