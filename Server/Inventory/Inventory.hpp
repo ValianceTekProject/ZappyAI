@@ -12,27 +12,29 @@
 
 #define NO_ITEM 0
 
-namespace ZappyPlayer {
-    enum class Item : uint8_t {
-        food,
-        linemate,
-        deraumere,
-        sibur,
-        mendiane,
-        phiras,
-        thrystame
-    };
+namespace zappy {
+    namespace player {
+        enum class Item : uint8_t {
+            food,
+            linemate,
+            deraumere,
+            sibur,
+            mendiane,
+            phiras,
+            thrystame
+        };
 
-    class Inventory {
-       public:
-        Inventory();
-        ~Inventory() = default;
+        class Inventory {
+        public:
+            Inventory();
+            ~Inventory() = default;
 
-        void addItem(const Item &item);
-        [[nodiscard]] bool removeItem(const Item &item);
-        void clearInventory();
+            void addItem(const Item &item);
+            [[nodiscard]] bool removeItem(const Item &item);
+            void clearInventory();
 
-       private:
-        std::map<Item, size_t> _items;
-    };
-}  // namespace ZappyPlayer
+        private:
+            std::map<Item, size_t> _items;
+        };
+    }  // namespace ZappyPlayer
+}

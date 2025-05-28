@@ -18,6 +18,7 @@ include_directories(
     Inventory
     Player
     EncapsuledFunction
+    Game
 )
 
 # Add executable

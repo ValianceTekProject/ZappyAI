@@ -28,12 +28,12 @@ int main(int argc, char const *argv[])
     if (checkArgs(argc) == false)
         return KO;
     try {
-        ZappyServer::Server server;
+        zappy::Server server;
 
         server.parsing(argc, argv);
         server.serverLaunch();
 
-    } catch (const ZappyServer::error::Error &e) {
+    } catch (const zappy::error::Error &e) {
         std::cerr << " Error: " << e.what() << std::endl;
         return KO;
     }
