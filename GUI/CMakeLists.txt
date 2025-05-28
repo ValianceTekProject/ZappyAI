@@ -14,17 +14,25 @@ set(ERRORS_DIR ${SRC_DIR}/Errors)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
 
+set(DATA_GAME_DIR ${CMAKE_SOURCE_DIR}/../Data/Game)
+
 # === Include paths ===
 include_directories(
     ${SRC_DIR}
     ${ERRORS_DIR}
     ${GAME_DIR}
     ${RENDERER_DIR}
+    ${DATA_GAME_DIR}
 )
 
 # === Fichiers sources ===
 set(SOURCES
     ${SRC_DIR}/main.cpp
+
+    ${DATA_GAME_DIR}/Ressource.cpp
+    ${DATA_GAME_DIR}/RessourceContainer.cpp
+    ${DATA_GAME_DIR}/Player.cpp
+    ${DATA_GAME_DIR}/Map.cpp
 
     ${SRC_DIR}/GUI.cpp
 
