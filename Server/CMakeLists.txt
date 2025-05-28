@@ -13,11 +13,11 @@ add_compile_options(-Wall -Wextra -Werror)
 
 # Include headers
 include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/Error
-    ${CMAKE_SOURCE_DIR}/Inventory
-    ${CMAKE_SOURCE_DIR}/Player
-    ${CMAKE_SOURCE_DIR}/EncapsuledFunction
+    .
+    Error
+    Inventory
+    Player
+    EncapsuledFunction
 )
 
 # Add executable
