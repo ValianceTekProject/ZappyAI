@@ -11,6 +11,15 @@ from typing import List, Dict, Any, Optional, Tuple
 from config import Constants, GameStates
 from utils.logger import logger
 
+class clientState:
+    def __init__(self, state: Dict[str, Any]) -> None:
+        self.clientPos = {0, 0}
+        self.inventory = None
+        self.vision = None
+        self.level = None
+        self.objectif = GameStates
+        pass
+
 class MCTSNode:
     def __init__(self, state: Dict[str, Any], parent=None, action=None):
         self.state = state
