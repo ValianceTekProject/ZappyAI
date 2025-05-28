@@ -18,7 +18,7 @@
 #include <algorithm>
 
 #include "Error/Error.hpp"
-#include "Player/Player.hpp"
+#include "Client/Client.hpp"
 
 namespace zappy {
 
@@ -56,10 +56,10 @@ namespace zappy {
             int _port;
             int _servSocket;
             sockaddr_in servAddr{};
-            std::vector<player::Team> _teamList;
+            std::vector<zappy::game::Team> _teamList;
             std::vector<pollfd> fds;
 
-            std::unordered_map<int, zappy::player::User> _users;
+            std::unordered_map<int, zappy::server::User> _users;
 
             int _width;
             int _height;
