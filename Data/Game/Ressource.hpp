@@ -8,6 +8,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 namespace zappy {
     namespace game {
@@ -23,7 +24,16 @@ namespace zappy {
             COUNT
         };
 
-        const std::string names[COUNT];
+        const std::vector<std::string> names = {
+            "food",
+            "linemate",
+            "deraumere",
+            "sibur",
+            "mendiane",
+            "phiras",
+            "thystame"
+        };
+
         const std::string &getName(Ressource res);
         Ressource getRessource(const std::string &name);
     }

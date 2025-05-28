@@ -13,7 +13,7 @@ zappy::game::Player::Player(
     size_t x,
     size_t y,
     Direction orientation,
-    size_t level = 1
+    size_t level
 ) : id(id), level(level), x(x), y(y), orientation(orientation)
 {}
 

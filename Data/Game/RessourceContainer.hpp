@@ -26,7 +26,7 @@ namespace zappy {
 
                 void removeResource(Ressource resource, size_t quantity = 1);
 
-                const size_t &getResourceQuantity(Ressource resource) const;
+                size_t getResourceQuantity(Ressource resource) const;
                 const std::map<Ressource, size_t> &getResources() const { return _resources; }
 
             private:

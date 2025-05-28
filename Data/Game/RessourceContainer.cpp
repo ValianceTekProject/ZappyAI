@@ -30,7 +30,7 @@ void zappy::game::RessourceContainer::removeResource(Ressource resource, size_t 
         _resources[resource] -= quantity;
 }
 
-const size_t &zappy::game::RessourceContainer::getResourceQuantity(Ressource resource) const
+size_t zappy::game::RessourceContainer::getResourceQuantity(Ressource resource) const
 {
     if (_resources.find(resource) == _resources.end())
         return 0;

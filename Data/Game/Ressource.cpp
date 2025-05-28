@@ -7,17 +7,6 @@
 
 #include "Ressource.hpp"
 
-// Ressources
-const std::string zappy::game::names[COUNT - 1] = {
-    "food",
-    "linemate",
-    "deraumere",
-    "sibur",
-    "mendiane",
-    "phiras",
-    "thystame"
-};
-
 const std::string &zappy::game::getName(Ressource res)
 {
     return names[res];
