@@ -5,30 +5,19 @@
 ** IRenderer.hpp
 */
 
-#pragma once
+namespace gui {
+    class IRenderer
+    {
+        public:
+            virtual ~IRenderer() = default;
 
-#include "GameState.hpp"
+            virtual void init() = 0;
 
-#include <iostream>
-#include <memory>
+            virtual void handleInput() = 0;
+            virtual void update() = 0;
 
-namespace zappy {
-    namespace gui {
-        class IRenderer
-        {
-            public:
-                virtual ~IRenderer() = default;
+            virtual void render() = 0;
 
-                virtual void init() = 0;
-
-                virtual void setGameState(std::shared_ptr<game::GameState> gameState) = 0;
-
-                virtual void handleInput() = 0;
-                virtual void update() = 0;
-
-                virtual void render() const = 0;
-
-                virtual bool shouldClose() const = 0;
-        };
-    }
+            virtual void close() = 0;
+    };
 }
