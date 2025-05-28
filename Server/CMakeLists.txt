@@ -16,7 +16,7 @@ include_directories(
     .
     Error
     Inventory
-    Player
+    Client
     EncapsuledFunction
     Game
 )

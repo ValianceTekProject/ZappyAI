@@ -48,13 +48,13 @@ void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName
 {
 
     auto itUser = _users.find(clientSocket);
-    if (itUser != _users.end() && itUser->second.getState() == zappy::player::ClientState::CONNECTED) {
+    if (itUser != _users.end() && itUser->second.getState() == zappy::server::ClientState::CONNECTED) {
         sendMessage(clientSocket, "Already in a team\n");
         return;
     }
 
     auto it = std::find_if(_teamList.begin(), _teamList.end(),
-        [&teamName](const zappy::player::Team &team) {
+        [&teamName](const zappy::game::Team &team) {
             return team.getName() == teamName;
         });
 
@@ -67,12 +67,13 @@ void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName
         sendMessage(clientSocket, "ko\n");
         return;
     }
-    zappy::player::User newUser;
-    newUser.setSocket(clientSocket);
-    newUser.setState(zappy::player::ClientState::CONNECTED);
+    zappy::server::User user(clientSocket);
+    zappy::game::Player newPlayer(user);
+    user.setSocket(clientSocket);
+    user.setState(zappy::server::ClientState::CONNECTED);
 
-    _users[clientSocket] = newUser;
-    it->addUser(newUser);
+    _users.emplace(clientSocket, zappy::server::User(clientSocket));
+    it->addUser(newPlayer);
 
     std::string msg = std::to_string(_clientNb - it->getUserList().size()) + "\n";
 
