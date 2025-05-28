@@ -26,6 +26,7 @@ include_directories(
 
     ${GAME_DIR}
     ${RENDERER_DIR}
+    ${DATA_GAME_DIR}
 )
 
 # === Fichiers sources ===
@@ -38,6 +39,11 @@ set(SOURCES
     ${DATA_GAME_DIR}/Map.cpp
 
     ${SRC_DIR}/main.cpp
+
+    ${DATA_GAME_DIR}/Ressource.cpp
+    ${DATA_GAME_DIR}/RessourceContainer.cpp
+    ${DATA_GAME_DIR}/Player.cpp
+    ${DATA_GAME_DIR}/Map.cpp
 
     ${SRC_DIR}/Gui.cpp
 
