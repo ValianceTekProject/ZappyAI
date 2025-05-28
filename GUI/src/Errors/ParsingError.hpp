@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2025
-** B-OOP-400-BDX-4-1-gui-baptiste.blambert
+** B-OOP-400-BDX-4-1-zappy::gui-baptiste.blambert
 ** File description:
 ** ParsingError
 */
@@ -9,7 +9,7 @@
 
 #include "AError.hpp"
 
-namespace gui {
+namespace zappy::gui {
     class ParsingError : public AError
     {
         public:

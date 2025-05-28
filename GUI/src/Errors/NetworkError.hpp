@@ -9,7 +9,7 @@
 
 #include "AError.hpp"
 
-namespace gui {
+namespace zappy::gui {
     class NetworkError : public AError
     {
         public:
