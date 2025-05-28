@@ -29,18 +29,13 @@ void zappy::Server::parsingName(int &index, char const *argv[])
         _namesTeam.push_back(argv[index]);
         nameCount += 1;
         index += 1;
+        zappy::game::Team team(argv[index]);
+        _teamList.push_back(team);
     }
-    
 
     if (nameCount == 0)
         throw error::InvalidArg("Flag -n must have at least on argument !");
 
-    zappy::player::Team team;
-
-    for (auto &name : _namesTeam) {
-        team.setName(name);
-        _teamList.push_back(team);
-    }
 }
 
 void zappy::Server::parsing(int argc, char const *argv[])
