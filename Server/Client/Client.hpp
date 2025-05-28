@@ -25,7 +25,6 @@ namespace zappy {
             ~User() = default;
 
             int getSocket() const { return _socket; }
-            void setSocket(int socket) { _socket = socket; }
 
             ClientState getState() const { return _state; }
             void setState(ClientState state) { _state = state; }
@@ -53,12 +52,12 @@ namespace zappy {
 
                 std::string getName() const { return _name; }
 
-                const std::vector<std::reference_wrapper<Player>> getUserList() const
+                const std::vector<std::reference_wrapper<Player>> getPlayerList() const
                 {
                     return this->_playerList;
                 }
 
-                void addUser(Player &player) { this->_playerList.push_back(player); }
+                void addPlayer(Player &player) { this->_playerList.push_back(player); }
 
             private:
                 const std::string _name;
