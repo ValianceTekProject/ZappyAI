@@ -22,7 +22,7 @@
 #include <algorithm>
 
 #include "Error/Error.hpp"
-#include "Player/Player.hpp"
+#include "Client/Client.hpp"
 
 namespace zappy {
 
