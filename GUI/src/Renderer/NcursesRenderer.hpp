@@ -11,13 +11,25 @@
 
 #include <ncurses.h>
 
-namespace gui {
-    class NCursesRenderer : public IRenderer
-    {
-        public:
-            NCursesRenderer();
-            ~NCursesRenderer();
+namespace zappy {
+    namespace gui {
+        class NCursesRenderer : public IRenderer
+        {
+            public:
+                NCursesRenderer();
+                ~NCursesRenderer();
 
+                void init() override;
 
-    };
+                void handleInput() override;
+                void update() override;
+
+                void render() override;
+
+                void close() override;
+
+            private:
+                WINDOW *_window;
+        };
+    }
 }
