@@ -58,11 +58,6 @@ void ZappyServer::Server::parsing(int argc, char const *argv[])
             continue;
         }
 
-        if (currentArg == "-help") {
-            std::cout << "USAGE: -p port -x width -y height -n name1 name2 ... -c clientNB -f freq" << std::endl;
-            return;
-        }
-
         int value = handlerFlag(argv, i, currentArg);
         if (value != -1) {
             if (currentArg == "-p")
