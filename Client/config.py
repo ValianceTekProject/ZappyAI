@@ -31,6 +31,7 @@ class Constants(Enum):
     DUR_FORK = 42
     DUR_INCANTATION = 300
 
+    # Resources
     FOOD = 'food'
     LINEMATE = 'linemate'
     DERAUMERE = 'deraumere'
