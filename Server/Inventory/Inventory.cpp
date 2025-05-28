@@ -9,12 +9,12 @@
 #include <cstddef>
 #include <sstream>
 
-ZappyPlayer::Inventory::Inventory()
+zappy::player::Inventory::Inventory()
 {
     this->_items[Item::food] = 10;
 }
 
-void ZappyPlayer::Inventory::addItem(const Item &item)
+void zappy::player::Inventory::addItem(const Item &item)
 {
     if (this->_items.find(item) != this->_items.end()) {
         this->_items[item] += 1;
@@ -23,7 +23,7 @@ void ZappyPlayer::Inventory::addItem(const Item &item)
     this->_items[item] = 1;
 }
 
-bool ZappyPlayer::Inventory::removeItem(const Item &item)
+bool zappy::player::Inventory::removeItem(const Item &item)
 {
     if (this->_items.find(item) != this->_items.end()) {
         if (this->_items[item] == NO_ITEM)
@@ -34,7 +34,7 @@ bool ZappyPlayer::Inventory::removeItem(const Item &item)
     return false;
 }
 
-void ZappyPlayer::Inventory::clearInventory()
+void zappy::player::Inventory::clearInventory()
 {
     this->_items.clear();
 }

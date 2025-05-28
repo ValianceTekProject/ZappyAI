@@ -7,15 +7,15 @@
 
 #include "Server.hpp"
 
-std::function<void(int)> ZappyServer::Server::takeSignal;
+std::function<void(int)> zappy::Server::takeSignal;
 
-void ZappyServer::Server::closeClients()
+void zappy::Server::closeClients()
 {
     // TODO send message to stop connexion with clients and AI
     _teamList.clear();
 }
 
-void ZappyServer::Server::stopServer(int sig)
+void zappy::Server::stopServer(int sig)
 {
     std::cout << "Received signal " << sig << ". Closing server in progress..." << std::endl;
     _serverRun = false;
@@ -23,20 +23,20 @@ void ZappyServer::Server::stopServer(int sig)
     close(_servSocket);
 }
 
-void ZappyServer::Server::signalWrapper(int sig)
+void zappy::Server::signalWrapper(int sig)
 {
     if (takeSignal)
         takeSignal(sig);
 }
 
-void ZappyServer::Server::handleNewConnection()
+void zappy::Server::handleNewConnection()
 {
     sockaddr_in clientAddr{};
     socklen_t clientLen = sizeof(clientAddr);
     int clientSocket = my_accept(_servSocket, (sockaddr *)&clientAddr, &clientLen);
 
     if (clientSocket < 0)
-        throw ZappyServer::error::ServerConnection("Accept failed");
+        throw zappy::error::ServerConnection("Accept failed");
 
     std::cout << "New connection: " << clientSocket << std::endl;
     fds.push_back({clientSocket, POLLIN, 0});
@@ -44,17 +44,17 @@ void ZappyServer::Server::handleNewConnection()
     sendMessage(clientSocket, "WELCOME\n");
 }
 
-void ZappyServer::Server::handleTeamJoin(int clientSocket, const std::string &teamName)
+void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName)
 {
 
     auto itUser = _users.find(clientSocket);
-    if (itUser != _users.end() && itUser->second.getState() == ZappyPlayer::ClientState::CONNECTED) {
+    if (itUser != _users.end() && itUser->second.getState() == zappy::player::ClientState::CONNECTED) {
         sendMessage(clientSocket, "Already in a team\n");
         return;
     }
 
     auto it = std::find_if(_teamList.begin(), _teamList.end(),
-        [&teamName](const ZappyPlayer::Team &team) {
+        [&teamName](const zappy::player::Team &team) {
             return team.getName() == teamName;
         });
 
@@ -67,9 +67,9 @@ void ZappyServer::Server::handleTeamJoin(int clientSocket, const std::string &te
         sendMessage(clientSocket, "ko\n");
         return;
     }
-    ZappyPlayer::User newUser;
+    zappy::player::User newUser;
     newUser.setSocket(clientSocket);
-    newUser.setState(ZappyPlayer::ClientState::CONNECTED);
+    newUser.setState(zappy::player::ClientState::CONNECTED);
 
     _users[clientSocket] = newUser;
     it->addUser(newUser);
@@ -82,14 +82,14 @@ void ZappyServer::Server::handleTeamJoin(int clientSocket, const std::string &te
     std::cout << "Client " << clientSocket << " joined team " << teamName << std::endl;
 }
 
-void ZappyServer::Server::serverLoop()
+void zappy::Server::serverLoop()
 {
-    takeSignal = std::bind(&ZappyServer::Server::stopServer, this, std::placeholders::_1);
+    takeSignal = std::bind(&zappy::Server::stopServer, this, std::placeholders::_1);
     my_signal(SIGINT, signalWrapper);
     while (_serverRun) {
         int poll_c = my_poll(fds.data(), fds.size(), 10);
         if (poll_c < 0 && _serverRun)
-            throw ZappyServer::error::ServerConnection("Poll failed");
+            throw zappy::error::ServerConnection("Poll failed");
 
         for (std::size_t i = 0; i < fds.size(); i++) {
             if (fds[i].revents & POLLIN) {

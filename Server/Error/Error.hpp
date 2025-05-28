@@ -9,7 +9,7 @@
 
     #include <stdexcept>
 
-namespace ZappyServer {
+namespace zappy {
     namespace error {
         class Error : std::exception {
             public:

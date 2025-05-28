@@ -11,47 +11,49 @@
 #include <string>
 #include <vector>
 
-namespace ZappyPlayer {
+namespace zappy {
+    namespace player {
 
-    enum class ClientState {
-        WAITING_TEAM_NAME,
-        CONNECTED,
-    };
+        enum class ClientState {
+            WAITING_TEAM_NAME,
+            CONNECTED,
+        };
 
-    class User {
-       public:
-        User() : _state(ClientState::WAITING_TEAM_NAME) {};
-        ~User() = default;
+        class User {
+        public:
+            User() : _state(ClientState::WAITING_TEAM_NAME) {};
+            ~User() = default;
 
-        int getSocket() const { return _socket; }
-        void setSocket(int socket) { _socket = socket; }
+            int getSocket() const { return _socket; }
+            void setSocket(int socket) { _socket = socket; }
 
-        ClientState getState() const { return _state; }
-        void setState(ClientState state) { _state = state; }
+            ClientState getState() const { return _state; }
+            void setState(ClientState state) { _state = state; }
 
-       private:
-        int _socket;
-        ClientState _state;
-    };
+        private:
+            int _socket;
+            ClientState _state;
+        };
 
-    class Team {
-       public:
-        Team() = default;
-        ~Team() = default;
+        class Team {
+        public:
+            Team() = default;
+            ~Team() = default;
 
-        std::string getName() const { return _name; }
+            std::string getName() const { return _name; }
 
-        void setName(const std::string &name) { this->_name = name; }
+            void setName(const std::string &name) { this->_name = name; }
 
-        const std::vector<std::reference_wrapper<User>> getUserList() const
-        {
-            return this->_userList;
-        }
+            const std::vector<std::reference_wrapper<User>> getUserList() const
+            {
+                return this->_userList;
+            }
 
-        void addUser(User &user) { this->_userList.push_back(user); }
+            void addUser(User &user) { this->_userList.push_back(user); }
 
-       private:
-        std::string _name;
-        std::vector<std::reference_wrapper<User>> _userList;
-    };
+        private:
+            std::string _name;
+            std::vector<std::reference_wrapper<User>> _userList;
+        };
+    }
 }
