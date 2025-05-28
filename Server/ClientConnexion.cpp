@@ -63,19 +63,18 @@ void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName
         return;
     }
 
-    if (it->getUserList().size() >= static_cast<std::size_t>(_clientNb)) {
+    if (it->getPlayerList().size() >= static_cast<std::size_t>(_clientNb)) {
         sendMessage(clientSocket, "ko\n");
         return;
     }
     zappy::server::User user(clientSocket);
     zappy::game::Player newPlayer(user);
-    user.setSocket(clientSocket);
     user.setState(zappy::server::ClientState::CONNECTED);
 
-    _users.emplace(clientSocket, zappy::server::User(clientSocket));
-    it->addUser(newPlayer);
+    _users.emplace(clientSocket, user);
+    it->addPlayer(newPlayer);
 
-    std::string msg = std::to_string(_clientNb - it->getUserList().size()) + "\n";
+    std::string msg = std::to_string(_clientNb - it->getPlayerList().size()) + "\n";
 
     sendMessage(clientSocket, msg.c_str());
     msg = std::to_string(_width) + " " + std::to_string(_height) + "\n";
