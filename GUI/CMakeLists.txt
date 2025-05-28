@@ -26,6 +26,7 @@ include_directories(
 
     ${GAME_DIR}
     ${RENDERER_DIR}
+    ${DATA_GAME_DIR}
 )
 
 # === Fichiers sources ===
