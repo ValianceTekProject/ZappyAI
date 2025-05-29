@@ -8,6 +8,7 @@
 #pragma once
 
 #include "Map.hpp"
+#include "Player.hpp"
 
 namespace zappy {
     namespace game {
@@ -22,8 +23,31 @@ namespace zappy {
 
                 size_t getFrequency() const { return _frequency; }
 
+                void updateTile(size_t x, size_t y, Tile tile) { _map.setTile(x, y, tile); }
+
+                void addTeam(const std::string &teamName) { _teams.push_back(teamName); }
+
+                void addPlayer(Player player) { _players.push_back(player); }
+                void updatePlayerPosition(size_t id,
+                    size_t x,
+                    size_t y,
+                    Orientation orientation
+                );
+                void updatePlayerLevel(size_t id,
+                    size_t level
+                );
+                void updatePlayerInventory(size_t id,
+                    Inventory &inventory
+                );
+                void removePlayer(size_t id);
+
+                void endGame(const std::string &teamName);
+
             private:
             size_t _frequency;
+
+            std::vector<Player> _players;
+            std::vector<std::string> _teams;
 
             game::Map _map;
         };
