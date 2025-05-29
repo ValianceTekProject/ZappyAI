@@ -15,7 +15,7 @@ namespace zappy {
         {
             public:
                 NetworkError(const std::string &msg, const std::string &where)
-                    noexcept : AError(msg, where) {};
+                    noexcept : gui::AError(msg, where) {};
         };
     }
 }
