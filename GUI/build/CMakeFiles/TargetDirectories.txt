@@ -1,3 +1,0 @@
-/home/axel/Epitech/Year 2/B-YEP-400/Zappy/GUI/build/CMakeFiles/zappy_gui.dir
-/home/axel/Epitech/Year 2/B-YEP-400/Zappy/GUI/build/CMakeFiles/edit_cache.dir
-/home/axel/Epitech/Year 2/B-YEP-400/Zappy/GUI/build/CMakeFiles/rebuild_cache.dir
