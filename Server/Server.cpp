@@ -19,7 +19,7 @@ int handlerFlag(char const *argv[], int i, std::string flag)
     return res;
 }
 
-void zappy::Server::parsingName(int &index, char const *argv[])
+void zappy::server::Server::parsingName(int &index, char const *argv[])
 {
     int nameCount = 0;
 
@@ -38,7 +38,7 @@ void zappy::Server::parsingName(int &index, char const *argv[])
 
 }
 
-void zappy::Server::parsing(int argc, char const *argv[])
+void zappy::server::Server::parsing(int argc, char const *argv[])
 {
     for (int i = 1; i < argc; ++i) {
         if (!argv[i])
@@ -75,7 +75,7 @@ void zappy::Server::parsing(int argc, char const *argv[])
         throw error::InvalidArg("Missing arguments: -p -x -y -c -f -n <names>");
 }
 
-void zappy::Server::serverLaunch()
+void zappy::server::Server::serverLaunch()
 {
     _servSocket = my_socket(AF_INET, SOCK_STREAM, 0);
     if (_servSocket < 0)
