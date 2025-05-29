@@ -13,6 +13,7 @@
 #include "GameState.hpp"
 
 #include <string>
+#include <sstream>
 #include <memory>
 
 namespace zappy {
@@ -24,14 +25,15 @@ namespace zappy {
             ~GUI() = default;
 
             void parseArgs(int argc, char const *argv[]);
+            void init();
 
             void run();
 
         private:
             std::string _ip;
-            int _port;
+            size_t _port;
 
-            int _frequency;
+            size_t _frequency;
 
             std::unique_ptr<IRenderer> _renderer;
 
