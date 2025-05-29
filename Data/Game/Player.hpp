@@ -9,27 +9,29 @@
 
 namespace zappy {
     namespace game {
+        enum class Orientation {
+            NORTH,
+            EAST,
+            SOUTH,
+            WEST
+        };
+
         class Player
         {
             public:
-                enum Direction {
-                    NORTH,
-                    EAST,
-                    SOUTH,
-                    WEST
-                };
-
                 size_t id;
                 size_t level;
                 size_t x;
                 size_t y;
-                Direction orientation;
+                Orientation orientation;
+                std::string teamName;
+                bool hasHatch;
 
                 Player(
                     size_t id,
                     size_t x,
                     size_t y,
-                    Direction orientation,
+                    Orientation orientation,
                     size_t level = 1
                 );
                 ~Player() = default;
@@ -38,17 +40,18 @@ namespace zappy {
                 bool isPraying() const { return _isPraying; }
                 void stopPraying() { _isPraying = false; }
 
-                void lookLeft() { this->orientation = static_cast<Direction>((this->orientation - 1 + 4) % 4); }
-                void lookRight() { this->orientation = static_cast<Direction>((this->orientation + 1) % 4); }
+                void lookLeft();
+                void lookRight();
 
                 void stepForward();
 
-                void ejectFrom(Direction direction);
+                void ejectFrom(Orientation direction);
 
+                void setInventory(const Inventory &inventory) { _inventory = inventory; }
                 const Inventory &getInventory() const { return _inventory; }
 
-                void collectRessource(Ressource resource, size_t quantity = 1);
-                void dropRessource(Ressource resource, size_t quantity = 1);
+                void collectRessource(Resource resource, size_t quantity = 1);
+                void dropRessource(Resource resource, size_t quantity = 1);
 
             private:
                 bool _isPraying;

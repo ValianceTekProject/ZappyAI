@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "RessourceContainer.hpp"
+#include "ResourceContainer.hpp"
 
 namespace zappy {
     namespace game {

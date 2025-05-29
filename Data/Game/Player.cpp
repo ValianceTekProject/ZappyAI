@@ -12,54 +12,71 @@ zappy::game::Player::Player(
     size_t id,
     size_t x,
     size_t y,
-    Direction orientation,
+    Orientation orientation,
     size_t level
-) : id(id), level(level), x(x), y(y), orientation(orientation)
+) :
+    id(id),
+    level(level),
+    x(x),
+    y(y),
+    orientation(orientation),
+    hasHatch(false),
+    _isPraying(false)
 {}
+
+void zappy::game::Player::lookLeft()
+{
+    orientation = static_cast<Orientation>((static_cast<int>(orientation) - 1 + 4) % 4);
+}
+
+void zappy::game::Player::lookRight()
+{
+    orientation = static_cast<Orientation>((static_cast<int>(orientation) + 1) % 4);
+}
 
 void zappy::game::Player::stepForward()
 {
     switch (orientation) {
-        case NORTH:
+        case Orientation::NORTH:
             y--;
             break;
-        case EAST:
+        case Orientation::EAST:
             x++;
             break;
-        case SOUTH:
+        case Orientation::SOUTH:
             y++;
             break;
-        case WEST:
+        case Orientation::WEST:
             x--;
             break;
     }
 }
 
-void zappy::game::Player::ejectFrom(Direction direction)
+void zappy::game::Player::ejectFrom(Orientation direction)
 {
     stopPraying();
     switch (direction) {
-        case NORTH:
+        case Orientation::NORTH:
             y++;
             break;
-        case EAST:
+        case Orientation::EAST:
             x--;
             break;
-        case SOUTH:
+        case Orientation::SOUTH:
             y--;
             break;
-        case WEST:
+        case Orientation::WEST:
             x++;
             break;
     }
 }
 
-void zappy::game::Player::collectRessource(Ressource resource, size_t quantity)
+void zappy::game::Player::collectRessource(Resource resource, size_t quantity)
 {
     _inventory.addResource(resource, quantity);
 }
 
-void zappy::game::Player::dropRessource(Ressource resource, size_t quantity)
+void zappy::game::Player::dropRessource(Resource resource, size_t quantity)
 {
     _inventory.removeResource(resource, quantity);
 }
