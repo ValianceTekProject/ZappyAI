@@ -10,33 +10,36 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-gnu-unique -Wl,--export-dynamic"
 
 # === Dossiers sources ===
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-set(ERRORS_DIR ${SRC_DIR}/Errors)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
 
-set(DATA_GAME_DIR ${CMAKE_SOURCE_DIR}/../Data/Game)
+set(DATA_DIR ${CMAKE_SOURCE_DIR}/../Data)
+set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
+set(DATA_GAME_DIR ${DATA_DIR}/Game)
 
 # === Include paths ===
 include_directories(
+    ${DATA_ERRORS_DIR}
+    ${DATA_GAME_DIR}
+
     ${SRC_DIR}
-    ${ERRORS_DIR}
+
     ${GAME_DIR}
     ${RENDERER_DIR}
-    ${DATA_GAME_DIR}
 )
 
 # === Fichiers sources ===
 set(SOURCES
-    ${SRC_DIR}/main.cpp
+    ${DATA_ERRORS_DIR}/AError.cpp
 
-    ${DATA_GAME_DIR}/Ressource.cpp
-    ${DATA_GAME_DIR}/RessourceContainer.cpp
+    ${DATA_GAME_DIR}/Resource.cpp
+    ${DATA_GAME_DIR}/ResourceContainer.cpp
     ${DATA_GAME_DIR}/Player.cpp
     ${DATA_GAME_DIR}/Map.cpp
 
-    ${SRC_DIR}/GUI.cpp
+    ${SRC_DIR}/main.cpp
 
-    ${ERRORS_DIR}/AError.cpp
+    ${SRC_DIR}/Gui.cpp
 
     ${GAME_DIR}/GameState.cpp
 
