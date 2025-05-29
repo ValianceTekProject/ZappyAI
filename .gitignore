@@ -13,9 +13,12 @@ test
 plazza
 unit_tests
 B-OOP-400_nanotekspice
+<<<<<<< HEAD
 .vscode
 zappy_*
 
+=======
+>>>>>>> 08628fd955d6fe1c6cdb4106ca53da802979a592
 build
 .build
 zappy_server
