@@ -9,10 +9,11 @@
 
 #include <iostream>
 #include <vector>
+#include <array>
 
 namespace zappy {
     namespace game {
-        enum Ressource {
+        enum class Ressource {
             FOOD,
             LINEMATE,
             DERAUMERE,
@@ -22,6 +23,17 @@ namespace zappy {
             THYSTAME,
             NONE,
             COUNT
+            
+        };
+
+        const std::array<float, static_cast<int> (Ressource::COUNT) - 1> coeff = {
+            0.5,
+            0.3,
+            0.15,
+            0.1,
+            0.1,
+            0.08,
+            0.05
         };
 
         const std::vector<std::string> names = {

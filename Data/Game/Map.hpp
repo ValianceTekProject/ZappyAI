@@ -32,7 +32,7 @@ namespace zappy {
 
                 void setTile(int x, int y, Tile &tile);
 
-            private:
+            protected:
                 int _width;
                 int _height;
 
