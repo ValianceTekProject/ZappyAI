@@ -39,7 +39,6 @@ set(SOURCES
     ${ERRORS_DIR}/AError.cpp
 
     ${GAME_DIR}/GameState.cpp
-    ${GAME_DIR}/Tile.cpp
 
     ${RENDERER_DIR}/NcursesRenderer.cpp
     ${RENDERER_DIR}/OpenGLRenderer.cpp
