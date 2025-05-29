@@ -38,7 +38,7 @@ namespace zappy {
             Server(int argc, char const *argv[]);
             ~Server() = default;
 
-            void serverLaunch();
+                void serverLaunch();
 
             void parsingName(int &index, char const *argv[]);
 
@@ -54,10 +54,10 @@ namespace zappy {
             void handleUserMessage(int clientSocket, std::string buffer);
 
 
-            void stopServer(int sig);
-            void closeClients();
-            static void signalWrapper(int sig);
-            static std::function<void(int)> takeSignal;
+                void stopServer(int sig);
+                void closeClients();
+                static void signalWrapper(int sig);
+                static std::function<void(int)> takeSignal;
 
            private:
             zappy::game::Game _game;
@@ -68,7 +68,7 @@ namespace zappy {
             std::vector<zappy::game::Team> _teamList;
             std::vector<pollfd> fds;
 
-            std::unordered_map<int, zappy::server::User> _users;
+                std::unordered_map<int, zappy::server::User> _users;
 
             std::mutex _socketLock;
             std::mutex _endLock;
