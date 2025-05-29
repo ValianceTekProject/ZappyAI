@@ -28,6 +28,7 @@ namespace zappy {
 
     #define OK 0
     #define KO 84
+    namespace server {
 
     #define OK 0
     #define KO 84
@@ -37,43 +38,44 @@ namespace zappy {
             Server() : _serverRun(true), _port(-1), _width(-1), _height(-1), _clientNb(-1), _freq(-1) {}
             ~Server() = default;
 
-            void serverLaunch();
+                void serverLaunch();
 
-            void parsing(int argc, char const *argv[]);
-            void parsingName(int &index, char const *argv[]);
+                void parsing(int argc, char const *argv[]);
+                void parsingName(int &index, char const *argv[]);
 
-            int getWidth() const { return _width; }
-            int getHeight() const { return _height; }
-            int getClientNb() const { return _clientNb; }
+                int getWidth() const { return _width; }
+                int getHeight() const { return _height; }
+                int getClientNb() const { return _clientNb; }
 
-            void serverLoop();
-            void handleNewConnection();
-            void handleTeamJoin(int clientSocket, const std::string &teamName);
+                void serverLoop();
+                void handleNewConnection();
+                void handleTeamJoin(int clientSocket, const std::string &teamName);
 
-            void stopServer(int sig);
-            void closeClients();
-            static void signalWrapper(int sig);
-            static std::function<void(int)> takeSignal;
+                void stopServer(int sig);
+                void closeClients();
+                static void signalWrapper(int sig);
+                static std::function<void(int)> takeSignal;
 
-            void sendMessage(int clientSocket, char const *message) { write(clientSocket, message, std::string(message).size()); }
+                void sendMessage(int clientSocket, char const *message) { write(clientSocket, message, std::string(message).size()); }
 
-        private:
+            private:
 
-            bool _serverRun;
-            int _port;
-            int _servSocket;
-            sockaddr_in servAddr{};
-            std::vector<zappy::game::Team> _teamList;
-            std::vector<pollfd> fds;
+                bool _serverRun;
+                int _port;
+                int _servSocket;
+                sockaddr_in servAddr{};
+                std::vector<zappy::game::Team> _teamList;
+                std::vector<pollfd> fds;
 
-            std::unordered_map<int, zappy::server::User> _users;
+                std::unordered_map<int, zappy::server::User> _users;
 
-            int _width;
-            int _height;
-            int _clientNb;
-            int _freq;
-            std::vector<std::string> _namesTeam;
-    };
+                int _width;
+                int _height;
+                int _clientNb;
+                int _freq;
+                std::vector<std::string> _namesTeam;
+        };
+    }
 
     // Encapsuled Functions
     int my_socket(int __domain, int __type, int __protocol);
