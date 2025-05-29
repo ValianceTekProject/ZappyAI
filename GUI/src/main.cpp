@@ -5,16 +5,16 @@
 ** main
 */
 
-#include "GUI.hpp"
+#include "Gui.hpp"
 
 int main(int argc, char const *argv[])
 {
     try {
-        zappy::gui::GUI gui;
+        zappy::gui::Gui gui;
         gui.parseArgs(argc, argv);
         gui.run();
     }
-    catch(const zappy::gui::IError& e) {
+    catch(const zappy::IError &e) {
         std::cerr << e.where() << " Error: " << e.what() << std::endl;
     }
     return 0;

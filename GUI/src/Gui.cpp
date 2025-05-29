@@ -2,12 +2,12 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** GUI.cpp
+** Gui.cpp
 */
 
-#include "GUI.hpp"
+#include "Gui.hpp"
 
-zappy::gui::GUI::GUI() :
+zappy::gui::Gui::Gui() :
     _ip("127.0.0.1"),
     _port(4242),
     _frequency(100),
@@ -16,7 +16,7 @@ zappy::gui::GUI::GUI() :
     _gameState.setFrequency(_frequency);
 }
 
-void zappy::gui::GUI::parseArgs(int argc, char const *argv[])
+void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
 {
     if (argc < 2)
         throw ParsingError("Not enough arguments\n\tUsage: ./zappy_gui -p port -h host", "Parsing");
@@ -45,7 +45,6 @@ void zappy::gui::GUI::parseArgs(int argc, char const *argv[])
             throw ParsingError("Unknown option: " + arg, "Parsing");
     }
 
-    // Vérification post-parsing
     if (_ip.empty()) {
         throw ParsingError("Host (-h) not specified", "Parsing");
     }
@@ -54,13 +53,13 @@ void zappy::gui::GUI::parseArgs(int argc, char const *argv[])
     }
 }
 
-void zappy::gui::GUI::init()
+void zappy::gui::Gui::init()
 {
     std::cout << "IP: " << _ip << std::endl;
     std::cout << "Port: " << _port << std::endl;
 }
 
-void zappy::gui::GUI::run()
+void zappy::gui::Gui::run()
 {
     init();
 }
