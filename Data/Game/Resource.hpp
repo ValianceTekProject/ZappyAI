@@ -37,7 +37,7 @@ namespace zappy {
         };
 
         size_t castResource(const Resource &res);
-        const std::string &getName(Resource &res);
+        const std::string &getName(const Resource &res);
         Resource getResource(const std::string &name);
     }
 }

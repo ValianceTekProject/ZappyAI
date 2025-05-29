@@ -12,14 +12,14 @@ size_t zappy::game::castResource(const Resource &res)
     return static_cast<size_t>(res);
 }
 
-const std::string &zappy::game::getName(Resource res)
+const std::string &zappy::game::getName(const Resource &res)
 {
     return names[castResource(res)];
 }
 
 zappy::game::Resource zappy::game::getResource(const std::string &name)
 {
-    for (int i = 0; i < RESOURCE_QUANTITY; i++) {
+    for (size_t i = 0; i < RESOURCE_QUANTITY; i++) {
         if (names[i] == name)
             return static_cast<Resource>(i);
     }
