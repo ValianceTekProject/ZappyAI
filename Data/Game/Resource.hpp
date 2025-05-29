@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include <iostream>
+#include "GameError.hpp"
+
 #include <array>
 
 namespace zappy {

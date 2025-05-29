@@ -23,5 +23,5 @@ zappy::game::Resource zappy::game::getResource(const std::string &name)
         if (names[i] == name)
             return static_cast<Resource>(i);
     }
-    return Resource::RESOURCE_SIZE;
+    throw GameError("Resource not found", "Resource");
 }
