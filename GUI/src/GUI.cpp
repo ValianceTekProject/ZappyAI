@@ -13,17 +13,54 @@ zappy::gui::GUI::GUI() :
     _frequency(100),
     _renderer(nullptr)
 {
-    // _gameState.setFrequency(_frequency);
+    _gameState.setFrequency(_frequency);
 }
 
 void zappy::gui::GUI::parseArgs(int argc, char const *argv[])
 {
     if (argc < 2)
-        throw ParsingError("Not enough arguments", "Parsing");
-    (void)argv;
+        throw ParsingError("Not enough arguments\n\tUsage: ./zappy_gui -p port -h host", "Parsing");
+
+    if (argc == 2 && std::string(argv[1]) == "-help") {
+        std::cout << "Usage: ./zappy_gui -p port -h host" << std::endl;
+        exit(0);
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+
+        if (arg == "-p") {
+            if (i + 1 >= argc)
+                throw ParsingError("Missing value for -p", "Parsing");
+            std::istringstream ss(argv[++i]);
+            if (!(ss >> _port) || !_port)
+                throw ParsingError("Invalid port number: " + std::string(argv[i]), "Parsing");
+        }
+        else if (arg == "-h") {
+            if (i + 1 >= argc)
+                throw ParsingError("Missing value for -h", "Parsing");
+            _ip = argv[++i];
+        }
+        else
+            throw ParsingError("Unknown option: " + arg, "Parsing");
+    }
+
+    // Vérification post-parsing
+    if (_ip.empty()) {
+        throw ParsingError("Host (-h) not specified", "Parsing");
+    }
+    if (_port <= 0 || _port > 65535) {
+        throw ParsingError("Port out of range: " + std::to_string(_port), "Parsing");
+    }
+}
+
+void zappy::gui::GUI::init()
+{
+    std::cout << "IP: " << _ip << std::endl;
+    std::cout << "Port: " << _port << std::endl;
 }
 
 void zappy::gui::GUI::run()
 {
-
+    init();
 }
