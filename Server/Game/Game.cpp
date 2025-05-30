@@ -8,7 +8,7 @@
 #include "Game.hpp"
 
 
-void zappy::game::MapServer::MapInit()
+void zappy::game::MapServer::mapInit()
 {
     std::srand(std::time({}));
     int randX = 0;
@@ -23,5 +23,16 @@ void zappy::game::MapServer::MapInit()
             zappy::game::Tile tileTmp = getTile(randX, randY);
             tileTmp.addResource(static_cast<zappy::game::Ressource>(i), 1);
         }
+    }
+}
+
+void zappy::game::Game::gameLoop()
+{
+    _map.init(_map.getWidth(), _map.getHeight());
+    _map.mapInit();
+    _isRunning = true;
+
+    while (_isRunning) {
+        
     }
 }
