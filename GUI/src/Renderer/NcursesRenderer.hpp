@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** NCursesRenderer.cpp
+** NcursesRenderer.cpp
 */
 
 #pragma once
@@ -13,22 +13,28 @@
 
 namespace zappy {
     namespace gui {
-        class NCursesRenderer : public IRenderer
+        class NcursesRenderer : public IRenderer
         {
             public:
-                NCursesRenderer();
-                ~NCursesRenderer();
+                NcursesRenderer() : _shouldClose(false) {}
+                ~NcursesRenderer() = default;
 
                 void init() override;
+
+                void setGameState(std::shared_ptr<game::GameState> gameState) override
+                    { _gameState = gameState; }
 
                 void handleInput() override;
                 void update() override;
 
-                void render() override;
+                void render() const override;
 
-                void close() override;
+                bool shouldClose() const override { return _shouldClose; }
 
             private:
+                std::weak_ptr<game::GameState> _gameState;
+                bool _shouldClose;
+
                 WINDOW *_window;
         };
     }

@@ -8,7 +8,6 @@
 #pragma once
 
 #include "IRenderer.hpp"
-
 #include <GL/glew.h>
 
 namespace zappy {
@@ -16,19 +15,24 @@ namespace zappy {
         class OpenGLRenderer : public IRenderer
         {
             public:
-                OpenGLRenderer();
-                ~OpenGLRenderer();
+                OpenGLRenderer() = default;
+                ~OpenGLRenderer() = default;
 
                 void init() override;
+
+                void setGameState(std::shared_ptr<game::GameState> gameState) override
+                    { _gameState = gameState; }
 
                 void handleInput() override;
                 void update() override;
 
-                void render() override;
+                void render() const override;
 
-                void close() override;
+                bool shouldClose() const override;
 
             private:
+                std::weak_ptr<game::GameState> _gameState;
+
                 GLuint _program;
         };
     }
