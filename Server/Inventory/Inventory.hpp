@@ -10,32 +10,24 @@
 #include <cstdint>
 #include <map>
 
+#include "Data/Game/Inventory.hpp"
+
 #define NO_ITEM 0
+#define START_FOOD 10
 
 namespace zappy {
     namespace game {
         namespace player {
-            enum class Item : uint8_t {
-                food,
-                linemate,
-                deraumere,
-                sibur,
-                mendiane,
-                phiras,
-                thrystame
-            };
 
-            class Inventory {
+            class InventoryServer :  public Inventory {
             public:
-                Inventory();
-                ~Inventory() = default;
+                InventoryServer();
+                ~InventoryServer() = default;
 
-                void addItem(const Item &item);
-                [[nodiscard]] bool removeItem(const Item &item);
                 void clearInventory();
 
             private:
-                std::map<Item, size_t> _items;
+                std::map<zappy::game::Ressource, size_t> _items;
             };
         }  // namespace ZappyPlayer
     }
