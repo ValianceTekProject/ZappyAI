@@ -15,6 +15,9 @@ namespace zappy {
             SOUTH,
             WEST
         };
+        void operator++(Orientation &orientation, int);
+        void operator--(Orientation &orientation, int);
+        Orientation convertOrientation(const std::string &orientation);
 
         class Player
         {
@@ -40,8 +43,8 @@ namespace zappy {
                 bool isPraying() const { return _isPraying; }
                 void stopPraying() { _isPraying = false; }
 
-                void lookLeft();
-                void lookRight();
+                void lookLeft() { orientation--; }
+                void lookRight() { orientation++; }
 
                 void stepForward();
 

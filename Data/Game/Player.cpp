@@ -7,6 +7,28 @@
 
 #include "Player.hpp"
 
+void operator++(zappy::game::Orientation &orientation, int)
+{
+    orientation = static_cast<zappy::game::Orientation>((static_cast<int>(orientation) + 1) % 4);
+}
+
+void operator--(zappy::game::Orientation &orientation, int)
+{
+    orientation = static_cast<zappy::game::Orientation>((static_cast<int>(orientation) - 1 + 4) % 4);
+}
+
+zappy::game::Orientation zappy::game::convertOrientation(const std::string &orientation)
+{
+    if (orientation == "NORTH" || orientation == "N")
+        return zappy::game::Orientation::NORTH;
+    if (orientation == "EAST" || orientation == "E")
+        return zappy::game::Orientation::EAST;
+    if (orientation == "SOUTH" || orientation == "S")
+        return zappy::game::Orientation::SOUTH;
+    if (orientation == "WEST" || orientation == "W")
+        return zappy::game::Orientation::WEST;
+    return zappy::game::Orientation::NORTH;
+}
 
 zappy::game::Player::Player(
     size_t id,
@@ -23,16 +45,6 @@ zappy::game::Player::Player(
     hasHatch(false),
     _isPraying(false)
 {}
-
-void zappy::game::Player::lookLeft()
-{
-    orientation = static_cast<Orientation>((static_cast<int>(orientation) - 1 + 4) % 4);
-}
-
-void zappy::game::Player::lookRight()
-{
-    orientation = static_cast<Orientation>((static_cast<int>(orientation) + 1) % 4);
-}
 
 void zappy::game::Player::stepForward()
 {
