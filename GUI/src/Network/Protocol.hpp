@@ -43,28 +43,28 @@ namespace zappy {
                 bool _authenticated;
 
                 // Message handlers
-                void handleMapSize(const std::vector<std::string>& params);
-                void handleTileContent(const std::vector<std::string>& params);
-                void handleMapContent(const std::vector<std::string>& params);
-                void handleTeamNames(const std::vector<std::string>& params);
-                void handleNewPlayer(const std::vector<std::string>& params);
-                void handlePlayerPosition(const std::vector<std::string>& params);
-                void handlePlayerLevel(const std::vector<std::string>& params);
-                void handlePlayerInventory(const std::vector<std::string>& params);
-                void handlePlayerExpulsion(const std::vector<std::string>& params);
-                void handlePlayerBroadcast(const std::vector<std::string>& params);
-                void handleIncantationStart(const std::vector<std::string>& params);
-                void handleIncantationEnd(const std::vector<std::string>& params);
-                void handleEggLaying(const std::vector<std::string>& params);
-                void handleResourceDrop(const std::vector<std::string>& params);
-                void handleResourceCollect(const std::vector<std::string>& params);
-                void handlePlayerDeath(const std::vector<std::string>& params);
-                void handleEggCreated(const std::vector<std::string>& params);
-                void handleEggHatch(const std::vector<std::string>& params);
-                void handleEggDeath(const std::vector<std::string>& params);
-                void handleTimeUnit(const std::vector<std::string>& params);
-                void handleGameEnd(const std::vector<std::string>& params);
-                void handleServerMessage(const std::vector<std::string>& params);
+                void handleMapSize(const std::string &params);
+                void handleTileContent(const std::string &params);
+                void handleMapContent(const std::string &params);
+                void handleTeamNames(const std::string &params);
+                void handleNewPlayer(const std::string &params);
+                void handlePlayerPosition(const std::string &params);
+                void handlePlayerLevel(const std::string &params);
+                void handlePlayerInventory(const std::string &params);
+                void handlePlayerExpulsion(const std::string &params);
+                void handlePlayerBroadcast(const std::string &params);
+                void handleIncantationStart(const std::string &params);
+                void handleIncantationEnd(const std::string &params);
+                void handleEggLaying(const std::string &params);
+                void handleResourceDrop(const std::string &params);
+                void handleResourceCollect(const std::string &params);
+                void handlePlayerDeath(const std::string &params);
+                void handleEggCreated(const std::string &params);
+                void handleEggHatch(const std::string &params);
+                void handleEggDeath(const std::string &params);
+                void handleTimeUnit(const std::string &params);
+                void handleGameEnd(const std::string &params);
+                void handleServerMessage(const std::string &params);
         };
     } // namespace network
 } // namespace zappy

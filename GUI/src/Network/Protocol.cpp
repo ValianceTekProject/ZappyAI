@@ -133,7 +133,7 @@ void zappy::network::Protocol::update() {
 }
 
 // Implémentation des handlers selon le protocole Zappy GUI
-void zappy::network::Protocol::handleMapSize(const std::vector<std::string> &params) {
+void zappy::network::Protocol::handleMapSize(const std::string &params) {
     if (params.size() >= 2) {
         try {
             int width = std::stoi(params[0]);
@@ -146,7 +146,7 @@ void zappy::network::Protocol::handleMapSize(const std::vector<std::string> &par
     }
 }
 
-void zappy::network::Protocol::handleTileContent(const std::vector<std::string> &params) {
+void zappy::network::Protocol::handleTileContent(const std::string &params) {
     if (params.size() >= 9) {
         try {
             int x = std::stoi(params[0]);
@@ -163,7 +163,7 @@ void zappy::network::Protocol::handleTileContent(const std::vector<std::string> 
     }
 }
 
-void zappy::network::Protocol::handleTeamNames(const std::vector<std::string> &params)
+void zappy::network::Protocol::handleTeamNames(const std::string &params)
 {
     if (!params.empty()) {
         _gameState->addTeam(params[0]);
@@ -171,11 +171,11 @@ void zappy::network::Protocol::handleTeamNames(const std::vector<std::string> &p
     }
 }
 
-void zappy::network::Protocol::handleNewPlayer(const std::vector<std::string> &params)
+void zappy::network::Protocol::handleNewPlayer(const std::string &params)
 {
     if (params.size() >= 6) {
         try {
-            std::istringstream iss(params[0]);
+            std::istringstream iss(params);
             std::string command;
             size_t playerId;
             size_t x, y;
@@ -185,7 +185,11 @@ void zappy::network::Protocol::handleNewPlayer(const std::vector<std::string> &p
 
             iss >> command >> playerId >> x >> y >> orientation >> level >> teamName;
 
-            game::Player player(playerId, x, y, orientation, level, teamName);
+            game::Player player(
+                playerId, x, y,
+                game::convertOrientation(orientation),
+                level, teamName
+            );
 
             _gameState->addPlayer(player);
             std::cout << "New player " << player.id << " connected from team "
@@ -196,7 +200,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::vector<std::string> &p
     }
 }
 
-void zappy::network::Protocol::handlePlayerPosition(const std::vector<std::string> &params)
+void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
 {
     if (params.size() >= 4) {
         try {
@@ -212,7 +216,7 @@ void zappy::network::Protocol::handlePlayerPosition(const std::vector<std::strin
     }
 }
 
-void zappy::network::Protocol::handlePlayerLevel(const std::vector<std::string> &params)
+void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
 {
     if (params.size() >= 2) {
         try {
@@ -227,7 +231,7 @@ void zappy::network::Protocol::handlePlayerLevel(const std::vector<std::string> 
     }
 }
 
-void zappy::network::Protocol::handlePlayerInventory(const std::vector<std::string> &params)
+void zappy::network::Protocol::handlePlayerInventory(const std::string &params)
 {
     if (params.size() >= 10) {
         try {
@@ -244,7 +248,7 @@ void zappy::network::Protocol::handlePlayerInventory(const std::vector<std::stri
     }
 }
 
-void zappy::network::Protocol::handleGameEnd(const std::vector<std::string> &params)
+void zappy::network::Protocol::handleGameEnd(const std::string &params)
 {
     if (!params.empty()) {
         std::string winningTeam = params[0];
@@ -300,7 +304,7 @@ void zappy::network::Protocol::setTimeUnit(int timeUnit)
 }
 
 // Handlers pour les autres événements (stub implementations pour l'instant)
-void zappy::network::Protocol::handlePlayerExpulsion(const std::vector<std::string> &params)
+void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
 {
     if (!params.empty()) {
         try {
@@ -312,7 +316,7 @@ void zappy::network::Protocol::handlePlayerExpulsion(const std::vector<std::stri
     }
 }
 
-void zappy::network::Protocol::handlePlayerBroadcast(const std::vector<std::string> &params) {
+void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params) {
     if (params.size() >= 2) {
         try {
             int playerId = std::stoi(params[0].substr(1));
@@ -324,7 +328,7 @@ void zappy::network::Protocol::handlePlayerBroadcast(const std::vector<std::stri
     }
 }
 
-void zappy::network::Protocol::handleIncantationStart(const std::vector<std::string> &params) {
+void zappy::network::Protocol::handleIncantationStart(const std::string &params) {
     if (params.size() >= 3) {
         try {
             int x = std::stoi(params[0]);
@@ -337,7 +341,7 @@ void zappy::network::Protocol::handleIncantationStart(const std::vector<std::str
     }
 }
 
-void zappy::network::Protocol::handleIncantationEnd(const std::vector<std::string> &params) {
+void zappy::network::Protocol::handleIncantationEnd(const std::string &params) {
     if (params.size() >= 3) {
         try {
             int x = std::stoi(params[0]);
@@ -351,10 +355,11 @@ void zappy::network::Protocol::handleIncantationEnd(const std::vector<std::strin
     }
 }
 
-void zappy::network::Protocol::handlePlayerDeath(const std::vector<std::string> &params) {
+void zappy::network::Protocol::handlePlayerDeath(const std::string &params) {
     if (!params.empty()) {
         try {
             int playerId = std::stoi(params[0].substr(1));
+
             _gameState->removePlayer(playerId);
             std::cout << "Player " << playerId << " died" << std::endl;
         } catch (const std::exception &e) {
@@ -363,12 +368,12 @@ void zappy::network::Protocol::handlePlayerDeath(const std::vector<std::string> 
     }
 }
 
-void zappy::network::Protocol::handleEggLaying(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleResourceDrop(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleResourceCollect(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleEggCreated(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleEggHatch(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleEggDeath(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleTimeUnit(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleServerMessage(const std::vector<std::string> &params) {}
-void zappy::network::Protocol::handleMapContent(const std::vector<std::string> &params) {}
+void zappy::network::Protocol::handleEggLaying(const std::string &params) {}
+void zappy::network::Protocol::handleResourceDrop(const std::string &params) {}
+void zappy::network::Protocol::handleResourceCollect(const std::string &params) {}
+void zappy::network::Protocol::handleEggCreated(const std::string &params) {}
+void zappy::network::Protocol::handleEggHatch(const std::string &params) {}
+void zappy::network::Protocol::handleEggDeath(const std::string &params) {}
+void zappy::network::Protocol::handleTimeUnit(const std::string &params) {}
+void zappy::network::Protocol::handleServerMessage(const std::string &params) {}
+void zappy::network::Protocol::handleMapContent(const std::string &params) {}

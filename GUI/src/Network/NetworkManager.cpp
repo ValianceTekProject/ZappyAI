@@ -139,14 +139,13 @@ zappy::network::ServerMessage zappy::network::NetworkManager::parseMessage(const
     ServerMessage msg;
     msg.raw = raw;
 
-    std::istringstream iss(raw);
-    std::string token;
-
-    if (iss >> token) {
-        msg.command = token;
-        while (iss >> token) {
-            msg.params.push_back(token);
-        }
+    auto pos = raw.find(' ');
+    if (pos == std::string::npos) {
+        msg.command = raw;
+        msg.params.clear();
+    } else {
+        msg.command = raw.substr(0, pos);
+        msg.params  = raw.substr(pos + 1);
     }
 
     return msg;
