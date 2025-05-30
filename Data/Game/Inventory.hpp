@@ -11,7 +11,7 @@
 
 namespace zappy {
     namespace game {
-        class Inventory : public RessourceContainer {
+        class Inventory : public ResourceContainer {
             public:
                 Inventory() = default;
                 Inventory(const Inventory &other) = default;

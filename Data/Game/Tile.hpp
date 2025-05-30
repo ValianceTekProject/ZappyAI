@@ -11,7 +11,7 @@
 
 namespace zappy {
     namespace game {
-        class Tile : public RessourceContainer {
+        class Tile : public ResourceContainer {
             public:
                 Tile() = default;
                 Tile(const Tile &other) = default;

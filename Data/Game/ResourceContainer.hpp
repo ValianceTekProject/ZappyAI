@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** RessourceContainer.hpp
+** ResourceContainer.hpp
 */
 
 #pragma once
@@ -11,12 +11,12 @@
 
 namespace zappy {
     namespace game {
-        class RessourceContainer
+        class ResourceContainer
         {
             public:
-                RessourceContainer() { clear(); }
-                RessourceContainer(const RessourceContainer &other) = default;
-                ~RessourceContainer() = default;
+                ResourceContainer() { clear(); }
+                ResourceContainer(const ResourceContainer &other) = default;
+                ~ResourceContainer() = default;
 
                 void clear();
 

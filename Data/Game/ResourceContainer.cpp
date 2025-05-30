@@ -2,22 +2,22 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** RessourceContainer.hpp
+** ResourceContainer.hpp
 */
 
 #include "ResourceContainer.hpp"
 
-void zappy::game::RessourceContainer::clear()
+void zappy::game::ResourceContainer::clear()
 {
     _resources.fill(0);
 }
 
-void zappy::game::RessourceContainer::addResource(Resource resource, size_t quantity)
+void zappy::game::ResourceContainer::addResource(Resource resource, size_t quantity)
 {
     _resources[castResource(resource)] += quantity;
 }
 
-void zappy::game::RessourceContainer::removeResource(Resource resource, size_t quantity)
+void zappy::game::ResourceContainer::removeResource(Resource resource, size_t quantity)
 {
     if (_resources[castResource(resource)] <= quantity)
         _resources[castResource(resource)] = 0;
@@ -25,7 +25,7 @@ void zappy::game::RessourceContainer::removeResource(Resource resource, size_t q
         _resources[castResource(resource)] -= quantity;
 }
 
-size_t zappy::game::RessourceContainer::getResourceQuantity(Resource resource) const
+size_t zappy::game::ResourceContainer::getResourceQuantity(Resource resource) const
 {
     return _resources[castResource(resource)];
 }
