@@ -21,22 +21,26 @@ namespace zappy {
                 MapServer() = default;
                 ~MapServer() = default;
 
-                void MapInit();
+                void mapInit();
 
             private:
+   
                 
         };
 
         class Game {
             
             public:
-                Game() = default;
+                Game() : _isRunning(false) {}
                 ~Game() = default;
 
-                MapServer &getMap() { return map; }
+                void gameLoop();
+
+                MapServer &getMap() { return _map; }
             
             private:
-                MapServer map;
+                MapServer _map;
+                bool _isRunning;
 
         };
         
