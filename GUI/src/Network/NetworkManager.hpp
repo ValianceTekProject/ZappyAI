@@ -26,7 +26,7 @@ namespace zappy {
     namespace network {
     struct ServerMessage {
         std::string command;
-        std::vector<std::string> params;
+        std::string params;
         std::string raw;
     };
 
