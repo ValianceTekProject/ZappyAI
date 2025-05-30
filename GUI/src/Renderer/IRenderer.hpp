@@ -5,6 +5,13 @@
 ** IRenderer.hpp
 */
 
+#pragma once
+
+#include "GameState.hpp"
+
+#include <iostream>
+#include <memory>
+
 namespace zappy {
     namespace gui {
         class IRenderer
@@ -14,12 +21,14 @@ namespace zappy {
 
                 virtual void init() = 0;
 
+                virtual void setGameState(std::shared_ptr<game::GameState> gameState) = 0;
+
                 virtual void handleInput() = 0;
                 virtual void update() = 0;
 
-                virtual void render() = 0;
+                virtual void render() const = 0;
 
-                virtual void close() = 0;
+                virtual bool shouldClose() const = 0;
         };
     }
 }

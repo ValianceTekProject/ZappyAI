@@ -9,8 +9,12 @@
 
 #include "GuiError.hpp"
 #include "ParsingError.hpp"
-#include "IRenderer.hpp"
+
+#include "NetworkManager.hpp"
+#include "Protocol.hpp"
 #include "GameState.hpp"
+#include "NcursesRenderer.hpp"
+#include "OpenGLRenderer.hpp"
 
 #include <string>
 #include <sstream>
@@ -37,7 +41,7 @@ namespace zappy {
 
                 std::unique_ptr<IRenderer> _renderer;
 
-                game::GameState _gameState;
+                std::shared_ptr<game::GameState> _gameState;
         };
     }
 }

@@ -154,7 +154,7 @@ void zappy::network::Protocol::handleTileContent(const std::vector<std::string> 
 
             game::Tile resources;
             for (int i = 0; i < 7; ++i)
-                resources.addResource(static_cast<game::Ressource>(i), std::stoi(params[i + 2]));
+                resources.addResource(static_cast<game::Resource>(i), std::stoi(params[i + 2]));
 
             _gameState->updateTile(x, y, resources);
         } catch (const std::exception &e) {
@@ -179,7 +179,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::vector<std::string> &p
             std::string command;
             size_t playerId;
             size_t x, y;
-            game::Orientation orientation;
+            std::string orientation;
             size_t level;
             std::string teamName;
 
@@ -235,7 +235,7 @@ void zappy::network::Protocol::handlePlayerInventory(const std::vector<std::stri
 
             game::Inventory inventory;
             for (int i = 0; i < 7; ++i)
-                inventory.addResource(static_cast<game::Ressource>(i), std::stoi(params[i + 1]));
+                inventory.addResource(static_cast<game::Resource>(i), std::stoi(params[i + 1]));
 
             _gameState->updatePlayerInventory(playerId, inventory);
         } catch (const std::exception &e) {
