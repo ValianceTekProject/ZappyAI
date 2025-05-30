@@ -20,9 +20,11 @@
 #include "Client/Client.hpp"
 #include <csignal>
 #include <algorithm>
+#include <thread>
 
 #include "Error/Error.hpp"
 #include "Client/Client.hpp"
+#include "Game.hpp"
 
 namespace zappy {
 

@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "Inventory.hpp"
+
 namespace zappy {
     namespace server {
 
@@ -43,6 +45,7 @@ namespace zappy {
 
             private:
                 zappy::server::User &_user;
+                zappy::game::Inventory _inventory;
         };
 
         class Team {
