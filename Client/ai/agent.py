@@ -8,7 +8,6 @@
 import time
 from typing import Dict
 from protocol.commands import CommandManager, CommandType
-from ai.fsm import FiniteStateMachine
 from ai.strategy.mcts import MCTSPlanner
 from ai.strategy.pathfinding import ToroidalGrid
 from utils.vision import Vision
@@ -22,7 +21,6 @@ class Agent:
         self.time_manager = TimingManager(freq)
         self.cmd = CommandManager(connection, self.time_manager)
         self.cmd_type = CommandType
-        self.fsm = FiniteStateMachine()
         self.mcts = MCTSPlanner()
         self.freq = freq
         self.time_per_action = 1.0 / freq
