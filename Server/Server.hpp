@@ -7,68 +7,73 @@
 
 #pragma once
 
-#include <functional>
-#include <vector>
+#include <algorithm>
+#include <csignal>
 #include <cstdint>
+#include <functional>
+#include <iostream>
 #include <netinet/in.h>
 #include <poll.h>
-#include <string>
-#include <iostream>
 #include <sstream>
+<<<<<<< HEAD
 #include <algorithm>
 
 #include "Error/Error.hpp"
 #include "Client/Client.hpp"
 #include <csignal>
 #include <algorithm>
+=======
+#include <string>
+>>>>>>> 3213ba3 (refacto: class Socket accept new connection)
 #include <thread>
+#include <vector>
 
+#include "Client/Client.hpp"
 #include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
-#include "Client/Client.hpp"
 #include "Game.hpp"
 
 namespace zappy {
 
-    #define OK 0
-    #define KO 84
+#define OK 0
+#define KO 84
+
     namespace server {
 
-    class Server {
-        public:
+        class Server {
+           public:
             Server(int argc, char const *argv[]);
             ~Server() = default;
 
-                void serverLaunch();
+            void serverLaunch();
 
             void parsingName(int &index, char const *argv[]);
 
-                int getWidth() const { return _width; }
-                int getHeight() const { return _height; }
-                int getClientNb() const { return _clientNb; }
+            int getWidth() const { return _width; }
 
-                void serverLoop();
-                void handleNewConnection();
-                void handleTeamJoin(int clientSocket, const std::string &teamName);
+            int getHeight() const { return _height; }
 
-                void stopServer(int sig);
-                void closeClients();
-                static void signalWrapper(int sig);
-                static std::function<void(int)> takeSignal;
+            int getClientNb() const { return _clientNb; }
 
-                void sendMessage(int clientSocket, char const *message) { write(clientSocket, message, std::string(message).size()); }
+            void serverLoop();
+            void handleNewConnection();
+            void handleTeamJoin(int clientSocket, const std::string &teamName);
 
-            private:
+            void stopServer(int sig);
+            void closeClients();
+            static void signalWrapper(int sig);
+            static std::function<void(int)> takeSignal;
+            std::unordered_map<int, zappy::server::User> _users;
 
+           private:
             std::unique_ptr<server::Socket> _socket = nullptr;
             bool _serverRun;
             int _port;
-            int _servSocket;
             sockaddr_in servAddr{};
             std::vector<zappy::game::Team> _teamList;
             std::vector<pollfd> fds;
 
-                std::unordered_map<int, zappy::server::User> _users;
+            std::unordered_map<int, zappy::server::User> _users;
 
             int _width;
             int _height;
@@ -77,13 +82,9 @@ namespace zappy {
             std::vector<std::string> _namesTeam;
 
             void _parseArgs(int argc, char const *argv[]);
-    };
+        };
 
-    // Encapsuled Functions
-    int my_socket(int __domain, int __type, int __protocol);
-    int my_bind(int __fd, const sockaddr *__addr, socklen_t __len);
-    int my_listen(int __fd, int __n);
-    int my_poll(pollfd *__fds, nfds_t __nfds, int __timeout);
-    int my_accept(int __fd, sockaddr *__restrict__ __addr, socklen_t *__restrict__ __addr_len);
-    sighandler_t my_signal(int __sig, sighandler_t __handler);
-}
+        // Encapsuled Functions
+        sighandler_t my_signal(int __sig, sighandler_t __handler);
+    }  // namespace server
+}  // namespace zappy

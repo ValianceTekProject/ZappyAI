@@ -11,6 +11,7 @@
 #include <memory>
 #include <netinet/in.h>
 #include <string>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <cstdint>
 
@@ -60,6 +61,8 @@ namespace zappy {
      */
             ~Socket();
 
+            pollfd acceptConnection();
+
             /**
      * @brief Creates the connection to the server.
      */
@@ -69,7 +72,7 @@ namespace zappy {
      * @brief Sends a message to the server.
      * @param msg The message to send.
      */
-            void sendInput(const std::string &msg) const;
+            void sendMessage(int clientSocket, const std::string &msg) const;
 
             /**
      * @brief Receives information from the server.
