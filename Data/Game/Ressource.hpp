@@ -13,7 +13,7 @@
 
 namespace zappy {
     namespace game {
-        enum class Ressource {
+        enum class Resource {
             FOOD,
             LINEMATE,
             DERAUMERE,
@@ -26,16 +26,6 @@ namespace zappy {
             
         };
 
-        const std::array<float, static_cast<int> (Ressource::COUNT) - 1> coeff = {
-            0.5,
-            0.3,
-            0.15,
-            0.1,
-            0.1,
-            0.08,
-            0.05
-        };
-
         const std::vector<std::string> names = {
             "food",
             "linemate",
@@ -46,7 +36,7 @@ namespace zappy {
             "thystame"
         };
 
-        const std::string &getName(Ressource res);
-        Ressource getRessource(const std::string &name);
+        const std::string &getName(Resource res);
+        Resource getRessource(const std::string &name);
     }
 }

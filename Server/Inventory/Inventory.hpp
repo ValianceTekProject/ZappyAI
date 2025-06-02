@@ -27,7 +27,7 @@ namespace zappy {
                 void clearInventory();
 
             private:
-                std::map<zappy::game::Ressource, size_t> _items;
+                std::map<zappy::game::Resource, size_t> _items;
             };
         }  // namespace ZappyPlayer
     }

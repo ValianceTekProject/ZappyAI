@@ -11,7 +11,7 @@
 
 zappy::game::player::InventoryServer::InventoryServer()
 {
-    this->_items[zappy::game::Ressource::FOOD] = START_FOOD;
+    this->_items[zappy::game::Resource::FOOD] = START_FOOD;
 }
 
 
