@@ -22,12 +22,7 @@ include_directories(
     Player
 )
 
+file(GLOB_RECURSE SOURCES ./*.cpp)
+
 # Add executable
-add_executable(zappy_server
-    Main.cpp
-    Server.cpp
-    ClientConnexion.cpp
-    Error/Error.cpp
-    Inventory/Inventory.cpp
-    EncapsuledFunction/NetworkFunction.cpp
-)
+add_executable(zappy_server ${SOURCES})
