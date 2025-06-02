@@ -6,6 +6,16 @@
 */
 
 #include "Server.hpp"
+#include "EncapsuledFunction/Socket.hpp"
+#include "Error/Error.hpp"
+#include <memory>
+
+zappy::Server::Server(int argc, char const *argv[])
+    : _serverRun(true), _port(-1), _width(-1), _height(-1), _clientNb(-1),
+      _freq(-1)
+{
+    this->_parseArgs(argc, argv);
+}
 
 int handlerFlag(char const *argv[], int i, std::string flag)
 {
@@ -13,8 +23,8 @@ int handlerFlag(char const *argv[], int i, std::string flag)
     int res = -1;
 
     if (std::string(argv[i]) == flag && argv[i + 1]) {
-            stream << std::string(argv[i + 1]);
-            stream >> res;
+        stream << std::string(argv[i + 1]);
+        stream >> res;
     }
     return res;
 }
@@ -35,11 +45,12 @@ void zappy::server::Server::parsingName(int &index, char const *argv[])
 
     if (nameCount == 0)
         throw error::InvalidArg("Flag -n must have at least on argument !");
-
 }
 
-void zappy::server::Server::parsing(int argc, char const *argv[])
+void zappy::Server::_parseArgs(int argc, char const *argv[])
 {
+    if (argv == nullptr || argv[0] == nullptr)
+        throw error::ServerConnection("Unable to access argv");
     for (int i = 1; i < argc; ++i) {
         if (!argv[i])
             throw error::Error("Error in argument list");
@@ -67,36 +78,21 @@ void zappy::server::Server::parsing(int argc, char const *argv[])
                 _freq = value;
             i += 1;
         } else
-            throw error::InvalidArg("Unknown or badly formatted argument: " + currentArg);
+            throw error::InvalidArg(
+                "Unknown or badly formatted argument: " + currentArg);
     }
 
-    if (_port == -1 || _width == -1 || _height == -1 ||
-        _clientNb == -1 || _freq == -1 || _namesTeam.empty())
-        throw error::InvalidArg("Missing arguments: -p -x -y -c -f -n <names>");
+    if (_port == -1 || _width == -1 || _height == -1 || _clientNb == -1 ||
+        _freq == -1 || _namesTeam.empty())
+        throw error::InvalidArg(
+            "Missing arguments: -p -x -y -c -f -n <names>");
 }
 
 void zappy::server::Server::serverLaunch()
 {
-    _servSocket = my_socket(AF_INET, SOCK_STREAM, 0);
-    if (_servSocket < 0)
-        throw zappy::error::ServerConnection("Socket failed");
-
-    servAddr.sin_addr.s_addr = INADDR_ANY;
-    servAddr.sin_port = htons(_port);
-    servAddr.sin_family = AF_INET;
-
-    if (my_bind(_servSocket, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0) {
-        close(_servSocket);
-        if (errno == EADDRINUSE)
-            throw zappy::error::ServerConnection("Port already used");
-        throw zappy::error::ServerConnection("bind failed");
-    }
-    if (my_listen(_servSocket, (_clientNb * _namesTeam.size())) < 0) {
-        close(_servSocket);
-        throw zappy::error::ServerConnection("listen failed");
-    }
-
-    std::cout << "Zappy Server listening on port " << _port << "...\n";
+    this->_socket =
+        std::make_unique<server::Socket>(this->_port, this->_clientNb);
+    std::cout << "Zappy Server listening on port " << this->_port << "...\n";
     fds.push_back({_servSocket, POLLIN, 0});
 
     

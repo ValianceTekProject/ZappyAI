@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <functional>
 #include <vector>
 #include <cstdint>
 #include <netinet/in.h>
@@ -22,6 +23,7 @@
 #include <algorithm>
 #include <thread>
 
+#include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
 #include "Client/Client.hpp"
 #include "Game.hpp"
@@ -32,18 +34,14 @@ namespace zappy {
     #define KO 84
     namespace server {
 
-    #define OK 0
-    #define KO 84
-
     class Server {
         public:
-            Server() : _serverRun(true), _port(-1), _width(-1), _height(-1), _clientNb(-1), _freq(-1) {}
+            Server(int argc, char const *argv[]);
             ~Server() = default;
 
                 void serverLaunch();
 
-                void parsing(int argc, char const *argv[]);
-                void parsingName(int &index, char const *argv[]);
+            void parsingName(int &index, char const *argv[]);
 
                 int getWidth() const { return _width; }
                 int getHeight() const { return _height; }
@@ -62,22 +60,24 @@ namespace zappy {
 
             private:
 
-                bool _serverRun;
-                int _port;
-                int _servSocket;
-                sockaddr_in servAddr{};
-                std::vector<zappy::game::Team> _teamList;
-                std::vector<pollfd> fds;
+            std::unique_ptr<server::Socket> _socket = nullptr;
+            bool _serverRun;
+            int _port;
+            int _servSocket;
+            sockaddr_in servAddr{};
+            std::vector<zappy::game::Team> _teamList;
+            std::vector<pollfd> fds;
 
                 std::unordered_map<int, zappy::server::User> _users;
 
-                int _width;
-                int _height;
-                int _clientNb;
-                int _freq;
-                std::vector<std::string> _namesTeam;
-        };
-    }
+            int _width;
+            int _height;
+            int _clientNb;
+            int _freq;
+            std::vector<std::string> _namesTeam;
+
+            void _parseArgs(int argc, char const *argv[]);
+    };
 
     // Encapsuled Functions
     int my_socket(int __domain, int __type, int __protocol);
