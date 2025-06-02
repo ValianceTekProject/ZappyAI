@@ -6,9 +6,12 @@
 */
 
 #include "Game.hpp"
+#include <chrono>
+#include <csignal>
 #include <cstdlib>
+#include <thread>
 #include "Data/Game/Resource.hpp"
-
+#include "Server.hpp"
 
 void zappy::game::MapServer::mapInit()
 {
@@ -30,11 +33,12 @@ void zappy::game::MapServer::mapInit()
 
 void zappy::game::Game::gameLoop()
 {
-    _map.init(_map.getWidth(), _map.getHeight());
-    _map.mapInit();
-    _isRunning = true;
+    this->_map.init(_map.getWidth(), _map.getHeight());
+    this->_map.mapInit();
+    this->_isRunning = true;
 
-    while (_isRunning) {
-        
+    while (this->_isRunning) {
+        // à enlever plus tard
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
