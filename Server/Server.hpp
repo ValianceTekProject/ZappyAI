@@ -65,13 +65,13 @@ namespace zappy {
             static std::function<void(int)> takeSignal;
             std::unordered_map<int, zappy::server::User> _users;
 
-           private:
-            std::unique_ptr<server::Socket> _socket = nullptr;
-            bool _serverRun;
-            int _port;
-            sockaddr_in servAddr{};
-            std::vector<zappy::game::Team> _teamList;
-            std::vector<pollfd> fds;
+       private:
+        std::unique_ptr<server::Socket> _socket = nullptr;
+        bool _serverRun;
+        int _port;
+        sockaddr_in servAddr{};
+        std::vector<zappy::game::Team> _teamList;
+        std::vector<pollfd> fds;
 
             std::unordered_map<int, zappy::server::User> _users;
 
