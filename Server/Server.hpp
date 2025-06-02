@@ -51,6 +51,8 @@ namespace zappy {
             void serverLoop();
             void handleNewConnection();
             void handleTeamJoin(int clientSocket, const std::string &teamName);
+            void handleUserMessage(int clientSocket, std::string buffer);
+
 
             void stopServer(int sig);
             void closeClients();

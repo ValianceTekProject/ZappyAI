@@ -64,7 +64,7 @@ void zappy::server::Socket::createConnection()
 
 void zappy::server::Socket::sendMessage(int clientSocket, const std::string &msg) const
 {
-    std::string messageFormat = msg + "\r\n";
+    std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
             strlen(messageFormat.c_str()), 0) == -1) {
         throw SocketError("Send Failed");
