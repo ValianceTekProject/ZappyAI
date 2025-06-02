@@ -20,28 +20,12 @@ void zappy::Server::stopServer(int sig)
     std::cout << "Received signal " << sig << ". Closing server in progress..." << std::endl;
     _serverRun = false;
     closeClients();
-    close(_servSocket);
 }
 
 void zappy::Server::signalWrapper(int sig)
 {
     if (takeSignal)
         takeSignal(sig);
-}
-
-void zappy::Server::handleNewConnection()
-{
-    sockaddr_in clientAddr{};
-    socklen_t clientLen = sizeof(clientAddr);
-    int clientSocket = my_accept(_servSocket, (sockaddr *)&clientAddr, &clientLen);
-
-    if (clientSocket < 0)
-        throw zappy::error::ServerConnection("Accept failed");
-
-    std::cout << "New connection: " << clientSocket << std::endl;
-    fds.push_back({clientSocket, POLLIN, 0});
-
-    sendMessage(clientSocket, "WELCOME\n");
 }
 
 void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName)
@@ -87,14 +71,14 @@ void zappy::Server::serverLoop()
     takeSignal = std::bind(&zappy::Server::stopServer, this, std::placeholders::_1);
     my_signal(SIGINT, signalWrapper);
     while (_serverRun) {
-        int poll_c = my_poll(fds.data(), fds.size(), 10);
+        int poll_c = poll(fds.data(), fds.size(), 10);
         if (poll_c < 0 && _serverRun)
             throw zappy::error::ServerConnection("Poll failed");
 
         for (std::size_t i = 0; i < fds.size(); i++) {
             if (fds[i].revents & POLLIN) {
-                if (fds[i].fd == _servSocket)
-                    handleNewConnection();
+                if (fds[i].fd == this->_socket->getSocket())
+                    this->_socket->acceptConnection();
                 else {
                     char buffer[1024] = {0};
                     int bytesRead = read(fds[i].fd, buffer, sizeof(buffer));

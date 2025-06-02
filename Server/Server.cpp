@@ -93,14 +93,11 @@ void zappy::server::Server::serverLaunch()
     this->_socket =
         std::make_unique<server::Socket>(this->_port, this->_clientNb);
     std::cout << "Zappy Server listening on port " << this->_port << "...\n";
-    fds.push_back({_servSocket, POLLIN, 0});
+    fds.push_back({this->_socket->getSocket(), POLLIN, 0});
 
-    
     std::thread networkThread(&zappy::server::Server::serverLoop, this);
     std::thread gameThread(&zappy::game::Game::gameLoop, this);
 
     networkThread.detach();
     gameThread.detach();
-
-    close(_servSocket);
 }
