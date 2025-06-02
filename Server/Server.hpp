@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <functional>
 #include <iostream>
+#include <mutex>
 #include <netinet/in.h>
 #include <poll.h>
 #include <sstream>
@@ -66,6 +67,9 @@ namespace zappy {
             std::vector<pollfd> fds;
 
             std::unordered_map<int, zappy::server::User> _users;
+
+            std::mutex _socketLock;
+            std::mutex _endLock;
 
             int _width;
             int _height;
