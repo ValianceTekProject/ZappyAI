@@ -7,6 +7,7 @@
 
 #include "Game.hpp"
 #include <cstdlib>
+#include "Data/Game/Resource.hpp"
 
 
 void zappy::game::MapServer::mapInit()
@@ -22,7 +23,7 @@ void zappy::game::MapServer::mapInit()
             randX = std::rand() % width;
             randY = std::rand() % height;
             zappy::game::Tile tileTmp = getTile(randX, randY);
-            tileTmp.addResource(static_cast<zappy::game::Ressource>(i), 1);
+            tileTmp.addResource(static_cast<zappy::game::Resource>(i), 1);
         }
     }
 }

@@ -99,6 +99,6 @@ void zappy::server::Server::serverLaunch()
     std::thread networkThread(&zappy::server::Server::serverLoop, this);
     std::thread gameThread(&game::Game::gameLoop, this->_game);
 
-    networkThread.detach();
-    gameThread.detach();
+    // networkThread.detach();
+    // gameThread.detach();
 }

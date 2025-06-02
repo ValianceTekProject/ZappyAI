@@ -21,7 +21,7 @@ include_directories(
     Game
     Player
     ..
->>>>>>> a506b2d (fix: fix namespace that where not correctly rebased)
+    ../Data/
 )
 
 file(GLOB_RECURSE SOURCES ./*.cpp ../Data/*.cpp)
