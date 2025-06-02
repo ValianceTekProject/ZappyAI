@@ -7,28 +7,28 @@
 
 #include "Server.hpp"
 
-std::function<void(int)> zappy::Server::takeSignal;
+std::function<void(int)> zappy::server::Server::takeSignal;
 
-void zappy::Server::closeClients()
+void zappy::server::Server::closeClients()
 {
     // TODO send message to stop connexion with clients and AI
     _teamList.clear();
 }
 
-void zappy::Server::stopServer(int sig)
+void zappy::server::Server::stopServer(int sig)
 {
     std::cout << "Received signal " << sig << ". Closing server in progress..." << std::endl;
     _serverRun = false;
     closeClients();
 }
 
-void zappy::Server::signalWrapper(int sig)
+void zappy::server::Server::signalWrapper(int sig)
 {
     if (takeSignal)
         takeSignal(sig);
 }
 
-void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName)
+void zappy::server::Server::handleTeamJoin(int clientSocket, const std::string &teamName)
 {
 
     auto itUser = _users.find(clientSocket);
@@ -66,9 +66,9 @@ void zappy::Server::handleTeamJoin(int clientSocket, const std::string &teamName
     std::cout << "Client " << clientSocket << " joined team " << teamName << std::endl;
 }
 
-void zappy::Server::serverLoop()
+void zappy::server::Server::serverLoop()
 {
-    takeSignal = std::bind(&zappy::Server::stopServer, this, std::placeholders::_1);
+    takeSignal = std::bind(&zappy::server::Server::stopServer, this, std::placeholders::_1);
     my_signal(SIGINT, signalWrapper);
     while (_serverRun) {
         int poll_c = poll(fds.data(), fds.size(), 10);

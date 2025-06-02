@@ -14,36 +14,30 @@
 namespace zappy {
     namespace game {
 
-        class MapServer : public Map
-        {
-            public:
+        class MapServer : public Map {
+           public:
+            MapServer() = default;
+            ~MapServer() = default;
 
-                MapServer() = default;
-                ~MapServer() = default;
+            void mapInit();
 
-                void mapInit();
-
-            private:
-   
-                
+           private:
         };
 
         class Game {
-            
-            public:
-                Game() : _isRunning(false) {}
-                ~Game() = default;
 
-                void gameLoop();
+           public:
+            Game() : _isRunning(false) {}
 
-                MapServer &getMap() { return _map; }
-            
-            private:
-                MapServer _map;
-                bool _isRunning;
+            ~Game() = default;
 
+            void gameLoop();
+
+            MapServer &getMap() { return _map; }
+
+           private:
+            MapServer _map;
+            bool _isRunning;
         };
-        
-        
-    }
-}
+    }  // namespace game
+}  // namespace zappy
