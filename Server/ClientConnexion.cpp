@@ -6,6 +6,7 @@
 */
 
 #include "Server.hpp"
+#include <mutex>
 
 std::function<void(int)> zappy::server::Server::takeSignal;
 
@@ -17,8 +18,10 @@ void zappy::server::Server::closeClients()
 
 void zappy::server::Server::stopServer(int sig)
 {
-    std::cout << "Received signal " << sig << ". Closing server in progress..." << std::endl;
-    _serverRun = false;
+    std::cout << "Received signal " << sig << ". Closing server in progress..."
+              << std::endl;
+    this->_serverRun = false;
+    this->_game.setRun(false);
     closeClients();
 }
 
@@ -28,11 +31,13 @@ void zappy::server::Server::signalWrapper(int sig)
         takeSignal(sig);
 }
 
-void zappy::server::Server::handleTeamJoin(int clientSocket, const std::string &teamName)
+void zappy::server::Server::handleTeamJoin(
+    int clientSocket, const std::string &teamName)
 {
 
     auto itUser = _users.find(clientSocket);
-    if (itUser != _users.end() && itUser->second.getState() == zappy::server::ClientState::CONNECTED) {
+    if (itUser != _users.end() &&
+        itUser->second.getState() == zappy::server::ClientState::CONNECTED) {
         this->_socket->sendMessage(clientSocket, "Already in a team\n");
         return;
     }
@@ -58,46 +63,59 @@ void zappy::server::Server::handleTeamJoin(int clientSocket, const std::string &
     _users.emplace(clientSocket, user);
     it->addPlayer(newPlayer);
 
-    std::string msg = std::to_string(_clientNb - it->getPlayerList().size()) + "\n";
+    std::string msg =
+        std::to_string(_clientNb - it->getPlayerList().size()) + "\n";
 
     this->_socket->sendMessage(clientSocket, msg.c_str());
     msg = std::to_string(_width) + " " + std::to_string(_height) + "\n";
     this->_socket->sendMessage(clientSocket, msg.c_str());
-    std::cout << "Client " << clientSocket << " joined team " << teamName << std::endl;
+    std::cout << "Client " << clientSocket << " joined team " << teamName
+              << std::endl;
 }
+
+void disconnectClient() {}
 
 void zappy::server::Server::serverLoop()
 {
-    takeSignal = std::bind(&zappy::server::Server::stopServer, this, std::placeholders::_1);
+    takeSignal = std::bind(
+        &zappy::server::Server::stopServer, this, std::placeholders::_1);
     my_signal(SIGINT, signalWrapper);
-    while (_serverRun) {
-        int poll_c = poll(fds.data(), fds.size(), 10);
-        if (poll_c < 0 && _serverRun)
-            throw zappy::error::ServerConnection("Poll failed");
+
+    while (this->_serverRun) {
+        {
+            std::lock_guard<std::mutex> lock(this->_socketLock);
+            int poll_c = poll(this->fds.data(), fds.size(), 100);
+            if (poll_c < 0 && _serverRun)
+                throw zappy::error::ServerConnection("Poll failed");
+        }
 
         for (std::size_t i = 0; i < fds.size(); i++) {
             if (fds[i].revents & POLLIN) {
-                if (fds[i].fd == this->_socket->getSocket())
-                    this->_socket->acceptConnection();
-                else {
-                    char buffer[1024] = {0};
-                    int bytesRead = read(fds[i].fd, buffer, sizeof(buffer));
-                    std::string content(buffer);
-                    content.erase(content.find_last_not_of(" \n\r\t") + 1);
-
-                    if (bytesRead <= 0 || content.compare("exit") == 0) {
-                        std::cout << "Client disconnected: " << fds[i].fd << std::endl;
-                        close(fds[i].fd);
-                        _users.erase(fds[i].fd);
-                        fds.erase(fds.begin() + i);
-                        --i;
+                {
+                    std::lock_guard<std::mutex> lock(this->_socketLock);
+                    if (fds[i].fd == this->_socket->getSocket()) {
+                        this->fds.push_back(this->_socket->acceptConnection());
                         continue;
                     }
+                }
+                char buffer[1024] = {0};
+                int bytesRead = read(fds[i].fd, buffer, sizeof(buffer));
+                std::string content(buffer);
+                content.erase(content.find_last_not_of(" \n\r\t") + 1);
 
-                    for (auto team : _teamList) {
-                        if (content.compare(team.getName()) == 0)
-                            handleTeamJoin(fds[i].fd, team.getName());
-                    }
+                if (bytesRead <= 0 || content.compare("exit") == 0) {
+                    std::cout << "Client disconnected: " << fds[i].fd
+                              << std::endl;
+                    close(fds[i].fd);
+                    _users.erase(fds[i].fd);
+                    fds.erase(fds.begin() + i);
+                    --i;
+                    continue;
+                }
+
+                for (auto team : this->_teamList) {
+                    if (content.compare(team.getName()) == 0)
+                        handleTeamJoin(fds[i].fd, team.getName());
                 }
             }
         }

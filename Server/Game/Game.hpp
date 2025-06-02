@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <atomic>
 #include <ctime>
+#include <functional>
 
 #include "Data/Game/Map.hpp"
 
@@ -27,7 +29,7 @@ namespace zappy {
         class Game {
 
            public:
-            Game() : _isRunning(false) {}
+            Game() {}
 
             ~Game() = default;
 
@@ -35,9 +37,11 @@ namespace zappy {
 
             MapServer &getMap() { return _map; }
 
+            void setRun(bool run) {this->_isRunning = run;};
+
            private:
             MapServer _map;
-            bool _isRunning;
+            std::atomic<bool>_isRunning = false;
         };
     }  // namespace game
 }  // namespace zappy

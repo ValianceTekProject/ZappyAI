@@ -97,8 +97,8 @@ void zappy::server::Server::serverLaunch()
     fds.push_back({this->_socket->getSocket(), POLLIN, 0});
 
     std::thread networkThread(&zappy::server::Server::serverLoop, this);
-    std::thread gameThread(&game::Game::gameLoop, this->_game);
+    std::thread gameThread(&game::Game::gameLoop, &this->_game);
 
-    // networkThread.detach();
-    // gameThread.detach();
+    networkThread.join();
+    gameThread.join();
 }
