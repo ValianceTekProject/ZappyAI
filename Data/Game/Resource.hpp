@@ -36,6 +36,7 @@ namespace zappy {
             0.05
         };
 
+
         const std::array<std::string, RESOURCE_QUANTITY> names = {
             "food",
             "linemate",
