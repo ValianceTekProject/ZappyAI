@@ -28,9 +28,8 @@ int main(int argc, char const *argv[])
     if (checkArgs(argc) == false)
         return KO;
     try {
-        zappy::Server server;
+        zappy::Server server(argc, argv);
 
-        server.parsing(argc, argv);
         server.serverLaunch();
 
     } catch (const zappy::error::Error &e) {
