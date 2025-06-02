@@ -31,6 +31,17 @@ void zappy::server::Server::signalWrapper(int sig)
         takeSignal(sig);
 }
 
+void zappy::server::Server::handleUserMessage(
+    int clientSocket, std::string buffer)
+{
+    auto itUser = this->_users.find(clientSocket);
+    if (itUser == _users.end() ||
+        itUser->second.getState() != zappy::server::ClientState::CONNECTED)
+        return;
+
+    itUser->second.queueMessage.push(buffer);
+}
+
 void zappy::server::Server::handleTeamJoin(
     int clientSocket, const std::string &teamName)
 {
@@ -114,8 +125,12 @@ void zappy::server::Server::serverLoop()
                 }
 
                 for (auto team : this->_teamList) {
-                    if (content.compare(team.getName()) == 0)
+                    if (content.compare(team.getName()) == 0) {
                         handleTeamJoin(fds[i].fd, team.getName());
+                        break;
+                    }
+                    else
+                        handleUserMessage(fds[i].fd, content);
                 }
             }
         }
