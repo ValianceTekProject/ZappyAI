@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "GameError.hpp"
+#include "Data/Errors/GameError.hpp"
 
 #include <array>
 
@@ -25,6 +25,17 @@ namespace zappy {
         };
 
         const size_t RESOURCE_QUANTITY = static_cast<size_t>(Resource::RESOURCE_SIZE);
+
+        const std::array<float, static_cast<int> (Resource::RESOURCE_SIZE)> coeff = {
+            0.5,
+            0.3,
+            0.15,
+            0.1,
+            0.1,
+            0.08,
+            0.05
+        };
+
 
         const std::array<std::string, RESOURCE_QUANTITY> names = {
             "food",

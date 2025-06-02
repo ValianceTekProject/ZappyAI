@@ -83,12 +83,12 @@ void zappy::game::Player::ejectFrom(Orientation direction)
     }
 }
 
-void zappy::game::Player::collectRessource(Resource resource, size_t quantity)
+void zappy::game::Player::collectRessource(Resource resource, std::size_t quantity)
 {
     _inventory.addResource(resource, quantity);
 }
 
-void zappy::game::Player::dropRessource(Resource resource, size_t quantity)
+void zappy::game::Player::dropRessource(Resource resource, std::size_t quantity)
 {
     _inventory.removeResource(resource, quantity);
 }

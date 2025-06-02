@@ -15,16 +15,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 #include <sstream>
-<<<<<<< HEAD
-#include <algorithm>
-
-#include "Error/Error.hpp"
-#include "Client/Client.hpp"
-#include <csignal>
-#include <algorithm>
-=======
 #include <string>
->>>>>>> 3213ba3 (refacto: class Socket accept new connection)
 #include <thread>
 #include <vector>
 
