@@ -20,9 +20,11 @@ include_directories(
     EncapsuledFunction
     Game
     Player
+    ..
+>>>>>>> a506b2d (fix: fix namespace that where not correctly rebased)
 )
 
-file(GLOB_RECURSE SOURCES ./*.cpp)
+file(GLOB_RECURSE SOURCES ./*.cpp ../Data/*.cpp)
 
 # Add executable
 add_executable(zappy_server ${SOURCES})

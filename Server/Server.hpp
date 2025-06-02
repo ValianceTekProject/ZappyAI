@@ -32,6 +32,7 @@
 #include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
+#include "Game/Game.hpp"
 
 namespace zappy {
 
@@ -63,15 +64,15 @@ namespace zappy {
             void closeClients();
             static void signalWrapper(int sig);
             static std::function<void(int)> takeSignal;
-            std::unordered_map<int, zappy::server::User> _users;
 
-       private:
-        std::unique_ptr<server::Socket> _socket = nullptr;
-        bool _serverRun;
-        int _port;
-        sockaddr_in servAddr{};
-        std::vector<zappy::game::Team> _teamList;
-        std::vector<pollfd> fds;
+           private:
+            zappy::game::Game _game;
+            std::unique_ptr<server::Socket> _socket = nullptr;
+            bool _serverRun;
+            int _port;
+            sockaddr_in servAddr{};
+            std::vector<zappy::game::Team> _teamList;
+            std::vector<pollfd> fds;
 
             std::unordered_map<int, zappy::server::User> _users;
 
@@ -85,6 +86,6 @@ namespace zappy {
         };
 
         // Encapsuled Functions
-        sighandler_t my_signal(int __sig, sighandler_t __handler);
+        void my_signal(int __sig, sighandler_t __handler);
     }  // namespace server
 }  // namespace zappy

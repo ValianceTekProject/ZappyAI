@@ -6,6 +6,7 @@
 */
 
 #include "Game.hpp"
+#include <cstdlib>
 
 
 void zappy::game::MapServer::mapInit()
@@ -16,7 +17,7 @@ void zappy::game::MapServer::mapInit()
     int width = getWidth();
     int height = getHeight();
 
-    for (int i = 0; i < coeff.size(); i += 1) {
+    for (unsigned i = 0; i < zappy::game::coeff.size(); i += 1) {
         for (int j = 0; j < (coeff[i] * width * height); j += 1) {
             randX = std::rand() % width;
             randY = std::rand() % height;

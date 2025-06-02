@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
     if (checkArgs(argc) == false)
         return KO;
     try {
-        zappy::Server server(argc, argv);
+        zappy::server::Server server(argc, argv);
 
         server.serverLaunch();
 

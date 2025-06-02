@@ -9,8 +9,9 @@
 #include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
 #include <memory>
+#include "Game/Game.hpp"
 
-zappy::Server::Server(int argc, char const *argv[])
+zappy::server::Server::Server(int argc, char const *argv[])
     : _serverRun(true), _port(-1), _width(-1), _height(-1), _clientNb(-1),
       _freq(-1)
 {
@@ -47,7 +48,7 @@ void zappy::server::Server::parsingName(int &index, char const *argv[])
         throw error::InvalidArg("Flag -n must have at least on argument !");
 }
 
-void zappy::Server::_parseArgs(int argc, char const *argv[])
+void zappy::server::Server::_parseArgs(int argc, char const *argv[])
 {
     if (argv == nullptr || argv[0] == nullptr)
         throw error::ServerConnection("Unable to access argv");
@@ -96,7 +97,7 @@ void zappy::server::Server::serverLaunch()
     fds.push_back({this->_socket->getSocket(), POLLIN, 0});
 
     std::thread networkThread(&zappy::server::Server::serverLoop, this);
-    std::thread gameThread(&zappy::game::Game::gameLoop, this);
+    std::thread gameThread(&game::Game::gameLoop, this->_game);
 
     networkThread.detach();
     gameThread.detach();

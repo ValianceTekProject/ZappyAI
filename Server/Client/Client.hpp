@@ -45,7 +45,7 @@ namespace zappy {
 
             private:
                 zappy::server::User &_user;
-                zappy::game::Inventory _inventory;
+                zappy::game::player::InventoryServer _inventory;
         };
 
         class Team {
