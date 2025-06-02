@@ -6,6 +6,7 @@
 */
 
 #include "Server.hpp"
+#include <csignal>
 #include <exception>
 //
 // int zappy::my_socket(int __domain, int __type, int __protocol)
@@ -33,7 +34,7 @@
 //     return accept(__fd, __addr, __addr_len);
 // }
 
-void zappy::my_signal(int __sig, sighandler_t __handler)
+void zappy::server::my_signal(int __sig, sighandler_t __handler)
 {
     if (signal(__sig, __handler) == SIG_ERR)
         throw zappy::error::Error("Unable to use signal");
