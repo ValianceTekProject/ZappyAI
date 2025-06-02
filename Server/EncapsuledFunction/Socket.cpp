@@ -7,7 +7,6 @@
 
 #include "Socket.hpp"
 #include <arpa/inet.h>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <memory>
@@ -63,10 +62,10 @@ void zappy::server::Socket::createConnection()
     }
 }
 
-void zappy::server::Socket::sendInput(const std::string &msg) const
+void zappy::server::Socket::sendMessage(int clientSocket, const std::string &msg) const
 {
     std::string messageFormat = msg + "\r\n";
-    if (send(this->_socket, messageFormat.c_str(),
+    if (send(clientSocket, messageFormat.c_str(),
             strlen(messageFormat.c_str()), 0) == -1) {
         throw SocketError("Send Failed");
     }
@@ -98,3 +97,20 @@ std::string zappy::server::Socket::getServerInformation()
     }
     return str;
 }
+
+pollfd zappy::server::Socket::acceptConnection()
+{
+    sockaddr_in clientAddr{};
+    socklen_t clientLen = sizeof(clientAddr);
+    int clientSocket = accept(this->_socket, (sockaddr *)&clientAddr, &clientLen);
+
+    if (clientSocket < 0)
+        throw SocketError("Accept failed");
+
+    std::cout << "New connection: " << clientSocket << std::endl;
+    pollfd fd = {clientSocket, POLLIN, 0};
+
+    this->sendMessage(clientSocket, "WELCOME\n");
+    return fd;
+}
+
