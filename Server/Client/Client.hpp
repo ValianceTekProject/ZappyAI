@@ -10,6 +10,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <queue>
 
 #include "Inventory.hpp"
 
@@ -22,18 +23,19 @@ namespace zappy {
         };
 
         class User {
-        public:
-            User(int socket) : _socket(socket), _state(ClientState::WAITING_TEAM_NAME) {};
-            ~User() = default;
+            public:
+                User(int socket) : _socket(socket), _state(ClientState::WAITING_TEAM_NAME) {};
+                ~User() = default;
 
-            int getSocket() const { return _socket; }
+                int getSocket() const { return _socket; }
 
-            ClientState getState() const { return _state; }
-            void setState(ClientState state) { _state = state; }
+                ClientState getState() const { return _state; }
+                void setState(ClientState state) { _state = state; }
 
-        private:
-            int _socket;
-            ClientState _state;
+                std::queue<std::string> queueMessage;
+            private:
+                int _socket;
+                ClientState _state;
         };
     }
     namespace game {
