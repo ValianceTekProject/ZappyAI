@@ -6,10 +6,13 @@
 */
 
 #include "Game.hpp" 
+#include "Server.hpp"
 #include <thread>
 
 void zappy::game::Game::gameLoop()
 {
+    this->_map.init(_map.getWidth(), _map.getHeight());
+    this->_map.mapInit();
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
 
@@ -30,7 +33,6 @@ void zappy::game::Game::gameLoop()
             lastUpdate = now;
             continue;
         }
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(1));  // temporaire
+        std::this_thread::sleep_for(std::chrono::milliseconds(1)); // temporaire
     }
 }
