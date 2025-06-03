@@ -51,7 +51,7 @@ namespace zappy {
             void serverLoop();
             void handleNewConnection();
             void handleTeamJoin(int clientSocket, const std::string &teamName);
-            void handleUserMessage(int clientSocket, std::string buffer);
+            void handleClientMessage(int clientSocket, std::string buffer);
 
                 void stopServer(int sig);
                 void closeClients();
@@ -67,7 +67,7 @@ namespace zappy {
             std::vector<zappy::game::Team> _teamList;
             std::vector<pollfd> fds;
 
-                std::unordered_map<int, zappy::server::User> _users;
+            std::unordered_map<int, zappy::server::Client> _users;
 
             std::mutex _socketLock;
             std::mutex _endLock;
