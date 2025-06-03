@@ -24,15 +24,15 @@ namespace zappy {
             CONNECTED,
         };
 
-        class User {
+        class Client {
            public:
-            User(int socket)
+            Client(int socket)
                 : _socket(socket), _state(ClientState::WAITING_TEAM_NAME)
             {
                 this->queueMutex = std::make_unique<std::mutex>();
             };
 
-            ~User() = default;
+            ~Client() = default;
 
             int getSocket() const { return _socket; }
 
@@ -53,12 +53,12 @@ namespace zappy {
         class Player {
 
            public:
-            Player(zappy::server::User &user) : _user(user) {}
+            Player(zappy::server::Client &user) : _user(user) {}
 
             ~Player() = default;
 
            private:
-            zappy::server::User &_user;
+            zappy::server::Client &_user;
             zappy::game::player::InventoryServer _inventory;
         };
 
