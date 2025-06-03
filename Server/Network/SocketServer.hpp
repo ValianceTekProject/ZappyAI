@@ -16,16 +16,19 @@
 #include <sys/socket.h>
 #include <vector>
 
+
 namespace zappy {
+    
 
     namespace server {
         /**
  * @class Socket
  * @brief Handles low-level socket communication with the server.
  */
-        constexpr int invalidSocket = -1;
 
-        class SocketServer {
+        constexpr int socketError = -1;
+
+        class Socket {
            public:
             /**
      * @class SocketError
@@ -95,9 +98,9 @@ namespace zappy {
             uint8_t _nbClients;
             int _port;           ///< Port number.
             socklen_t _addrlen;  ///< Length of the socket address.
-            std::unique_ptr<struct sockaddr_in> _address =
-                nullptr;  ///< Address structure for the socket.
-
+            std::unique_ptr<struct sockaddr_in>
+                _address = nullptr;  ///< Address structure for the socket.
+            
             void _initSocket();
         };
 
