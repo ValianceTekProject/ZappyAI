@@ -25,8 +25,7 @@ namespace zappy {
  * @class Socket
  * @brief Handles low-level socket communication with the server.
  */
-
-        constexpr int socketError = -1;
+        constexpr int invalidSocket = -1;
 
         class Socket {
            public:
