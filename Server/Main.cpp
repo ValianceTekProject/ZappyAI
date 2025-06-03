@@ -30,7 +30,7 @@ int main(int argc, char const *argv[])
     try {
         zappy::server::Server server(argc, argv);
 
-        server.serverLaunch();
+        server.runServer();
 
     } catch (const zappy::error::Error &e) {
         std::cerr << " Error: " << e.what() << std::endl;

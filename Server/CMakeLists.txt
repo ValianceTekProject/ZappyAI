@@ -20,6 +20,7 @@ include_directories(
     EncapsuledFunction
     Game
     Player
+    Server
     ..
     ../Data/
 )
