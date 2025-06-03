@@ -5,7 +5,9 @@
 ** ClientConnexion
 */
 
+#include "algorithm"
 #include "Server.hpp"
+#include "Game.hpp"
 #include <mutex>
 
 std::function<void(int)> zappy::server::Server::takeSignal;
@@ -20,8 +22,8 @@ void zappy::server::Server::stopServer(int sig)
 {
     std::cout << "Received signal " << sig << ". Closing server in progress..."
               << std::endl;
-    this->_serverRun = false;
-    this->_game.setRun(false);
+    this->_serverRun = RunningState::STOP;
+    this->_game->setRunningState(RunningState::STOP);
     closeClients();
 }
 
@@ -87,17 +89,17 @@ void zappy::server::Server::handleTeamJoin(
 
 void disconnectClient() {}
 
-void zappy::server::Server::serverLoop()
+void zappy::server::Server::runLoop()
 {
     takeSignal = std::bind(
         &zappy::server::Server::stopServer, this, std::placeholders::_1);
     my_signal(SIGINT, signalWrapper);
 
-    while (this->_serverRun) {
+    while (this->_serverRun == RunningState::RUN) {
         {
             std::lock_guard<std::mutex> lock(this->_socketLock);
             int poll_c = poll(this->fds.data(), fds.size(), 100);
-            if (poll_c < 0 && _serverRun)
+            if (poll_c < 0 && this->_serverRun != RunningState::STOP)
                 throw zappy::error::ServerConnection("Poll failed");
         }
 

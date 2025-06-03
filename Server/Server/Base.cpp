@@ -8,13 +8,12 @@
 #include "Server.hpp"
 #include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
+#include "Game.hpp"
 #include <memory>
-#include "Game/Game.hpp"
 
 zappy::server::Server::Server(int argc, char const *argv[])
-    : _serverRun(true), _port(-1), _width(-1), _height(-1), _clientNb(-1),
-      _freq(-1)
 {
+    this->_game = std::make_unique<zappy::game::Game>();
     this->_parseArgs(argc, argv);
 }
 
@@ -30,7 +29,7 @@ int handlerFlag(char const *argv[], int i, std::string flag)
     return res;
 }
 
-void zappy::server::Server::parsingName(int &index, char const *argv[])
+void zappy::server::Server::_parseName(int &index, char const *argv[])
 {
     int nameCount = 0;
 
@@ -60,7 +59,7 @@ void zappy::server::Server::_parseArgs(int argc, char const *argv[])
 
         if (currentArg == "-n") {
             ++i;
-            parsingName(i, argv);
+            _parseName(i, argv);
             --i;
             continue;
         }
@@ -89,15 +88,16 @@ void zappy::server::Server::_parseArgs(int argc, char const *argv[])
             "Missing arguments: -p -x -y -c -f -n <names>");
 }
 
-void zappy::server::Server::serverLaunch()
+void zappy::server::Server::runServer()
 {
     this->_socket =
         std::make_unique<server::Socket>(this->_port, this->_clientNb);
+
     std::cout << "Zappy Server listening on port " << this->_port << "...\n";
     fds.push_back({this->_socket->getSocket(), POLLIN, 0});
 
-    std::thread networkThread(&zappy::server::Server::serverLoop, this);
-    std::thread gameThread(&game::Game::gameLoop, &this->_game);
+    std::thread networkThread(&zappy::server::Server::runLoop, this);
+    std::thread gameThread(&game::Game::gameLoop, this->_game.get());
 
     networkThread.join();
     gameThread.join();
