@@ -17,7 +17,7 @@ include_directories(
     Error
     Inventory
     Client
-    EncapsuledFunction
+    Network
     Game
     Player
     Server

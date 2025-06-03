@@ -19,15 +19,14 @@
 #include <vector>
 
 #include "Client/Client.hpp"
-#include "EncapsuledFunction/Socket.hpp"
+#include "Socket.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
+#include "my_macros.hpp"
 
 namespace zappy {
 
     namespace server {
-
-        constexpr int invalidPort = -1;
 
         class Server {
            public:
@@ -41,7 +40,6 @@ namespace zappy {
             int getClientNb() const { return this->_clientNb; }
 
             void runLoop();
-            void handleNewConnection();
             void handleTeamJoin(int clientSocket, const std::string &teamName);
             void handleClientMessage(int clientSocket, std::string buffer);
 
@@ -55,23 +53,26 @@ namespace zappy {
             std::unique_ptr<server::Socket> _socket = nullptr;
 
             RunningState _serverRun = RunningState::RUN;
-            int _port = invalidPort;
+
             std::vector<zappy::game::Team> _teamList;
-            std::vector<pollfd> fds;
+            std::vector<pollfd> _fds;
 
             std::unordered_map<int, zappy::server::Client> _users;
+            std::unordered_map<std::string, std::function<void(int)>> _flags;
 
             std::mutex _socketLock;
             std::mutex _endLock;
 
-            int _width;
-            int _height;
-            int _clientNb;
-            int _freq;
+            int _port = noValue;
+            int _width = noValue;
+            int _height = noValue;
+            int _clientNb = noValue;
+            int _freq = noValue;
             std::vector<std::string> _namesTeam;
 
-            void _parseArgs(int argc, char const *argv[]);
+            void _parseFlags(int argc, char const *argv[]);
             void _parseName(int &index, char const *argv[]);
+            void _parseFlagsInt(int &index, std::string arg, std::string value);
         };
 
         // Encapsuled Functions
