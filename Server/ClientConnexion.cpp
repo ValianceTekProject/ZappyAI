@@ -39,6 +39,7 @@ void zappy::server::Server::handleUserMessage(
         itUser->second.getState() != zappy::server::ClientState::CONNECTED)
         return;
 
+    std::lock_guard<std::mutex> lock(*(itUser->second.queueMutex));
     itUser->second.queueMessage.push(buffer);
 }
 
@@ -128,8 +129,7 @@ void zappy::server::Server::serverLoop()
                     if (content.compare(team.getName()) == 0) {
                         handleTeamJoin(fds[i].fd, team.getName());
                         break;
-                    }
-                    else
+                    } else
                         handleUserMessage(fds[i].fd, content);
                 }
             }

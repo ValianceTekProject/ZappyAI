@@ -8,9 +8,11 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+#include <mutex>
+#include <queue>
 #include <string>
 #include <vector>
-#include <queue>
 
 #include "Inventory.hpp"
 
@@ -23,50 +25,65 @@ namespace zappy {
         };
 
         class User {
-            public:
-                User(int socket) : _socket(socket), _state(ClientState::WAITING_TEAM_NAME) {};
-                ~User() = default;
+           public:
+            User(int socket)
+                : _socket(socket), _state(ClientState::WAITING_TEAM_NAME)
+            {
+                this->queueMutex = std::make_unique<std::mutex>();
+            };
 
-                int getSocket() const { return _socket; }
+            ~User() = default;
 
-                ClientState getState() const { return _state; }
-                void setState(ClientState state) { _state = state; }
+            int getSocket() const { return _socket; }
 
-                std::queue<std::string> queueMessage;
-            private:
-                int _socket;
-                ClientState _state;
+            ClientState getState() const { return _state; }
+
+            void setState(ClientState state) { _state = state; }
+
+            std::queue<std::string> queueMessage;
+            std::shared_ptr<std::mutex> queueMutex = nullptr;
+
+           private:
+            int _socket;
+            ClientState _state;
         };
-    }
+    }  // namespace server
+
     namespace game {
         class Player {
-            
-            public:
-                Player(zappy::server::User &user) : _user(user) {}
-                ~Player() = default;
 
-            private:
-                zappy::server::User &_user;
-                zappy::game::player::InventoryServer _inventory;
+           public:
+            Player(zappy::server::User &user) : _user(user) {}
+
+            ~Player() = default;
+
+           private:
+            zappy::server::User &_user;
+            zappy::game::player::InventoryServer _inventory;
         };
 
         class Team {
-            public:
-                Team(const std::string &name) : _name(name) {}
-                ~Team() = default;
+           public:
+            Team(const std::string &name) : _name(name) {}
 
-                std::string getName() const { return _name; }
+            ~Team() = default;
 
-                const std::vector<std::reference_wrapper<Player>> getPlayerList() const
-                {
-                    return this->_playerList;
-                }
+            std::string getName() const { return _name; }
 
-                void addPlayer(Player &player) { this->_playerList.push_back(player); }
+            const std::vector<std::reference_wrapper<Player>>
+            getPlayerList() const
+            {
+                return this->_playerList;
+            }
 
-            private:
-                const std::string _name;
-                std::vector<std::reference_wrapper<Player>> _playerList;
+            void addPlayer(Player &player)
+            {
+                this->_playerList.push_back(player);
+            }
+
+           private:
+            const std::string _name;
+            std::vector<std::reference_wrapper<Player>> _playerList;
         };
-    }
-}
+    }  // namespace game
+}  // namespace zappy
