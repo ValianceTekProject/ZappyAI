@@ -7,9 +7,7 @@
 
 #pragma once
 
-#include <algorithm>
 #include <csignal>
-#include <cstdint>
 #include <functional>
 #include <iostream>
 #include <mutex>
@@ -24,46 +22,40 @@
 #include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
-#include "Game/Game.hpp"
 
 namespace zappy {
 
-#define OK 0
-#define KO 84
-
     namespace server {
+
+        constexpr int invalidPort = -1;
 
         class Server {
            public:
             Server(int argc, char const *argv[]);
             ~Server() = default;
 
-                void serverLaunch();
+            void runServer();
 
-            void parsingName(int &index, char const *argv[]);
+            int getWidth() const { return this->_width; }
+            int getHeight() const { return this->_height; }
+            int getClientNb() const { return this->_clientNb; }
 
-            int getWidth() const { return _width; }
-
-            int getHeight() const { return _height; }
-
-            int getClientNb() const { return _clientNb; }
-
-            void serverLoop();
+            void runLoop();
             void handleNewConnection();
             void handleTeamJoin(int clientSocket, const std::string &teamName);
             void handleClientMessage(int clientSocket, std::string buffer);
 
-                void stopServer(int sig);
-                void closeClients();
-                static void signalWrapper(int sig);
-                static std::function<void(int)> takeSignal;
+            void stopServer(int sig);
+            void closeClients();
+            static void signalWrapper(int sig);
+            static std::function<void(int)> takeSignal;
 
            private:
-            zappy::game::Game _game;
+            std::unique_ptr<zappy::game::Game> _game;
             std::unique_ptr<server::Socket> _socket = nullptr;
-            bool _serverRun;
-            int _port;
-            sockaddr_in servAddr{};
+
+            RunningState _serverRun = RunningState::RUN;
+            int _port = invalidPort;
             std::vector<zappy::game::Team> _teamList;
             std::vector<pollfd> fds;
 
@@ -79,6 +71,7 @@ namespace zappy {
             std::vector<std::string> _namesTeam;
 
             void _parseArgs(int argc, char const *argv[]);
+            void _parseName(int &index, char const *argv[]);
         };
 
         // Encapsuled Functions

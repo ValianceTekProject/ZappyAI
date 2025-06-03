@@ -95,7 +95,7 @@ std::string zappy::server::Socket::getServerInformation()
             break;
         if (bytes_read == 0) {
             close(this->_socket);
-            this->_socket = socketError;
+            this->_socket = invalidSocket;
             throw SocketError("Server disconected");
         }
         str.append(buf, bytes_read);
