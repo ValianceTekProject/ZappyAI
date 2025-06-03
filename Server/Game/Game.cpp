@@ -6,12 +6,12 @@
 */
 
 #include "Game.hpp"
+#include "Data/Game/Resource.hpp"
+#include "Server.hpp"
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
 #include <thread>
-#include "Data/Game/Resource.hpp"
-#include "Server.hpp"
 
 void zappy::game::MapServer::mapInit()
 {
@@ -36,9 +36,16 @@ void zappy::game::Game::gameLoop()
     this->_map.init(_map.getWidth(), _map.getHeight());
     this->_map.mapInit();
     this->_isRunning = true;
+    auto lastUpdate = std::chrono::steady_clock::now();
 
     while (this->_isRunning) {
-        // à enlever plus tard
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - lastUpdate);
+
+        if (elapsed >= this->_baseFreqMs) {
+            lastUpdate = now;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
