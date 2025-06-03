@@ -11,9 +11,10 @@ import time
 class Constants(Enum):
     HOST = 'localhost'
     PORT_DEFAULT = 6666
-    FREQ_DEFAULT = 100  # miliseconds
+    FREQ_DEFAULT = 100  # freq (100ms)
     MAX_PENDING = 10
     TIME_UNIT = 1.0  # seconds
+    FOODS_LOSS_TIME = 126 # times units send inventory for look nb of food
 
     # Network settings
     SOCKET_TIMEOUT = 5.0
@@ -30,7 +31,6 @@ class Constants(Enum):
     DUR_FORK = 42
     DUR_INCANTATION = 300
 
-    # Resources
     FOOD = 'food'
     LINEMATE = 'linemate'
     DERAUMERE = 'deraumere'
@@ -60,6 +60,7 @@ class CommandStatus(Enum):
     PENDING = 'pending'
     SUCCESS = 'success'
     FAILED = 'failed'
+    DEAD = 'dead'
     TIMEOUT = 'timeout'
 
 class GameStates(Enum):
@@ -70,7 +71,7 @@ class GameStates(Enum):
     FLEEING = 'fleeing'
     DEAD = 'dead'
 
-class Orientation(Enum):
+class Orientation(int):
     NORTH = 0
     EAST = 1
     SOUTH = 2
