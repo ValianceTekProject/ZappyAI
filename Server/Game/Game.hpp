@@ -21,7 +21,7 @@ namespace zappy {
         class Game {
 
            public:
-            Game() : _baseFreqMs(baseGameFreqMs) {}
+            Game(int mapWidth, int mapHeight) : _map(mapWidth, mapHeight), _baseFreqMs(baseGameFreqMs) {}
 
             ~Game() = default;
 
