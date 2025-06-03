@@ -21,6 +21,7 @@ namespace zappy {
                 void clear();
 
                 void addResource(Resource resource, size_t quantity = 1);
+                void addSingleResource(Resource resource);
 
                 void removeResource(Resource resource, size_t quantity = 1);
 

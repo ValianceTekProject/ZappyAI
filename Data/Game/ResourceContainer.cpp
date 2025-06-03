@@ -6,15 +6,22 @@
 */
 
 #include "ResourceContainer.hpp"
+#include "Data/Game/Resource.hpp"
 
 void zappy::game::ResourceContainer::clear()
 {
-    _resources.fill(0);
+    constexpr auto noResource = 0;
+    this->_resources.fill(noResource);
 }
 
 void zappy::game::ResourceContainer::addResource(Resource resource, size_t quantity)
 {
-    _resources[castResource(resource)] += quantity;
+    this->_resources[castResource(resource)] += quantity;
+}
+
+void zappy::game::ResourceContainer::addSingleResource(Resource resource)
+{
+    this->_resources[castResource(resource)] += 1;
 }
 
 void zappy::game::ResourceContainer::removeResource(Resource resource, size_t quantity)

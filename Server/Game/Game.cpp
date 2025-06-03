@@ -5,28 +5,8 @@
 ** Game
 */
 
-#include "Game.hpp" #include "Data/Game/Resource.hpp"
-#include "Server.hpp"
-#include <chrono>
-#include <csignal>
-#include <cstdlib>
+#include "Game.hpp" 
 #include <thread>
-
-void zappy::game::MapServer::mapInit()
-{
-    std::srand(std::time({}));
-    int width = this->getWidth();
-    int height = this->getHeight();
-
-    for (unsigned i = 0; i < zappy::game::coeff.size(); i += 1) {
-        for (int j = 0; j < (coeff[i] * width * height); j += 1) {
-            auto randX = std::rand() % width;
-            auto randY = std::rand() % height;
-            zappy::game::Tile tileTmp = this->getTile(randX, randY);
-            tileTmp.addResource(static_cast<zappy::game::Resource>(i), 1);
-        }
-    }
-}
 
 void zappy::game::Game::gameLoop()
 {
