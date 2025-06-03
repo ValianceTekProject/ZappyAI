@@ -20,9 +20,6 @@ zappy::server::Socket::Socket(int port, std::uint8_t nbClients)
 {
     this->_port = port;
     this->_nbClients = nbClients;
-    this->_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->_socket < 0)
-        throw SocketError("Socket failed");
     if (this->_port <= 0)
         throw SocketError("Wrong Port for socket");
 
@@ -34,15 +31,23 @@ zappy::server::Socket::Socket(int port, std::uint8_t nbClients)
     this->_address->sin_port = htons(this->_port);
     this->_address->sin_family = AF_INET;
 
-    std::cout << "Port: " << port << std::endl;
-    std::cout << "Socket: " << this->_socket << std::endl;
+    this->_initSocket();
+}
+
+void zappy::server::Socket::_initSocket()
+{
+    this->_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (this->_socket < 0)
+        throw SocketError("Socket failed");
+
     if (bind(this->_socket, (struct sockaddr *)this->_address.get(),
             sizeof(struct sockaddr_in)) < 0) {
         if (errno == EADDRINUSE)
             throw SocketError("Port already used");
         throw SocketError("Bind failed");
     }
-    if (listen(this->_socket, nbClients) < 0)
+
+    if (listen(this->_socket, this->_nbClients) < 0)
         throw SocketError("Listen failed");
 }
 
@@ -78,7 +83,9 @@ int zappy::server::Socket::getSocket() const
 
 std::string zappy::server::Socket::getServerInformation()
 {
-    char buf[256];
+    constexpr short BUFFSIZE = 256;
+
+    char buf[BUFFSIZE];
     std::string str;
     ssize_t bytes_read = 0;
 
@@ -88,11 +95,11 @@ std::string zappy::server::Socket::getServerInformation()
             break;
         if (bytes_read == 0) {
             close(this->_socket);
-            this->_socket = -1;
+            this->_socket = socketError;
             throw SocketError("Server disconected");
         }
         str.append(buf, bytes_read);
-        if (bytes_read < 256)
+        if (bytes_read < BUFFSIZE)
             break;
     }
     return str;
@@ -107,7 +114,6 @@ pollfd zappy::server::Socket::acceptConnection()
     if (clientSocket < 0)
         throw SocketError("Accept failed");
 
-    std::cout << "New connection: " << clientSocket << std::endl;
     pollfd fd = {clientSocket, POLLIN, 0};
 
     this->sendMessage(clientSocket, "WELCOME\n");

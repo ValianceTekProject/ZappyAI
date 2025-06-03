@@ -5,8 +5,7 @@
 ** Game
 */
 
-#include "Game.hpp"
-#include "Data/Game/Resource.hpp"
+#include "Game.hpp" #include "Data/Game/Resource.hpp"
 #include "Server.hpp"
 #include <chrono>
 #include <csignal>
