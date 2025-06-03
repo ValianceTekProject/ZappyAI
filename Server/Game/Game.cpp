@@ -16,16 +16,14 @@
 void zappy::game::MapServer::mapInit()
 {
     std::srand(std::time({}));
-    int randX = 0;
-    int randY = 0;
-    int width = getWidth();
-    int height = getHeight();
+    int width = this->getWidth();
+    int height = this->getHeight();
 
     for (unsigned i = 0; i < zappy::game::coeff.size(); i += 1) {
         for (int j = 0; j < (coeff[i] * width * height); j += 1) {
-            randX = std::rand() % width;
-            randY = std::rand() % height;
-            zappy::game::Tile tileTmp = getTile(randX, randY);
+            auto randX = std::rand() % width;
+            auto randY = std::rand() % height;
+            zappy::game::Tile tileTmp = this->getTile(randX, randY);
             tileTmp.addResource(static_cast<zappy::game::Resource>(i), 1);
         }
     }
@@ -44,7 +42,9 @@ void zappy::game::Game::gameLoop()
             now - lastUpdate);
 
         if (elapsed >= this->_baseFreqMs) {
+            this->_playTurn();
             lastUpdate = now;
+            continue;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }

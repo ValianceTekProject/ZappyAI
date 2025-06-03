@@ -30,7 +30,7 @@ namespace zappy {
         class Game {
 
            public:
-            Game(): _baseFreqMs(2000) {}
+            Game(): _baseFreqMs(1000) {}
 
             ~Game() = default;
 
@@ -44,6 +44,8 @@ namespace zappy {
             MapServer _map;
             std::chrono::milliseconds _baseFreqMs;
             std::atomic<bool>_isRunning = false;
+        
+            void _playTurn();
         };
     }  // namespace game
 }  // namespace zappy
