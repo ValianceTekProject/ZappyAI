@@ -7,6 +7,7 @@
 
 import socket
 import time
+import select
 from typing import List, Optional
 from utils.logger import logger
 from config import Constants, CommandType
@@ -14,21 +15,25 @@ from protocol.parser import Parser
 
 class Connection:
     def __init__(self, host: str, port: int):
-        """Initialise la connexion TCP avec le serveur Zappy."""
+        """Initialise la connexion TCP avec le serveur."""
         self._host = host
         self._port = port
         self._sock = None
+        self._connected = False
+
+        self._send_buffer = []
+        self._receive_buffer = ""
+
         self._map_width = None
         self._map_height = None
         self._nb_clients = None
-        self._send_buffer = []
-        self._receive_buffer = ""
-        self._connected = False
+
         self._parser = Parser()
+
         self._connect()
 
     def _connect(self) -> bool:
-        """Établit la connexion initiale."""
+        """Tente d'établir la connexion avec le serveur."""
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._sock.settimeout(Constants.SOCKET_TIMEOUT.value)
         self._sock.connect((self._host, self._port))
@@ -37,7 +42,7 @@ class Connection:
         return True
 
     def _reconnect(self) -> bool:
-        """Tente une reconnexion avec backoff exponentiel."""
+        """Effectue des tentatives de reconnexion."""
         if self._sock:
             self._sock.close()
 
@@ -53,7 +58,7 @@ class Connection:
         return False
 
     def handshake(self, team_name: str) -> None:
-        """Effectue le handshake initial avec le serveur Zappy."""
+        """Effectue le handshake initial : WELCOME → team → slot → map size."""
         if not self._connected:
             raise ConnectionError("Not connected to server")
 
@@ -80,22 +85,19 @@ class Connection:
         self._map_height = int(dimensions[1])
         logger.info(f"Map dimensions: {self._map_width}x{self._map_height}")
 
-        logger.info("Handshake completed successfully")
-
     def send_raw(self, msg: str) -> bool:
-        """Envoie un message brut avec gestion d'erreur."""
+        """Envoie un message brut (terminé par '\n')."""
         if not self._connected or not self._sock:
             logger.error("Cannot send: not connected")
             return False
 
         if not msg.endswith('\n'):
             msg += '\n'
-
         self._sock.send(msg.encode('utf-8'))
         return True
 
     def send_command(self, cmd_type: CommandType, *args) -> bool:
-        """Envoie une commande avec gestion d'erreur."""
+        """Construit et envoie une commande complète au serveur."""
         if not self._connected:
             logger.error("Cannot send command: not connected")
             return False
@@ -103,11 +105,11 @@ class Connection:
         cmd_parts = [cmd_type.value]
         cmd_parts.extend(str(arg) for arg in args)
         command = ' '.join(cmd_parts)
-
+        print(f"Sending command: {command}")
         return self.send_raw(command)
 
     def recv_line(self) -> str:
-        """Lit une ligne complète terminée par '\n'."""
+        """Lit une ligne terminée par '\n'"""
         if not self._connected or not self._sock:
             raise ConnectionError("Not connected")
 
@@ -118,11 +120,10 @@ class Connection:
             self._receive_buffer += data.decode('utf-8')
 
         line, self._receive_buffer = self._receive_buffer.split('\n', 1)
-        line = line.strip()
-        return line
+        return line.strip()
 
     def receive(self) -> List[str]:
-        """Lit les lignes envoyées par le serveur (non-bloquant)."""
+        """Récupère toutes les lignes disponibles (mode non-bloquant)."""
         if not self._connected or not self._sock:
             return []
 
@@ -130,36 +131,67 @@ class Connection:
         self._sock.settimeout(0.01)
 
         while True:
-            data = self._sock.recv(1024)
+            try:
+                data = self._sock.recv(1024)
+            except socket.timeout:
+                break
             if not data:
                 self._connected = False
                 break
+
             self._receive_buffer += data.decode('utf-8')
 
             while '\n' in self._receive_buffer:
                 line, self._receive_buffer = self._receive_buffer.split('\n', 1)
-                line = line.strip()
-                if line:
-                    lines.append(line)
+                if line.strip():
+                    lines.append(line.strip())
 
-        if self._sock:
-            self._sock.settimeout(Constants.SOCKET_TIMEOUT.value)
+        self._sock.settimeout(Constants.SOCKET_TIMEOUT.value)
         return lines
 
     def is_connected(self) -> bool:
-        """Vérifie si la connexion est active."""
+        """Retourne l'état de la connexion."""
         return self._connected and self._sock is not None
 
     def get_map_info(self) -> tuple[int, int, int]:
-        """Retourne les informations de la map (width, height, nb_clients)."""
+        """Retourne (largeur, hauteur, slots disponibles)."""
         if not self._connected:
             raise ConnectionError("Not connected")
         if None in (self._map_width, self._map_height, self._nb_clients):
             raise ValueError("Map info not available (handshake not completed)")
         return self._map_width, self._map_height, self._nb_clients
 
+    def receive_raw(self) -> str:
+        """Lecture brute sans bloquer. Utilisé pour du debug ou pré-traitement."""
+        if not self._connected or not self._sock:
+            return ""
+
+        readable, _, _ = select.select([self._sock], [], [], 0.01)
+
+        if readable:
+            data = self._sock.recv(1024)
+            if not data:
+                self._connected = False
+                return ""
+            self._receive_buffer += data.decode('utf-8')
+
+        return self._receive_buffer
+
+    def split_responses(self, raw_data: str) -> List[str]:
+        """Découpe les messages complets depuis le buffer."""
+        responses = []
+        while '\n' in self._receive_buffer:
+            line, self._receive_buffer = self._receive_buffer.split('\n', 1)
+            if line.strip():
+                responses.append(line.strip())
+        return responses
+
+    def get_socket(self):
+        """Expose le socket (utile pour un `select` externe)."""
+        return self._sock
+
     def close(self) -> None:
-        """Ferme proprement la connexion."""
+        """Ferme proprement la connexion TCP."""
         if self._sock:
             self._sock.close()
             logger.info("Connection closed")
