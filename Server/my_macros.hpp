@@ -13,9 +13,6 @@
 namespace zappy {
 
     enum class RunningState { RUN, PAUSE, STOP };
-    
-    constexpr int noValue = -1;
-    constexpr char endSequence[] = " \n\r\t";
 
     namespace game {
     }

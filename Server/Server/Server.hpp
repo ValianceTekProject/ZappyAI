@@ -19,15 +19,15 @@
 #include <vector>
 
 #include "Client/Client.hpp"
-#include "SocketServer.hpp"
+#include "EncapsuledFunction/Socket.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
-#include "my_macros.hpp"
-#include "Utils.hpp"
 
 namespace zappy {
 
     namespace server {
+
+        constexpr int invalidPort = -1;
 
         class Server {
            public:
@@ -39,52 +39,42 @@ namespace zappy {
             int getWidth() const { return this->_width; }
             int getHeight() const { return this->_height; }
             int getClientNb() const { return this->_clientNb; }
-            int getFreq() const { return this->_freq; }
 
             void runLoop();
+            void handleNewConnection();
+            void handleTeamJoin(int clientSocket, const std::string &teamName);
             void handleClientMessage(int clientSocket, std::string buffer);
 
-            void attachObserver(std::shared_ptr<zappy::observer::IObserver> observer);
-            void notifyObservers(int sig);
-
-            void setRunningState(RunningState state) { _serverRun = state; }
-            void clearTeams() { _teamList.clear(); }
-
-            void sendMessage(const std::string &buf, int socket) { send(socket, buf.c_str(), buf.size(), 0); }
+            void stopServer(int sig);
+            void closeClients();
+            static void signalWrapper(int sig);
+            static std::function<void(int)> takeSignal;
 
            private:
-            std::vector<std::shared_ptr<zappy::observer::IObserver>> _observers;
-            std::unique_ptr<zappy::game::Game> _game = nullptr;
-            std::unique_ptr<server::SocketServer> _socket = nullptr;
+            std::unique_ptr<zappy::game::Game> _game;
+            std::unique_ptr<server::Socket> _socket = nullptr;
 
             RunningState _serverRun = RunningState::RUN;
-
-            std::vector<pollfd> _fds;
-
+            int _port = invalidPort;
             std::vector<zappy::game::Team> _teamList;
-            std::unordered_map<int, zappy::server::Client> _clients;
-            std::unordered_map<std::string, std::function<void(int)>> _flags;
+            std::vector<pollfd> fds;
+
+            std::unordered_map<int, zappy::server::Client> _users;
 
             std::mutex _socketLock;
             std::mutex _endLock;
 
-            int _port = noValue;
-            int _width = noValue;
-            int _height = noValue;
-            int _clientNb = noValue;
-            int _freq = noValue;
+            int _width;
+            int _height;
+            int _clientNb;
+            int _freq;
             std::vector<std::string> _namesTeam;
 
-            void _parseFlags(int argc, char const *argv[]);
+            void _parseArgs(int argc, char const *argv[]);
             void _parseName(int &index, char const *argv[]);
-            void _parseFlagsInt(int &index, std::string arg, std::string value);
-            void _checkParams();
-
-            bool _handleNewConnection(struct pollfd &pfd);
-            std::string _getClientCommand(const struct pollfd &fd);
-            ClientState _handleClientDisconnection(const std::string &content, struct pollfd &fd);
-            void _handleClientCommand(const std::string &command, struct pollfd &pfd);
         };
 
+        // Encapsuled Functions
+        void my_signal(int __sig, sighandler_t __handler);
     }  // namespace server
 }  // namespace zappy
