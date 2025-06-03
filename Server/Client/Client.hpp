@@ -55,4 +55,42 @@ namespace zappy {
             ClientState _state;
         };
     }  // namespace server
+
+    namespace game {
+        class Player {
+
+           public:
+            Player(zappy::server::Client &user) : _user(user) {}
+
+            ~Player() = default;
+
+           private:
+            zappy::server::Client &_user;
+            zappy::game::player::InventoryServer _inventory;
+        };
+
+        class Team {
+           public:
+            Team(const std::string &name) : _name(name) {}
+
+            ~Team() = default;
+
+            std::string getName() const { return _name; }
+
+            const std::vector<std::reference_wrapper<Player>>
+            getPlayerList() const
+            {
+                return this->_playerList;
+            }
+
+            void addPlayer(Player &player)
+            {
+                this->_playerList.push_back(player);
+            }
+
+           private:
+            const std::string _name;
+            std::vector<std::reference_wrapper<Player>> _playerList;
+        };
+    }  // namespace game
 }  // namespace zappy
