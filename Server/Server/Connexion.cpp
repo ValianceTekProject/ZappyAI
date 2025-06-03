@@ -98,41 +98,41 @@ void zappy::server::Server::runLoop()
     while (this->_serverRun == RunningState::RUN) {
         {
             std::lock_guard<std::mutex> lock(this->_socketLock);
-            int poll_c = poll(this->fds.data(), fds.size(), 100);
+            int poll_c = poll(this->_fds.data(), _fds.size(), 100);
             if (poll_c < 0 && this->_serverRun != RunningState::STOP)
                 throw zappy::error::ServerConnection("Poll failed");
         }
 
-        for (std::size_t i = 0; i < fds.size(); i++) {
-            if (fds[i].revents & POLLIN) {
+        for (std::size_t i = 0; i < _fds.size(); i++) {
+            if (_fds[i].revents & POLLIN) {
                 {
                     std::lock_guard<std::mutex> lock(this->_socketLock);
-                    if (fds[i].fd == this->_socket->getSocket()) {
-                        this->fds.push_back(this->_socket->acceptConnection());
+                    if (_fds[i].fd == this->_socket->getSocket()) {
+                        this->_fds.push_back(this->_socket->acceptConnection());
                         continue;
                     }
                 }
                 char buffer[1024] = {0};
-                int bytesRead = read(fds[i].fd, buffer, sizeof(buffer));
+                int bytesRead = read(_fds[i].fd, buffer, sizeof(buffer));
                 std::string content(buffer);
                 content.erase(content.find_last_not_of(" \n\r\t") + 1);
 
                 if (bytesRead <= 0 || content.compare("exit") == 0) {
-                    std::cout << "Client disconnected: " << fds[i].fd
+                    std::cout << "Client disconnected: " << _fds[i].fd
                               << std::endl;
-                    close(fds[i].fd);
-                    _users.erase(fds[i].fd);
-                    fds.erase(fds.begin() + i);
+                    close(_fds[i].fd);
+                    _users.erase(_fds[i].fd);
+                    _fds.erase(_fds.begin() + i);
                     --i;
                     continue;
                 }
 
                 for (auto team : this->_teamList) {
                     if (content.compare(team.getName()) == 0) {
-                        handleTeamJoin(fds[i].fd, team.getName());
+                        handleTeamJoin(_fds[i].fd, team.getName());
                         break;
                     } else
-                        handleClientMessage(fds[i].fd, content);
+                        handleClientMessage(_fds[i].fd, content);
                 }
             }
         }

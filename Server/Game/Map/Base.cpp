@@ -9,13 +9,21 @@
 #include "Map.hpp"
 #include <chrono>
 
-void zappy::game::MapServer::mapInit()
+zappy::game::MapServer::MapServer(int width, int height)
 {
     std::srand(std::time({}));
 
-    int mapWidth = this->getWidth();
-    int mapHeight = this->getHeight();
+    this->_width = width;
+    this->_height = height;
+    this->init(width, height);
+    this->_placeResources();
+}
+
+void zappy::game::MapServer::_placeResources()
+{
     size_t nbResources = zappy::game::coeff.size();
+    auto mapWidth = this->_width;
+    auto mapHeight = this->_height;
 
     for (size_t resourceIdx = 0; resourceIdx < nbResources; resourceIdx += 1) {
         int totalResources = coeff[resourceIdx] * mapWidth * mapHeight;
