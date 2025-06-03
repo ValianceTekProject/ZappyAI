@@ -31,25 +31,25 @@ void zappy::server::Server::signalWrapper(int sig)
         takeSignal(sig);
 }
 
-void zappy::server::Server::handleUserMessage(
+void zappy::server::Server::handleClientMessage(
     int clientSocket, std::string buffer)
 {
-    auto itUser = this->_users.find(clientSocket);
-    if (itUser == _users.end() ||
-        itUser->second.getState() != zappy::server::ClientState::CONNECTED)
+    auto itClient = this->_users.find(clientSocket);
+    if (itClient == _users.end() ||
+        itClient->second.getState() != zappy::server::ClientState::CONNECTED)
         return;
 
-    std::lock_guard<std::mutex> lock(*(itUser->second.queueMutex));
-    itUser->second.queueMessage.push(buffer);
+    std::lock_guard<std::mutex> lock(*(itClient->second.queueMutex));
+    itClient->second.queueMessage.push(buffer);
 }
 
 void zappy::server::Server::handleTeamJoin(
     int clientSocket, const std::string &teamName)
 {
 
-    auto itUser = _users.find(clientSocket);
-    if (itUser != _users.end() &&
-        itUser->second.getState() == zappy::server::ClientState::CONNECTED) {
+    auto itClient = _users.find(clientSocket);
+    if (itClient != _users.end() &&
+        itClient->second.getState() == zappy::server::ClientState::CONNECTED) {
         this->_socket->sendMessage(clientSocket, "Already in a team\n");
         return;
     }
@@ -68,7 +68,7 @@ void zappy::server::Server::handleTeamJoin(
         this->_socket->sendMessage(clientSocket, "ko\n");
         return;
     }
-    zappy::server::User user(clientSocket);
+    zappy::server::Client user(clientSocket);
     zappy::game::Player newPlayer(user);
     user.setState(zappy::server::ClientState::CONNECTED);
 
@@ -130,7 +130,7 @@ void zappy::server::Server::serverLoop()
                         handleTeamJoin(fds[i].fd, team.getName());
                         break;
                     } else
-                        handleUserMessage(fds[i].fd, content);
+                        handleClientMessage(fds[i].fd, content);
                 }
             }
         }
