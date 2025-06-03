@@ -8,6 +8,7 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 #include <ctime>
 #include <functional>
 
@@ -29,7 +30,7 @@ namespace zappy {
         class Game {
 
            public:
-            Game() {}
+            Game(): _baseFreqMs(2000) {}
 
             ~Game() = default;
 
@@ -41,6 +42,7 @@ namespace zappy {
 
            private:
             MapServer _map;
+            std::chrono::milliseconds _baseFreqMs;
             std::atomic<bool>_isRunning = false;
         };
     }  // namespace game
