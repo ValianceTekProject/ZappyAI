@@ -14,12 +14,11 @@ namespace zappy {
 
         class MapServer : public Map {
            public:
-            MapServer() = default;
+            explicit MapServer(int mapWidth, int mapHeight);
             ~MapServer() = default;
 
-            void mapInit();
-
            private:
+            void _placeResources();
         };
 
     }  // namespace game

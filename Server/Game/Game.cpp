@@ -11,8 +11,6 @@
 
 void zappy::game::Game::gameLoop()
 {
-    this->_map.init(_map.getWidth(), _map.getHeight());
-    this->_map.mapInit();
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
 
