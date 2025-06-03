@@ -12,9 +12,6 @@
 
 #include "Data/Game/Inventory.hpp"
 
-#define NO_ITEM 0
-#define START_FOOD 10
-
 namespace zappy {
     namespace game {
         namespace player {
