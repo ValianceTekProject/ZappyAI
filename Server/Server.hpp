@@ -53,7 +53,6 @@ namespace zappy {
             void handleTeamJoin(int clientSocket, const std::string &teamName);
             void handleUserMessage(int clientSocket, std::string buffer);
 
-
                 void stopServer(int sig);
                 void closeClients();
                 static void signalWrapper(int sig);
