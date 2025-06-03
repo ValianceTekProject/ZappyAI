@@ -34,7 +34,7 @@ zappy::server::SocketServer::SocketServer(int port, std::uint8_t nbClients)
     this->_initSocket();
 }
 
-void zappy::server::SocketServer::_initSocket()
+void zappy::server::Socket::_initSocket()
 {
     this->_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (this->_socket < 0)
@@ -84,9 +84,9 @@ int zappy::server::SocketServer::getSocket() const
 
 std::string zappy::server::SocketServer::getServerInformation()
 {
-    constexpr short buffSize = 256;
+    constexpr short BUFFSIZE = 256;
 
-    char buf[buffSize];
+    char buf[BUFFSIZE];
     std::string str;
     ssize_t bytes_read = 0;
 
@@ -96,11 +96,11 @@ std::string zappy::server::SocketServer::getServerInformation()
             break;
         if (bytes_read == 0) {
             close(this->_socket);
-            this->_socket = invalidSocket;
-            throw SocketError("Server disconnected");
+            this->_socket = socketError;
+            throw SocketError("Server disconected");
         }
         str.append(buf, bytes_read);
-        if (bytes_read < buffSize)
+        if (bytes_read < BUFFSIZE)
             break;
     }
     std::cout << str << std::endl;

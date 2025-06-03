@@ -5,8 +5,7 @@
 ** Game
 */
 
-#include "Game.hpp"
-#include "Player/ServerPlayer.hpp"
+#include "Game.hpp" #include "Data/Game/Resource.hpp"
 #include "Server.hpp"
 #include "Teams/Teams.hpp"
 #include <algorithm>
