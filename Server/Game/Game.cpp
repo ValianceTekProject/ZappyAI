@@ -5,74 +5,10 @@
 ** Game
 */
 
-#include "Game.hpp" #include "Data/Game/Resource.hpp"
-#include "Server.hpp"
-#include "Teams/Teams.hpp"
-#include <algorithm>
+#include "Game.hpp" 
 #include <thread>
 
-const constexpr int nbOrientation = 4;
-
-void zappy::game::Game::_addPlayerToTeam(
-    zappy::game::Team &team, int clientSocket)
-{
-    std::srand(std::time({}));
-    int randVal = std::rand() % nbOrientation;
-    zappy::game::Orientation tmp = static_cast<zappy::game::Orientation>(randVal);
-    zappy::server::Client user(clientSocket);
-    std::unique_ptr<zappy::game::ServerPlayer> newPlayer =
-        std::make_unique<zappy::game::ServerPlayer>(std::move(user), _idTot, 0, 0, tmp, 1);
-    _idTot += 1;
-    user.setState(zappy::server::ClientState::CONNECTED);
-
-    team.addPlayer(std::move(newPlayer));
-}
-
-bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
-{
-    for (const auto &team : this->_teamList) {
-        for (const auto &player : team.getPlayerList()) {
-            const auto &socket = player->getClient();
-            if (socket.getSocket() == clientSocket) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool zappy::game::Game::handleTeamJoin(
-    int clientSocket, const std::string &teamName)
-{
-    auto it = std::find_if(this->_teamList.begin(), this->_teamList.end(),
-        [&teamName](const zappy::game::Team &team) {
-            return team.getName() == teamName;
-        });
-
-    if (it == this->_teamList.end() || static_cast<int> (it->getPlayerList().size()) >= this->_clientNb)
-        return false;
-
-    if (this->_checkAlreadyInTeam(clientSocket) == true)
-        return false;
-    this->_addPlayerToTeam(*it, clientSocket);
-    return true;
-}
-
-void zappy::game::Game::removeFromTeam(int clientSocket)
-{
-    std::cout << "Trying to remove: " << clientSocket << std::endl;
-    for (auto &team: this->_teamList) {
-        for (auto &player: team.getPlayerList()) {
-            std::cout << "Player: " << player->getClient().getSocket() << std::endl;
-            if (player->getClient().getSocket() == clientSocket) {
-                std::cout << "Player: " << clientSocket << " removed" << std::endl;
-                team.removePlayer(clientSocket);
-            }
-        }
-    }
-}
-
-void zappy::game::Game::runGame()
+void zappy::game::Game::gameLoop()
 {
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
