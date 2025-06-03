@@ -123,30 +123,28 @@ class Connection:
         return line.strip()
 
     def receive(self) -> List[str]:
-        """Récupère toutes les lignes disponibles (mode non-bloquant)."""
+        """Récupère toutes les lignes disponibles (mode non-bloquant, sans exceptions)."""
         if not self._connected or not self._sock:
             return []
 
         lines = []
-        self._sock.settimeout(0.01)
 
-        while True:
-            try:
-                data = self._sock.recv(1024)
-            except socket.timeout:
-                break
-            if not data:
-                self._connected = False
-                break
+        readable, _, _ = select.select([self._sock], [], [], 0.01)
+        if not readable:
+            return lines
 
-            self._receive_buffer += data.decode('utf-8')
+        data = self._sock.recv(1024)
+        if not data:
+            self._connected = False
+            return lines
 
-            while '\n' in self._receive_buffer:
-                line, self._receive_buffer = self._receive_buffer.split('\n', 1)
-                if line.strip():
-                    lines.append(line.strip())
+        self._receive_buffer += data.decode('utf-8')
 
-        self._sock.settimeout(Constants.SOCKET_TIMEOUT.value)
+        while '\n' in self._receive_buffer:
+            line, self._receive_buffer = self._receive_buffer.split('\n', 1)
+            if line.strip():
+                lines.append(line.strip())
+
         return lines
 
     def is_connected(self) -> bool:
