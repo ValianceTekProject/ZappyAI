@@ -76,3 +76,14 @@ class Orientation(int):
     EAST = 1
     SOUTH = 2
     WEST = 3
+
+class ResponseType(Enum):
+    OK = 'ok'
+    KO = 'ko'
+    DEAD = 'dead'
+    CURRENT_LEVEL = 'current level:'
+    ELEVATION_UNDERWAY = 'elevation underway'
+    LOOK = '['
+    INVENTORY = '['
+    BROADCAST = 'message'
+    EJECT = 'eject:'
