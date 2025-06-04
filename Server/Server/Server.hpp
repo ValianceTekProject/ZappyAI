@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "Client/Client.hpp"
-#include "Network/Socket.hpp"
+#include "SocketServer.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
 #include "my_macros.hpp"
@@ -51,18 +51,16 @@ namespace zappy {
             void clearTeams() { _teamList.clear(); }
 
            private:
-
             std::vector<std::shared_ptr<zappy::observer::IObserver>> _observers;
-
-            std::unique_ptr<zappy::game::Game> _game;
-            std::unique_ptr<server::Socket> _socket = nullptr;
+            std::unique_ptr<zappy::game::Game> _game = nullptr;
+            std::unique_ptr<server::SocketServer> _socket = nullptr;
 
             RunningState _serverRun = RunningState::RUN;
 
-            std::vector<zappy::game::Team> _teamList;
             std::vector<pollfd> _fds;
 
-            std::unordered_map<int, zappy::server::Client> _users;
+            std::vector<zappy::game::Team> _teamList;
+            std::unordered_map<int, zappy::server::Client> _clients;
             std::unordered_map<std::string, std::function<void(int)>> _flags;
 
             std::mutex _socketLock;
