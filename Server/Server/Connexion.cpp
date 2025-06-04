@@ -10,29 +10,6 @@
 #include "Game.hpp"
 #include <mutex>
 
-std::function<void(int)> zappy::server::Server::takeSignal;
-
-void zappy::server::Server::closeClients()
-{
-    // TODO send message to stop connexion with clients and AI
-    _teamList.clear();
-}
-
-void zappy::server::Server::stopServer(int sig)
-{
-    std::cout << "Received signal " << sig << ". Closing server in progress..."
-              << std::endl;
-    this->_serverRun = RunningState::STOP;
-    this->_game->setRunningState(RunningState::STOP);
-    closeClients();
-}
-
-void zappy::server::Server::signalWrapper(int sig)
-{
-    if (takeSignal)
-        takeSignal(sig);
-}
-
 void zappy::server::Server::handleClientMessage(
     int clientSocket, std::string buffer)
 {
@@ -91,9 +68,8 @@ void disconnectClient() {}
 
 void zappy::server::Server::runLoop()
 {
-    takeSignal = std::bind(
-        &zappy::server::Server::stopServer, this, std::placeholders::_1);
-    my_signal(SIGINT, signalWrapper);
+    auto signalHandler = std::make_shared<zappy::utils::Signal>(*this, *_game);
+    zappy::utils::Signal::initSignalHandling(signalHandler.get());
 
     while (this->_serverRun == RunningState::RUN) {
         {
