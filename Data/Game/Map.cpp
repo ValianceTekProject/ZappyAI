@@ -7,32 +7,30 @@
 
 #include "Map.hpp"
 
-void zappy::game::Map::init(int width, int height)
+void zappy::game::Map::init(const size_t &width, const size_t &height)
 {
-    _width = width;
+    this->_width = width;
     _height = height;
 
-    _map.resize(width);
-    for (int i = 0; i < width; i++) {
-        _map[i].resize(height);
-        for (int j = 0; j < height; j++)
-            _map[i][j] = Tile();
-    }
+    this->_map.resize(width, std::vector<Tile>(height));
 }
 
-void zappy::game::Map::clearTile(int x, int y)
+void zappy::game::Map::clearTile(const size_t &x, const size_t &y)
 {
-    _map[x][y].clear();
+    if (x >= this->_width || y >= _height)
+        return;
+    this->_map[x][y].clear();
 }
 
 void zappy::game::Map::clear()
 {
-    for (int i = 0; i < _width; i++)
-        for (int j = 0; j < _height; j++)
-            clearTile(i, j);
+    for (auto &row : this->_map) {
+        for (auto &tile : row)
+            tile.clear();
+    }
 }
 
-void zappy::game::Map::setTile(int x, int y, Tile &tile)
+void zappy::game::Map::setTile(const size_t &x, const size_t &y, const Tile &tile)
 {
-    _map[x][y] = tile;
+    this->_map[x][y] = tile;
 }

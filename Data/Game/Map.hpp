@@ -16,25 +16,25 @@ namespace zappy {
         class Map
         {
             public:
-                Map() = default;
+                Map(const size_t &width, const size_t &height) { init(width, height); }
                 ~Map() = default;
 
-                void init(int width, int height);
+                const size_t &getWidth() const { return this->_width; }
+                const size_t &getHeight() const { return this->_height; }
 
-                int getWidth() const { return _width; }
-                int getHeight() const { return _height; }
+                Tile &getTile(const size_t &x, const size_t &y) { return this->_map[x][y]; }
+                const Tile &getTile(const size_t &x, const size_t &y) const { return this->_map[x][y]; }
 
-                Tile &getTile(int x, int y) { return _map[x][y]; }
-                const Tile &getTile(int x, int y) const { return _map[x][y]; }
-
-                void clearTile(int x, int y);
+                void clearTile(const size_t &x, const size_t &y);
                 void clear();
 
-                void setTile(int x, int y, Tile &tile);
+                void setTile(const size_t &x, const size_t &y, const Tile &tile);
 
-            protected:
-                int _width;
-                int _height;
+            private:
+                void init(const size_t &width, const size_t &height);
+
+                size_t _width;
+                size_t _height;
 
                 std::vector<std::vector<Tile>> _map;
         };
