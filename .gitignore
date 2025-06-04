@@ -21,3 +21,4 @@ build
 assets/
 zappy_ref-v3.0.0/
 __pycache__/
+.idea
