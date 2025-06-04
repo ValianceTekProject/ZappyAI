@@ -6,7 +6,7 @@
 */
 
 #include "Server.hpp"
-#include "Socket.hpp"
+#include "SocketServer.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
 #include "my_macros.hpp"
@@ -22,9 +22,10 @@ zappy::server::Server::Server(int argc, char const *argv[])
         {"-f", [this](int value) {this->_freq = value;}}
     };
     this->_parseFlags(argc, argv);
-    this->_game = std::make_unique<zappy::game::Game>(this->_width, this->_height);
+    this->_game = std::make_unique<zappy::game::Game>(
+        this->_width, this->_height, std::move(this->_teamList));
     this->_socket =
-        std::make_unique<server::Socket>(this->_port, this->_clientNb);
+        std::make_unique<server::SocketServer>(this->_port, this->_clientNb);
     this->_fds.push_back({this->_socket->getSocket(), POLLIN, 0});
     std::cout << "Zappy Server listening on port " << this->_port << "...\n";
 }
@@ -46,9 +47,8 @@ void zappy::server::Server::_parseName(int &index, char const *argv[])
         if (std::string(argv[index]).find("-") == 0)
             break;
         this->_namesTeam.push_back(argv[index]);
+        this->_teamList.emplace_back(argv[index]);
         index += 1;
-        zappy::game::Team team(argv[index]);
-        this->_teamList.push_back(team);
     }
 
     if (this->_teamList.empty())
@@ -94,7 +94,7 @@ void zappy::server::Server::_parseFlags(int argc, char const *argv[])
 void zappy::server::Server::runServer()
 {
     std::thread networkThread(&zappy::server::Server::runLoop, this);
-    std::thread gameThread(&game::Game::gameLoop, this->_game.get());
+    std::thread gameThread(&game::Game::runGame, this->_game.get());
 
     networkThread.join();
     gameThread.join();

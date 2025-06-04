@@ -5,7 +5,7 @@
 // Socket
 //
 
-#include "Socket.hpp"
+#include "SocketServer.hpp"
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-zappy::server::Socket::Socket(int port, std::uint8_t nbClients)
+zappy::server::SocketServer::SocketServer(int port, std::uint8_t nbClients)
 {
     this->_port = port;
     this->_nbClients = nbClients;
@@ -34,7 +34,7 @@ zappy::server::Socket::Socket(int port, std::uint8_t nbClients)
     this->_initSocket();
 }
 
-void zappy::server::Socket::_initSocket()
+void zappy::server::SocketServer::_initSocket()
 {
     this->_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (this->_socket < 0)
@@ -51,14 +51,14 @@ void zappy::server::Socket::_initSocket()
         throw SocketError("Listen failed");
 }
 
-zappy::server::Socket::~Socket()
+zappy::server::SocketServer::~SocketServer()
 {
     if (this->_socket > 0) {
         close(this->_socket);
     }
 }
 
-void zappy::server::Socket::createConnection()
+void zappy::server::SocketServer::createConnection()
 {
     if (connect(this->_socket,
             reinterpret_cast<sockaddr *>(this->_address.get()),
@@ -67,7 +67,7 @@ void zappy::server::Socket::createConnection()
     }
 }
 
-void zappy::server::Socket::sendMessage(int clientSocket, const std::string &msg) const
+void zappy::server::SocketServer::sendMessage(int clientSocket, const std::string &msg) const
 {
     std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
@@ -76,12 +76,12 @@ void zappy::server::Socket::sendMessage(int clientSocket, const std::string &msg
     }
 }
 
-int zappy::server::Socket::getSocket() const
+int zappy::server::SocketServer::getSocket() const
 {
     return this->_socket;
 }
 
-std::string zappy::server::Socket::getServerInformation()
+std::string zappy::server::SocketServer::getServerInformation()
 {
     constexpr short BUFFSIZE = 256;
 
@@ -105,7 +105,7 @@ std::string zappy::server::Socket::getServerInformation()
     return str;
 }
 
-pollfd zappy::server::Socket::acceptConnection()
+pollfd zappy::server::SocketServer::acceptConnection()
 {
     sockaddr_in clientAddr{};
     socklen_t clientLen = sizeof(clientAddr);
