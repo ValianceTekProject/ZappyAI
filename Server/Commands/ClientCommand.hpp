@@ -41,7 +41,6 @@ namespace zappy {
             void handleIncantation() { std::cout << "Incantation\n"; }
         };
 
-
     }  // namespace server
 
 }  // namespace zappy

@@ -34,7 +34,7 @@ zappy::server::SocketServer::SocketServer(int port, std::uint8_t nbClients)
     this->_initSocket();
 }
 
-void zappy::server::Socket::_initSocket()
+void zappy::server::SocketServer::_initSocket()
 {
     this->_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (this->_socket < 0)
@@ -67,8 +67,7 @@ void zappy::server::SocketServer::createConnection()
     }
 }
 
-void zappy::server::SocketServer::sendMessage(
-    int clientSocket, const std::string &msg) const
+void zappy::server::SocketServer::sendMessage(int clientSocket, const std::string &msg) const
 {
     std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
