@@ -2,27 +2,21 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## parser
+## parser utilities for server responses
 ##
 
-import re
-from enum import Enum
 from typing import Dict, List, Union, Optional
+from config import ResponseType
 from utils.logger import logger
-
-class ResponseType(Enum):
-    OK = 'ok'
-    KO = 'ko'
-    DEAD = 'dead'
-    MESSAGE = 'message'
-    CURRENT_LEVEL = 'current level:'
-    EJECT = 'eject:'
-    BROADCAST = 'message'
 
 class Parser:
     @staticmethod
     def parse_look_response(response: str) -> List[List[str]]:
-        """Parse: [ player food, linemate player, food ]"""
+        """
+        Parse la réponse à la commande 'Look'.
+        Format attendu : "[ player food, linemate player, food ]"
+        Retourne une liste de tuiles, chaque tuile étant une liste d'objets.
+        """
         try:
             response = response.strip()
             if not (response.startswith('[') and response.endswith(']')):
@@ -32,26 +26,28 @@ class Parser:
             if not content:
                 return [[]]
 
-            tiles = []
+            tiles: List[List[str]] = []
             for tile_content in content.split(','):
-                tile_content = tile_content.strip()
-                if tile_content:
-                    items = tile_content.split()
-                    tiles.append(items)
-                else:
-                    tiles.append([])
+                items = tile_content.strip().split() if tile_content.strip() else []
+                tiles.append(items)
 
             return tiles
+
         except Exception as e:
-            print(f"Erreur parsing Look: {e}")
+            logger.error(f"Erreur lors du parsing Look: {e}")
             return [[]]
 
     @staticmethod
     def parse_inventory_response(response: str) -> Dict[str, int]:
-        """Parse: [ food 3, linemate 2, sibur 1 ]"""
+        """
+        Parse la réponse à la commande 'Inventory'.
+        Format attendu : "[ food 3, linemate 2, sibur 1 ]"
+        Retourne un dictionnaire {ressource: quantité}.
+        """
         try:
-            inventory = {}
+            inventory: Dict[str, int] = {}
             response = response.strip()
+
             if not (response.startswith('[') and response.endswith(']')):
                 raise ValueError(f"Format invalide pour Inventory: {response}")
 
@@ -60,21 +56,24 @@ class Parser:
                 return inventory
 
             for item in content.split(','):
-                item = item.strip()
-                if item:
-                    parts = item.split()
-                    if len(parts) == 2:
-                        resource, quantity = parts
-                        inventory[resource] = int(quantity)
+                parts = item.strip().split()
+                if len(parts) == 2:
+                    resource, quantity = parts
+                    inventory[resource] = int(quantity)
 
             return inventory
+
         except Exception as e:
-            print(f"Erreur parsing Inventory: {e}")
+            logger.error(f"Erreur lors du parsing Inventory: {e}")
             return {}
 
     @staticmethod
     def parse_broadcast_response(response: str) -> Optional[Dict[str, Union[int, str]]]:
-        """Parse: message K, message"""
+        """
+        Parse la réponse à un message broadcast.
+        Format attendu : "message K, contenu"
+        Retourne un dictionnaire avec la direction et le message.
+        """
         try:
             if response.startswith("message "):
                 parts = response[8:].split(', ', 1)
@@ -83,17 +82,43 @@ class Parser:
                     message = parts[1]
                     return {"direction": direction, "message": message}
             return None
+
         except Exception as e:
-            print(f"Erreur parsing Broadcast: {e}")
+            logger.error(f"Erreur lors du parsing Broadcast: {e}")
             return None
 
     @staticmethod
     def is_error_response(response: str) -> bool:
-        """Vérifie si la réponse est une erreur."""
-        error_responses = ["ko", "dead", "eject"]
-        return response.strip().lower() in error_responses
+        """
+        Vérifie si la réponse est une erreur : 'ko' ou 'eject ...'
+        """
+        s = response.strip().lower()
+        return s == ResponseType.KO or s.startswith(ResponseType.EJECT)
 
     @staticmethod
     def is_success_response(response: str) -> bool:
-        """Vérifie si la réponse indique un succès."""
-        return response.strip().lower() == "ok"
+        """
+        Vérifie si la réponse est 'ok'.
+        """
+        return response.strip().lower() == ResponseType.OK
+
+    @staticmethod
+    def is_dead_response(response: str) -> bool:
+        """
+        Vérifie si la réponse est 'dead'.
+        """
+        return response.strip().lower() == ResponseType.DEAD
+
+    @staticmethod
+    def is_elevation_underway(response: str) -> bool:
+        """
+        Vérifie si la réponse est 'Elevation underway'.
+        """
+        return response.strip().lower() == ResponseType.ELEVATION_UNDERWAY
+
+    @staticmethod
+    def is_current_level_response(response: str) -> bool:
+        """
+        Vérifie si la réponse commence par 'Current level:'.
+        """
+        return response.strip().lower().startswith(ResponseType.CURRENT_LEVEL)
