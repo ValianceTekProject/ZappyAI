@@ -18,38 +18,51 @@ namespace zappy {
                 GameState() : _frequency(100) {}
                 ~GameState() = default;
 
-                void setFrequency(size_t frequency) { _frequency = frequency; }
-                void initMap(size_t width, size_t height) { _map.init(width, height); }
+                void setFrequency(const size_t &frequency) { _frequency = frequency; }
+                void initMap(const size_t &width, const size_t &height) { _map.init(width, height); }
 
                 size_t getFrequency() const { return _frequency; }
 
-                void updateTile(size_t x, size_t y, Tile tile) { _map.setTile(x, y, tile); }
+                void updateTile(const size_t &x, const size_t &y, Tile &tile) { _map.setTile(x, y, tile); }
 
                 void addTeam(const std::string &teamName) { _teams.push_back(teamName); }
 
-                void addPlayer(Player player) { _players.push_back(player); }
-                void updatePlayerPosition(size_t id,
-                    size_t x,
-                    size_t y,
-                    Orientation orientation
+                void addEgg(
+                    const int &eggId,
+                    const int &playerId,
+                    const size_t &x,
+                    const size_t &y
                 );
-                void updatePlayerLevel(size_t id,
-                    size_t level
+                void addPlayer(Player &player) { _players.push_back(player); }
+
+                void updatePlayerPosition(
+                    const int &id,
+                    const size_t &x,
+                    const size_t &y,
+                    const Orientation &orientation
                 );
-                void updatePlayerInventory(size_t id,
-                    Inventory &inventory
-                );
-                void removePlayer(size_t id);
+                void updatePlayerLevel(const int &id, const size_t &level);
+                void updatePlayerInventory(const int &id, const Inventory &inventory);
+
+                void hatchEgg(const int &eggId);
+
+                void removeEgg(const int &eggId);
+                void removePlayer(const int &id);
+
+                Player &getEggById(const int &eggId);
+                Player &getPlayerById(const int &id);
 
                 void endGame(const std::string &teamName);
 
             private:
-            size_t _frequency;
+                std::vector<Player &> getPlayersByCoord(const size_t &x, const size_t &y);
 
-            std::vector<Player> _players;
-            std::vector<std::string> _teams;
+                size_t _frequency;
 
-            game::Map _map;
+                std::vector<Player> _players;
+                std::vector<std::string> _teams;
+
+                game::Map _map;
         };
     }
 }

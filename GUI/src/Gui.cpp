@@ -10,11 +10,10 @@
 zappy::gui::Gui::Gui() :
     _ip("127.0.0.1"),
     _port(4242),
-    _frequency(100),
+    _protocol(nullptr),
+    _gameState(nullptr),
     _renderer(nullptr)
-{
-    _gameState->setFrequency(_frequency);
-}
+{}
 
 void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
 {
@@ -40,7 +39,7 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
                 throw ParsingError("Missing value for -h", "Parsing");
             _ip = argv[++i];
         } else if (arg == "-gl" || arg == "-opengl") {
-            _renderer = std::make_unique<OpenGLRenderer>();
+            _renderer = std::make_shared<OpenGLRenderer>();
         } else
             throw ParsingError("Unknown option: " + arg, "Parsing");
     }
@@ -53,21 +52,52 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
     }
 
     if (!_renderer)
-        _renderer = std::make_unique<NcursesRenderer>();
+        _renderer = std::make_shared<NcursesRenderer>();
 }
 
 void zappy::gui::Gui::init()
 {
-    std::cout << "IP: " << _ip << std::endl;
-    std::cout << "Port: " << _port << std::endl;
-
     _gameState = std::make_shared<game::GameState>();
 
     _renderer->init();
     _renderer->setGameState(_gameState);
+
+    initNetwork();
+}
+
+void zappy::gui::Gui::initNetwork()
+{
+    _protocol = std::make_unique<network::Protocol>(_gameState);
+    if (!_protocol->connectToServer(_ip, _port))
+        throw network::NetworkError("Connection failed", "Network");
 }
 
 void zappy::gui::Gui::run()
 {
     init();
+
+    const std::chrono::milliseconds frameDelay(1000 / _gameState->getFrequency());
+
+    _protocol->setTimeUnit(500);
+
+    bool running = true;
+    while (running) {
+        auto frameStart = std::chrono::steady_clock::now();
+
+        _renderer->handleInput();
+        if (_renderer->shouldClose()) {
+            running = false;
+            continue;
+        }
+
+        _protocol->update();
+        _renderer->update();
+        _renderer->render();
+
+        auto frameTime = std::chrono::steady_clock::now() - frameStart;
+        if (frameTime < frameDelay)
+            std::this_thread::sleep_for(frameDelay - frameTime);
+    }
+
+    _protocol->disconnect();
 }

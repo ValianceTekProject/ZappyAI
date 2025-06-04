@@ -34,14 +34,14 @@ namespace zappy {
                 void run();
 
             private:
+                void initNetwork();
+
                 std::string _ip;
                 size_t _port;
 
-                size_t _frequency;
-
-                std::unique_ptr<IRenderer> _renderer;
-
+                std::unique_ptr<network::Protocol> _protocol;
                 std::shared_ptr<game::GameState> _gameState;
+                std::shared_ptr<IRenderer> _renderer;
         };
     }
 }

@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include "GuiProtocol.hpp"
 #include "NetworkManager.hpp"
 #include "GameState.hpp"
 
 #include <memory>
+#include <functional>
 #include <sstream>
 #include <chrono>
 #include <thread>
@@ -25,7 +27,7 @@ namespace zappy {
                 bool connectToServer(const std::string& host, int port);
                 void disconnect();
                 bool isConnected() const;
-                void update(); // À appeler dans la boucle principale
+                void update();
 
                 void requestMapSize();
                 void requestTileContent(int x, int y);
@@ -38,14 +40,12 @@ namespace zappy {
                 void setTimeUnit(int timeUnit);
 
             private:
-                std::unique_ptr<NetworkManager> _network;
-                std::shared_ptr<game::GameState> _gameState;
-                bool _authenticated;
+                void removeSharp(std::string &message);
 
                 // Message handlers
                 void handleMapSize(const std::string &params);
                 void handleTileContent(const std::string &params);
-                void handleMapContent(const std::string &params);
+                // void handleMapContent(const std::string &params);
                 void handleTeamNames(const std::string &params);
                 void handleNewPlayer(const std::string &params);
                 void handlePlayerPosition(const std::string &params);
@@ -65,6 +65,16 @@ namespace zappy {
                 void handleTimeUnit(const std::string &params);
                 void handleGameEnd(const std::string &params);
                 void handleServerMessage(const std::string &params);
+
+                void initHandlers();
+                void onServerMessage(const ServerMessage &msg);
+
+                std::unique_ptr<NetworkManager> _network;
+                std::shared_ptr<game::GameState> _gameState;
+                bool _authenticated;
+
+                using HandlerFunc = std::function<void(const std::string &)>;
+                std::unordered_map<GuiProtocol, HandlerFunc> _handlers;
         };
     } // namespace network
 } // namespace zappy
