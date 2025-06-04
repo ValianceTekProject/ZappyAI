@@ -5,6 +5,7 @@
 ** Player.hpp
 */
 
+#include "Egg.hpp"
 #include "Inventory.hpp"
 #include <string>
 
@@ -20,39 +21,35 @@ namespace zappy {
         void operator--(Orientation &orientation, int);
         Orientation convertOrientation(const std::string &orientation);
 
-        class Player
+        class Player : public Egg
         {
             public:
-                size_t id;
                 size_t level;
-                size_t x;
-                size_t y;
                 Orientation orientation;
                 std::string teamName;
-                bool hasHatch;
 
-                Player(
-                    size_t id,
+                explicit Player(
+                    int id,
                     size_t x,
                     size_t y,
-                    Orientation orientation,
+                    Orientation orientation = Orientation::NORTH,
                     size_t level = 1
                 );
                 ~Player() = default;
 
-                void pray() { _isPraying = true; }
-                bool isPraying() const { return _isPraying; }
-                void stopPraying() { _isPraying = false; }
+                void pray() { this->_isPraying = true; }
+                bool isPraying() const { return this->_isPraying; }
+                void stopPraying() { this->_isPraying = false; }
 
-                void lookLeft() { orientation--; }
-                void lookRight() { orientation++; }
+                void lookLeft() { this->orientation--; }
+                void lookRight() { this->orientation++; }
 
                 void stepForward();
 
                 void ejectFrom(Orientation direction);
 
-                void setInventory(const Inventory &inventory) { _inventory = inventory; }
-                const Inventory &getInventory() const { return _inventory; }
+                void setInventory(const Inventory &inventory) { this->_inventory = inventory; }
+                const Inventory &getInventory() const { return this->_inventory; }
 
                 void collectRessource(Resource resource, size_t quantity = 1);
                 void dropRessource(Resource resource, size_t quantity = 1);
