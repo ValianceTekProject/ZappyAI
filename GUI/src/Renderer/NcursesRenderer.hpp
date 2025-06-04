@@ -16,7 +16,7 @@ namespace zappy {
         class NcursesRenderer : public IRenderer
         {
             public:
-                NcursesRenderer() : _shouldClose(false) {}
+                NcursesRenderer();
                 ~NcursesRenderer() = default;
 
                 void init() override;

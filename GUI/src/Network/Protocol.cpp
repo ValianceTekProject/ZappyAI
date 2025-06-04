@@ -12,53 +12,17 @@ zappy::network::Protocol::Protocol(std::shared_ptr<game::GameState> gameState)  
     _gameState(gameState),
     _authenticated(false)
 {
+    initHandlers();
     _network->setMessageCallback([this](const ServerMessage &msg) {
-        if (msg.command == "msz")
-            handleMapSize(msg.params);
-        else if (msg.command == "bct")
-            handleTileContent(msg.params);
-        else if (msg.command == "tna")
-            handleTeamNames(msg.params);
-        else if (msg.command == "pnw")
-            handleNewPlayer(msg.params);
-        else if (msg.command == "ppo")
-            handlePlayerPosition(msg.params);
-        else if (msg.command == "plv")
-            handlePlayerLevel(msg.params);
-        else if (msg.command == "pin")
-            handlePlayerInventory(msg.params);
-        else if (msg.command == "pex")
-            handlePlayerExpulsion(msg.params);
-        else if (msg.command == "pbc")
-            handlePlayerBroadcast(msg.params);
-        else if (msg.command == "pic")
-            handleIncantationStart(msg.params);
-        else if (msg.command == "pie")
-            handleIncantationEnd(msg.params);
-        else if (msg.command == "pfk")
-            handleEggLaying(msg.params);
-        else if (msg.command == "pdr")
-            handleResourceDrop(msg.params);
-        else if (msg.command == "pgt")
-            handleResourceCollect(msg.params);
-        else if (msg.command == "pdi")
-            handlePlayerDeath(msg.params);
-        else if (msg.command == "enw")
-            handleEggCreated(msg.params);
-        else if (msg.command == "ebo")
-            handleEggHatch(msg.params);
-        else if (msg.command == "edi")
-            handleEggDeath(msg.params);
-        else if (msg.command == "sgt")
-            handleTimeUnit(msg.params);
-        else if (msg.command == "seg")
-            handleGameEnd(msg.params);
-        else if (msg.command == "smg")
-            handleServerMessage(msg.params);
-        else if (msg.command == "suc")
-            std::cout << "Server: Unknown command" << std::endl;
-        else if (msg.command == "sbp")
-            std::cout << "Server: Bad command parameter" << std::endl;
+        std::cout << "Command: " << msg.command << " " << msg.params << std::endl;
+
+        GP cmd = getGuiProtocol(msg.command);
+
+        try {
+            _handlers[cmd](msg.params);
+        } catch (const std::exception &e) {
+            std::cerr << "Error handling command \"" + msg.command + " " + msg.params + "\": " << e.what() << std::endl;
+        }
     });
 }
 
@@ -66,11 +30,51 @@ zappy::network::Protocol::~Protocol() {
     disconnect();
 }
 
+void zappy::network::Protocol::initHandlers()
+{
+    _handlers = {
+        {GP::MAP_SIZE,               [this](auto &p){ handleMapSize(p); }},
+        {GP::TILE_CONTENT,           [this](auto &p){ handleTileContent(p); }},
+        {GP::TEAM_NAME,              [this](auto &p){ handleTeamNames(p); }},
+        {GP::NEW_PLAYER,             [this](auto &p){ handleNewPlayer(p); }},
+        {GP::PLAYER_POSITION,        [this](auto &p){ handlePlayerPosition(p); }},
+        {GP::PLAYER_LEVEL,           [this](auto &p){ handlePlayerLevel(p); }},
+        {GP::PLAYER_INVENTORY,       [this](auto &p){ handlePlayerInventory(p); }},
+        {GP::PLAYER_EXPULSION,       [this](auto &p){ handlePlayerExpulsion(p); }},
+        {GP::PLAYER_BROADCAST,       [this](auto &p){ handlePlayerBroadcast(p); }},
+        {GP::INCANTATION_START,      [this](auto &p){ handleIncantationStart(p); }},
+        {GP::INCANTATION_END,        [this](auto &p){ handleIncantationEnd(p); }},
+        {GP::EGG_LAYING,             [this](auto &p){ handleEggLaying(p); }},
+        {GP::RESOURCE_DROP,          [this](auto &p){ handleResourceDrop(p); }},
+        {GP::RESOURCE_COLLECT,       [this](auto &p){ handleResourceCollect(p); }},
+        {GP::PLAYER_DEATH,           [this](auto &p){ handlePlayerDeath(p); }},
+        {GP::EGG_CREATED,            [this](auto &p){ handleEggCreated(p); }},
+        {GP::EGG_HATCH,              [this](auto &p){ handleEggHatch(p); }},
+        {GP::EGG_DESTROYED,          [this](auto &p){ handleEggDeath(p); }},
+        {GP::TIME_UNIT_REQUEST,      [this](auto &p){ handleTimeUnit(p); }},
+        {GP::TIME_UNIT_MODIFICATION, [this](auto &p){ setTimeUnit(std::stoi(p)); }},
+        {GP::GAME_END,               [this](auto &p){ handleGameEnd(p); }},
+        {GP::SERVER_MESSAGE,         [this](auto &p){ handleServerMessage(p); }},
+        {GP::UNKNOWN_COMMAND,        [](auto &){ std::cerr << "Server: Unknown command\n"; }},
+        {GP::COMMAND_PARAMETER,      [](auto &){ std::cerr << "Server: Bad parameter\n"; }}
+    };
+}
+
+void zappy::network::Protocol::onServerMessage(const ServerMessage &msg)
+{
+    GuiProtocol cmd = getGuiProtocol(msg.command);
+    auto it = _handlers.find(cmd);
+
+    if (it != _handlers.end())
+        it->second(msg.params);
+    else
+        std::cerr << "Unhandled command: " << msg.command << std::endl;
+}
+
 bool zappy::network::Protocol::connectToServer(const std::string &host, int port) {
     try {
-        if (!_network->connect(host, port)) {
+        if (!_network->connect(host, port))
             return false;
-        }
 
         std::vector<ServerMessage> messages;
         int attempts = 0;
@@ -102,10 +106,12 @@ bool zappy::network::Protocol::connectToServer(const std::string &host, int port
         std::cout << "Sent: GRAPHIC" << std::endl;
         _authenticated = true;
 
-        requestMapSize();
-        requestTeamNames();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        requestMapContent();
+        // sent automatically
+        // requestMapSize();
+        // requestTimeUnit();
+        // requestTeamNames();
+        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // requestMapContent();
 
         return true;
 
@@ -129,132 +135,6 @@ void zappy::network::Protocol::update() {
         return;
 
     auto messages = _network->receiveMessages();
-    // Les messages sont déjà traités par les callbacks configurés dans le constructeur
-}
-
-// Implémentation des handlers selon le protocole Zappy GUI
-void zappy::network::Protocol::handleMapSize(const std::string &params) {
-    if (params.size() >= 2) {
-        try {
-            int width = std::stoi(params[0]);
-            int height = std::stoi(params[1]);
-            _gameState->initMap(width, height);
-            std::cout << "Map size received: " << width << "x" << height << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing map size: " << e.what() << std::endl;
-        }
-    }
-}
-
-void zappy::network::Protocol::handleTileContent(const std::string &params) {
-    if (params.size() >= 9) {
-        try {
-            int x = std::stoi(params[0]);
-            int y = std::stoi(params[1]);
-
-            game::Tile resources;
-            for (int i = 0; i < 7; ++i)
-                resources.addResource(static_cast<game::Resource>(i), std::stoi(params[i + 2]));
-
-            _gameState->updateTile(x, y, resources);
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing tile content: " << e.what() << std::endl;
-        }
-    }
-}
-
-void zappy::network::Protocol::handleTeamNames(const std::string &params)
-{
-    if (!params.empty()) {
-        _gameState->addTeam(params[0]);
-        std::cout << "Team added: " << params[0] << std::endl;
-    }
-}
-
-void zappy::network::Protocol::handleNewPlayer(const std::string &params)
-{
-    if (params.size() >= 6) {
-        try {
-            std::istringstream iss(params);
-            std::string command;
-            size_t playerId;
-            size_t x, y;
-            std::string orientation;
-            size_t level;
-            std::string teamName;
-
-            iss >> command >> playerId >> x >> y >> orientation >> level >> teamName;
-
-            game::Player player(
-                playerId, x, y,
-                game::convertOrientation(orientation),
-                level, teamName
-            );
-
-            _gameState->addPlayer(player);
-            std::cout << "New player " << player.id << " connected from team "
-                      << player.teamName << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing new player: " << e.what() << std::endl;
-        }
-    }
-}
-
-void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
-{
-    if (params.size() >= 4) {
-        try {
-            int playerId = std::stoi(params[0].substr(1));
-            int x = std::stoi(params[1]);
-            int y = std::stoi(params[2]);
-            game::Orientation orientation = static_cast<game::Orientation>(std::stoi(params[3]));
-
-            _gameState->updatePlayerPosition(playerId, x, y, orientation);
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing player position: " << e.what() << std::endl;
-        }
-    }
-}
-
-void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
-{
-    if (params.size() >= 2) {
-        try {
-            int playerId = std::stoi(params[0].substr(1));
-            int level = std::stoi(params[1]);
-
-            _gameState->updatePlayerLevel(playerId, level);
-            std::cout << "Player " << playerId << " reached level " << level << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing player level: " << e.what() << std::endl;
-        }
-    }
-}
-
-void zappy::network::Protocol::handlePlayerInventory(const std::string &params)
-{
-    if (params.size() >= 10) {
-        try {
-            int playerId = std::stoi(params[0].substr(1));
-
-            game::Inventory inventory;
-            for (int i = 0; i < 7; ++i)
-                inventory.addResource(static_cast<game::Resource>(i), std::stoi(params[i + 1]));
-
-            _gameState->updatePlayerInventory(playerId, inventory);
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing player inventory: " << e.what() << std::endl;
-        }
-    }
-}
-
-void zappy::network::Protocol::handleGameEnd(const std::string &params)
-{
-    if (!params.empty()) {
-        std::string winningTeam = params[0];
-        _gameState->endGame(winningTeam);
-        std::cout << "Game ended! Winning team: " << winningTeam << std::endl;
-    }
 }
 
 // Commandes GUI vers serveur selon le protocole officiel
@@ -303,77 +183,355 @@ void zappy::network::Protocol::setTimeUnit(int timeUnit)
     _network->sendCommand("sst " + std::to_string(timeUnit));
 }
 
-// Handlers pour les autres événements (stub implementations pour l'instant)
+// Handlers selon le protocole officiel
+void zappy::network::Protocol::handleMapSize(const std::string &params)
+{
+    std::istringstream iss(params);
+    size_t width;
+    size_t height;
+
+    iss >> width >> height;
+
+    _gameState->initMap(width, height);
+    std::cout << "Map size received: " << width << "x" << height << std::endl;
+}
+
+void zappy::network::Protocol::handleTileContent(const std::string &params)
+{
+    std::istringstream iss(params);
+    int x;
+    int y;
+
+    iss >> x >> y;
+
+    game::Tile tile;
+    size_t resourceCount;
+    for (size_t i = 0; i < game::RESOURCE_QUANTITY; ++i) {
+        if (!(iss >> resourceCount)) {
+            std::cerr << "Error parsing tile content" << std::endl;
+            return;
+        }
+        tile.addResource(static_cast<game::Resource>(i), resourceCount);
+    }
+
+    _gameState->updateTile(x, y, tile);
+}
+
+void zappy::network::Protocol::handleTeamNames(const std::string &params)
+{
+    std::istringstream iss(params);
+    std::string teamName;
+
+    iss >> teamName;
+
+    _gameState->addTeam(teamName);
+    std::cout << "Team added: " << params << std::endl;
+}
+
+void zappy::network::Protocol::handleNewPlayer(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    std::string command;
+    int playerId;
+    size_t x, y;
+    std::string orientation;
+    size_t level;
+    std::string teamName;
+
+    iss >> command >> playerId >> x >> y >> orientation >> level >> teamName;
+
+    game::Player player(
+        playerId, x, y,
+        game::convertOrientation(orientation),
+        level
+    );
+    player.teamName = teamName;
+
+    _gameState->addPlayer(player);
+    std::cout << "New player " << player.id <<
+        " connected from team " << player.teamName << std::endl;
+}
+
+void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+    size_t x, y;
+    std::string orientation;
+
+    iss >> playerId >> x >> y >> orientation;
+
+    _gameState->updatePlayerPosition(playerId, x, y, game::convertOrientation(orientation));
+}
+
+void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+    size_t level;
+
+    iss >> playerId >> level;
+
+    _gameState->updatePlayerLevel(playerId, level);
+    std::cout << "Player " << playerId << " reached level " << level << std::endl;
+}
+
+void zappy::network::Protocol::handlePlayerInventory(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+
+    iss >> playerId;
+
+    game::Inventory inventory;
+    size_t resourceCount;
+    for (size_t i = 0; i < game::RESOURCE_QUANTITY; ++i) {
+        if (!(iss >> resourceCount)) {
+            std::cerr << "Error parsing tile content" << std::endl;
+            return;
+        }
+        inventory.addResource(static_cast<game::Resource>(i), resourceCount);
+    }
+
+    _gameState->updatePlayerInventory(playerId, inventory);
+}
+
+void zappy::network::Protocol::handleGameEnd(const std::string &params)
+{
+    std::istringstream iss(params);
+    std::string winningTeam;
+
+    iss >> winningTeam;
+
+    _gameState->endGame(winningTeam);
+    std::cout << "Game ended! Winning team: " << winningTeam << std::endl;
+}
+
 void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
 {
-    if (!params.empty()) {
-        try {
-            int playerId = std::stoi(params[0].substr(1));
-            std::cout << "Player " << playerId << " was expelled" << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing player expulsion: " << e.what() << std::endl;
-        }
-    }
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+
+    iss >> playerId;
+
+    std::cout << "Player " << playerId << " was expelled" << std::endl;
 }
 
-void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params) {
-    if (params.size() >= 2) {
-        try {
-            int playerId = std::stoi(params[0].substr(1));
-            std::string message = params[1];
-            std::cout << "Player " << playerId << " broadcast: " << message << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing player broadcast: " << e.what() << std::endl;
-        }
-    }
+void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+    std::string message;
+
+    iss >> playerId >> message;
+
+    // Log the broadcast message
+    std::cout << "Player " << playerId << " broadcast: " << message << std::endl;
 }
 
-void zappy::network::Protocol::handleIncantationStart(const std::string &params) {
-    if (params.size() >= 3) {
-        try {
-            int x = std::stoi(params[0]);
-            int y = std::stoi(params[1]);
-            int level = std::stoi(params[2]);
-            std::cout << "Incantation started at (" << x << ", " << y << ") for level " << level << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing incantation start: " << e.what() << std::endl;
-        }
-    }
+/**
+ * @brief Handles the start of an incantation event
+ *
+ * Parses the incantation start parameters to extract the x and y coordinates
+ * and the target level of the incantation. Logs the incantation details to
+ * the console.
+ *
+ * @param params A string containing the incantation start parameters
+ *               Expected format: "X Y L #n #n ..."
+ */
+void zappy::network::Protocol::handleIncantationStart(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    size_t x, y, level;
+    std::vector<int> playerIds;
+
+    iss >> x >> y >> level;
+
+    // get player IDs from the rest of the string
+    int playerId;
+    while (iss >> playerId)
+        playerIds.push_back(playerId);
+
+    // handle the incantation
+    std::cout << "Incantation started at (" << x << ", " << y << ") for level " << level << " with players:";
+    for (const auto &playerId : playerIds)
+        std::cout << " " << playerId;
+    std::cout << std::endl;
 }
 
-void zappy::network::Protocol::handleIncantationEnd(const std::string &params) {
-    if (params.size() >= 3) {
-        try {
-            int x = std::stoi(params[0]);
-            int y = std::stoi(params[1]);
-            bool success = (params[2] == "1");
-            std::cout << "Incantation " << (success ? "succeeded" : "failed")
-                      << " at (" << x << ", " << y << ")" << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing incantation end: " << e.what() << std::endl;
-        }
-    }
+/**
+ * @brief Handles the end of an incantation event
+ *
+ * Parses the incantation end parameters to extract the x and y coordinates
+ * and the success status of the incantation. Logs the incantation result
+ * to the console.
+ *
+ * @param params A string containing the incantation end parameters
+ *               Expected format: "X Y Result", where Result is 1 (true) or 0 (false)
+ */
+void zappy::network::Protocol::handleIncantationEnd(const std::string &params)
+{
+    std::istringstream iss(params);
+    size_t x, y;
+    bool success;
+
+    iss >> x >> y >> success;
+
+    std::cout << "Incantation " << (success ? "succeeded" : "failed")
+                << " at (" << x << ", " << y << ")" << std::endl;
 }
 
-void zappy::network::Protocol::handlePlayerDeath(const std::string &params) {
-    if (!params.empty()) {
-        try {
-            int playerId = std::stoi(params[0].substr(1));
+void zappy::network::Protocol::handleEggLaying(const std::string &params)
+{
+    std::string trueParams = params;
+    removeSharp(trueParams);
 
-            _gameState->removePlayer(playerId);
-            std::cout << "Player " << playerId << " died" << std::endl;
-        } catch (const std::exception &e) {
-            std::cerr << "Error parsing player death: " << e.what() << std::endl;
-        }
-    }
+    std::istringstream iss(trueParams);
+    int playerId;
+
+    iss >> playerId;
+
+    // animation
+    std::cout << "Egg laid by player " << playerId << std::endl;
 }
 
-void zappy::network::Protocol::handleEggLaying(const std::string &params) {}
-void zappy::network::Protocol::handleResourceDrop(const std::string &params) {}
-void zappy::network::Protocol::handleResourceCollect(const std::string &params) {}
-void zappy::network::Protocol::handleEggCreated(const std::string &params) {}
-void zappy::network::Protocol::handleEggHatch(const std::string &params) {}
-void zappy::network::Protocol::handleEggDeath(const std::string &params) {}
-void zappy::network::Protocol::handleTimeUnit(const std::string &params) {}
-void zappy::network::Protocol::handleServerMessage(const std::string &params) {}
-void zappy::network::Protocol::handleMapContent(const std::string &params) {}
+void zappy::network::Protocol::handleResourceDrop(const std::string &params)
+{
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+    size_t nbResources;
+
+    iss >> playerId >> nbResources;
+
+    // animation
+    std::cout << "Player " << playerId << " dropped " << nbResources << " resources" << std::endl;
+}
+
+void zappy::network::Protocol::handleResourceCollect(const std::string &params)
+{
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+    size_t nbResources;
+
+    iss >> playerId >> nbResources;
+
+    // animation
+    std::cout << "Player " << playerId << " collected " << nbResources << " resources" << std::endl;
+}
+
+void zappy::network::Protocol::handlePlayerDeath(const std::string &params)
+{
+    // remove # from the beginning of the string
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int playerId;
+
+    iss >> playerId;
+
+    _gameState->removePlayer(playerId);
+    std::cout << "Player " << playerId << " died" << std::endl;
+}
+
+void zappy::network::Protocol::handleEggCreated(const std::string &params)
+{
+    std::istringstream iss(params);
+
+    int eggId;
+    int playerId;
+    size_t x, y;
+
+    iss >> eggId >> playerId >> x >> y;
+
+    _gameState->addEgg(eggId, playerId, x, y);
+    std::cout << "Egg created at (" << x << ", " << y << ") by player " << playerId << std::endl;
+}
+
+void zappy::network::Protocol::handleEggHatch(const std::string &params)
+{
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int eggId;
+
+    iss >> eggId;
+
+    _gameState->hatchEgg(eggId);
+    std::cout << "Egg " << eggId << " hatched" << std::endl;
+}
+
+void zappy::network::Protocol::handleEggDeath(const std::string &params)
+{
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
+    int eggId;
+
+    iss >> eggId;
+
+    _gameState->removeEgg(eggId);
+    std::cout << "Egg " << eggId << " died" << std::endl;
+}
+
+void zappy::network::Protocol::handleTimeUnit(const std::string &params)
+{
+    std::istringstream iss(params);
+    size_t timeUnit;
+
+    iss >> timeUnit;
+
+    _gameState->setFrequency(timeUnit);
+    std::cout << "Time unit set to " << timeUnit << std::endl;
+}
+
+void zappy::network::Protocol::handleServerMessage(const std::string &params)
+{
+    std::cout << "Server message: " << params << std::endl;
+}
+
+void zappy::network::Protocol::removeSharp(std::string &message)
+{
+    size_t pos = message.find('#');
+
+    while (pos != std::string::npos) {
+        message.erase(pos, 1);
+        pos = message.find('#');
+    }
+}

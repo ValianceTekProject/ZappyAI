@@ -115,21 +115,20 @@ std::vector<zappy::network::ServerMessage> zappy::network::NetworkManager::recei
 void zappy::network::NetworkManager::processBuffer()
 {
     size_t pos = 0;
+
     while ((pos = _buffer.find('\n')) != std::string::npos) {
         std::string line = _buffer.substr(0, pos);
         _buffer.erase(0, pos + 1);
 
-        if (!line.empty() && line.back() == '\r') {
+        if (!line.empty() && line.back() == '\r')
             line.pop_back();
-        }
 
         if (!line.empty()) {
             ServerMessage msg = parseMessage(line);
             _messageQueue.push(msg);
 
-            if (_messageCallback) {
+            if (_messageCallback)
                 _messageCallback(msg);
-            }
         }
     }
 }

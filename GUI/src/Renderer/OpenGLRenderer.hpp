@@ -31,7 +31,7 @@ namespace zappy {
                 bool shouldClose() const override;
 
             private:
-                std::weak_ptr<game::GameState> _gameState;
+                std::shared_ptr<game::GameState> _gameState;
 
                 GLuint _program;
         };
