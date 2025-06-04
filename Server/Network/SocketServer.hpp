@@ -26,7 +26,7 @@ namespace zappy {
  */
         constexpr int invalidSocket = -1;
 
-        class Socket {
+        class SocketServer {
            public:
             /**
      * @class SocketError
@@ -58,12 +58,12 @@ namespace zappy {
      * @param ip The server IP address.
      * @param port The server port number.
      */
-            explicit Socket(int port, const std::uint8_t nbClients);
+            explicit SocketServer(int port, const std::uint8_t nbClients);
 
             /**
      * @brief Destroys the Socket object and closes the connection if open.
      */
-            ~Socket();
+            ~SocketServer();
 
             pollfd acceptConnection();
 

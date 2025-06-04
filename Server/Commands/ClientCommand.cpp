@@ -25,6 +25,7 @@ zappy::server::CommandHandler::CommandHandler()
         {"Incantation", [this]() { handleIncantation(); }}
     };
 }
+
 std::string zappy::server::CommandHandler::_getFirstWord(
     const std::string &input) const
 {

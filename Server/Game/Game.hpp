@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "Client.hpp"
+#include "Teams/Teams.hpp"
 #include "Map/Map.hpp"
+#include "my_macros.hpp"
 #include <atomic>
 #include <chrono>
-#include "my_macros.hpp"
 
 namespace zappy {
     namespace game {
@@ -21,18 +21,24 @@ namespace zappy {
         class Game {
 
            public:
-            Game(int mapWidth, int mapHeight) : _map(mapWidth, mapHeight), _baseFreqMs(baseGameFreqMs) {}
+            Game(
+                int mapWidth, int mapHeight, std::vector<Team> teamList)
+                : _map(mapWidth, mapHeight), _teamList(std::move(teamList)), _baseFreqMs(baseGameFreqMs)
+            {}
 
             ~Game() = default;
 
-            void gameLoop();
+            void runGame();
             void setRunningState(RunningState run) { this->_isRunning = run; };
 
-            MapServer &getMap() { return _map; }
+            bool handleTeamJoin(int clientSocket, const std::string &teamName);
+
+            MapServer &getMap() { return this->_map; }
+            std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };
 
            private:
             MapServer _map;
-            // std::vector<zappy::game::Team> _teamList;
+            std::vector<zappy::game::Team> _teamList;
             std::chrono::milliseconds _baseFreqMs;
             std::atomic<RunningState> _isRunning = RunningState::PAUSE;
 
