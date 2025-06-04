@@ -19,7 +19,7 @@ namespace zappy {
 
         class MapServer : public Map {
            public:
-            MapServer() = default;
+            MapServer(const size_t &x, const size_t &y) : Map(x, y) {}
             ~MapServer() = default;
 
             void mapInit();
