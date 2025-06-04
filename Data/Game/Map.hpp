@@ -16,7 +16,7 @@ namespace zappy {
         class Map
         {
             public:
-                Map(const size_t &width, const size_t &height) { init(width, height); }
+                Map(const size_t &width = 0, const size_t &height = 0) { _init(width, height); }
                 ~Map() = default;
 
                 const size_t &getWidth() const { return this->_width; }
@@ -30,8 +30,8 @@ namespace zappy {
 
                 void setTile(const size_t &x, const size_t &y, const Tile &tile);
 
-            private:
-                void init(const size_t &width, const size_t &height);
+            protected:
+                void _init(const size_t &width, const size_t &height);
 
                 size_t _width;
                 size_t _height;
