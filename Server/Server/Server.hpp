@@ -19,10 +19,11 @@
 #include <vector>
 
 #include "Client/Client.hpp"
-#include "Socket.hpp"
+#include "Network/Socket.hpp"
 #include "Error/Error.hpp"
 #include "Game.hpp"
 #include "my_macros.hpp"
+#include "Utils.hpp"
 
 namespace zappy {
 
@@ -43,12 +44,16 @@ namespace zappy {
             void handleTeamJoin(int clientSocket, const std::string &teamName);
             void handleClientMessage(int clientSocket, std::string buffer);
 
-            void stopServer(int sig);
-            void closeClients();
-            static void signalWrapper(int sig);
-            static std::function<void(int)> takeSignal;
+            void attachObserver(std::shared_ptr<zappy::observer::IObserver> observer);
+            void notifyObservers(int sig);
+
+            void setRunningState(RunningState state) { _serverRun = state; }
+            void clearTeams() { _teamList.clear(); }
 
            private:
+
+            std::vector<std::shared_ptr<zappy::observer::IObserver>> _observers;
+
             std::unique_ptr<zappy::game::Game> _game;
             std::unique_ptr<server::Socket> _socket = nullptr;
 
@@ -75,7 +80,5 @@ namespace zappy {
             void _parseFlagsInt(int &index, std::string arg, std::string value);
         };
 
-        // Encapsuled Functions
-        void my_signal(int __sig, sighandler_t __handler);
     }  // namespace server
 }  // namespace zappy
