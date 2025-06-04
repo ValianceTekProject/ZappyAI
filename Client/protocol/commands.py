@@ -36,7 +36,6 @@ class Command:
         self.response = None
         self.id = 0
 
-
 class CommandManager:
     """
     Gère l'envoi des commandes, la réception des réponses et leur traitement.
@@ -70,7 +69,7 @@ class CommandManager:
 
     def _send(self, cmd: Command) -> Optional[Command]:
         """
-        Envoie une commande via la connexion, l’ajoute aux réponses en attente.
+        Envoie une commande via la connexion, l'ajoute aux réponses en attente.
         """
         success = self.conn.send_command(cmd.type, *cmd.args)
         if not success:
@@ -152,10 +151,14 @@ class CommandManager:
         for raw in responses:
             response = raw.strip()
 
-            if self._handle_dead(response, completed): continue
-            if self._handle_elevation_underway(response): continue
-            if self._handle_current_level(response, completed): continue
-            if self._handle_general_response(response, completed): continue
+            if self._handle_dead(response, completed):
+                continue
+            if self._handle_elevation_underway(response):
+                continue
+            if self._handle_current_level(response, completed):
+                continue
+            if self._handle_general_response(response, completed):
+                continue
 
             logger.warning(f"Aucune commande en attente ne correspond à: {response!r}")
 

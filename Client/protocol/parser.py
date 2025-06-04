@@ -93,32 +93,32 @@ class Parser:
         Vérifie si la réponse est une erreur : 'ko' ou 'eject ...'
         """
         s = response.strip().lower()
-        return s == ResponseType.KO or s.startswith(ResponseType.EJECT)
+        return s == ResponseType.KO.value or s.startswith(ResponseType.EJECT.value)
 
     @staticmethod
     def is_success_response(response: str) -> bool:
         """
         Vérifie si la réponse est 'ok'.
         """
-        return response.strip().lower() == ResponseType.OK
+        return response.strip().lower() == ResponseType.OK.value
 
     @staticmethod
     def is_dead_response(response: str) -> bool:
         """
         Vérifie si la réponse est 'dead'.
         """
-        return response.strip().lower() == ResponseType.DEAD
+        return response.strip().lower() == ResponseType.DEAD.value
 
     @staticmethod
     def is_elevation_underway(response: str) -> bool:
         """
         Vérifie si la réponse est 'Elevation underway'.
         """
-        return response.strip().lower() == ResponseType.ELEVATION_UNDERWAY
+        return response.strip().lower() == ResponseType.ELEVATION_UNDERWAY.value
 
     @staticmethod
     def is_current_level_response(response: str) -> bool:
         """
         Vérifie si la réponse commence par 'Current level:'.
         """
-        return response.strip().lower().startswith(ResponseType.CURRENT_LEVEL)
+        return response.strip().lower().startswith(ResponseType.CURRENT_LEVEL.value)
