@@ -27,7 +27,7 @@ namespace zappy {
  */
         constexpr int invalidSocket = -1;
 
-        class Socket {
+        class SocketServer {
            public:
             /**
      * @class SocketError

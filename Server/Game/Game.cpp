@@ -5,11 +5,46 @@
 ** Game
 */
 
-#include "Game.hpp" 
+#include "Game.hpp"
+#include "Player/Player.hpp"
 #include "Server.hpp"
+#include <algorithm>
 #include <thread>
 
-void zappy::game::Game::gameLoop()
+bool zappy::game::Game::handleTeamJoin(
+    int clientSocket, const std::string &teamName)
+{
+    auto it = std::find_if(this->_teamList.begin(), this->_teamList.end(),
+        [&teamName](const zappy::game::Team &team) {
+            return team.getName() == teamName;
+        });
+
+    if (it == this->_teamList.end()) {
+        return false;
+    }
+
+    for (const auto &team: this->_teamList) {
+        for (const auto &player: team.getPlayerList()) {
+            const auto &socket = player->getClient();
+            std::cout << "Socket: " << clientSocket << std::endl;
+            std::cout << "Client: " << socket.getSocket() << std::endl;
+            if (socket.getSocket() == clientSocket) {
+                std::cout << "Déjà dans une équipe" << std::endl;
+                return false;
+            }
+        }
+    }
+
+    zappy::server::Client user(clientSocket);
+    std::unique_ptr<zappy::game::ServerPlayer> newPlayer = std::make_unique<zappy::game::ServerPlayer>(std::move(user));
+    std::cout << "Name: " << clientSocket << " " << newPlayer->getClient().getSocket() << std::endl;
+    user.setState(zappy::server::ClientState::CONNECTED);
+
+    it->addPlayer(std::move(newPlayer));
+    return true;
+}
+
+void zappy::game::Game::runGame()
 {
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
@@ -34,3 +69,4 @@ void zappy::game::Game::gameLoop()
         std::this_thread::sleep_for(std::chrono::milliseconds(1)); // temporaire
     }
 }
+
