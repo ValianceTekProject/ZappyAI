@@ -17,18 +17,18 @@ namespace zappy {
                 size_t x;
                 size_t y;
 
-                explicit Egg(int id, size_t x, size_t y) :
-                    _id(id), _fatherId(-1), x(x), y(y)
+                explicit Egg(const int &id, const int &fatherId, const size_t &x, const size_t &y) :
+                    x(x), y(y), _id(id), _fatherId(fatherId)
                 {}
-                explicit Egg(int id, int fatherId, size_t x, size_t y) :
-                    _id(id), _fatherId(fatherId), x(x), y(y)
+                explicit Egg(const int &id, const size_t &x, const size_t &y) :
+                    Egg(id, -1, x, y)
                 {}
                 ~Egg() = default;
 
-                const int getId() const { return this->_id; }
+                int getId() const { return this->_id; }
 
                 int getFatherId() const { return this->_fatherId; }
-                void setFatherId(int id) { this->_fatherId = id; }
+                void setFatherId(const int &id) { this->_fatherId = id; }
 
             private:
                 const int _id;

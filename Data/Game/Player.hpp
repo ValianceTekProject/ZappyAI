@@ -7,7 +7,6 @@
 
 #include "Egg.hpp"
 #include "Inventory.hpp"
-#include <string>
 
 namespace zappy {
     namespace game {
