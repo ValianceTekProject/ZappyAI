@@ -17,3 +17,7 @@ B-OOP-400_nanotekspice
 zappy_*
 build
 .build
+
+assets/
+zappy_ref-v3.0.0/
+__pycache__/
