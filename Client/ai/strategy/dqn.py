@@ -66,6 +66,19 @@ class DeepQNetwork(nn.Module):
             maxQ = torch.argmax(q_values)
             return maxQ.item()
 
+    def calculate_reward(self, action, result, old_state, new_state):
+        reward = 0
+        if result == "ko":
+            return -0.1
+        old_food = old_state[0] * 100
+        new_food = new_state[0] * 100
+        if new_food > old_food:
+            reward += 10
+        if old_state[1] > new_state[1]:
+            reward += 30
+        if result == "dead":
+            reward -= 100
+        return reward
 
     """State
     [
