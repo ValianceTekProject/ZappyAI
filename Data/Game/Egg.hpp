@@ -17,10 +17,10 @@ namespace zappy {
                 size_t x;
                 size_t y;
 
-                explicit Egg(const int &id, const int &fatherId, const size_t &x, const size_t &y) :
+                Egg(const int &id, const int &fatherId, const size_t &x, const size_t &y) :
                     x(x), y(y), _id(id), _fatherId(fatherId)
                 {}
-                explicit Egg(const int &id, const size_t &x, const size_t &y) :
+                Egg(const int &id, const size_t &x, const size_t &y) :
                     Egg(id, -1, x, y)
                 {}
                 ~Egg() = default;
@@ -31,7 +31,7 @@ namespace zappy {
                 void setFatherId(const int &id) { this->_fatherId = id; }
 
             private:
-                const int _id;
+                int _id;
                 int _fatherId;
         };
     }

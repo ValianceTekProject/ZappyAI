@@ -7,7 +7,7 @@
 
 #include "Map.hpp"
 
-void zappy::game::Map::init(const size_t &width, const size_t &height)
+void zappy::game::Map::_init(const size_t &width, const size_t &height)
 {
     this->_width = width;
     _height = height;
