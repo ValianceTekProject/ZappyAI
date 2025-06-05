@@ -24,6 +24,8 @@ namespace zappy {
         enum class ClientState {
             WAITING_TEAM_NAME,
             CONNECTED,
+            DISCONNECTED,
+            UNDEFINED
         };
 
         class Client {
