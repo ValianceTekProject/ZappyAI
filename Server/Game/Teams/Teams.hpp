@@ -25,17 +25,12 @@ namespace zappy {
             ~Team() = default;
 
             Team(Team&&) noexcept = default;
-            std::string getName() const { return _name; }
+            std::string getName() const { return this->_name; }
+            void removePlayer(int playerSocket);
 
-            const std::vector<std::unique_ptr<ServerPlayer>> &getPlayerList() const
-            {
-                return this->_playerList;
-            }
+            const std::vector<std::unique_ptr<ServerPlayer>> &getPlayerList() const;
 
-            void addPlayer(std::unique_ptr<ServerPlayer> player)
-            {
-                this->_playerList.push_back(std::move(player));
-            }
+            void addPlayer(std::unique_ptr<ServerPlayer> player);
 
            private:
             const std::string _name;
