@@ -59,8 +59,3 @@ class Message:
     def validate_message(msg_data: Dict[str, Any]) -> bool:
         """Valide la structure d'un message."""
         pass
-
-    @staticmethod
-    def get_message_age(timestamp: float) -> float:
-        """Retourne l'âge d'un message en secondes."""
-        pass
