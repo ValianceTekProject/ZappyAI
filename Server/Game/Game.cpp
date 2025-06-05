@@ -8,8 +8,33 @@
 #include "Game.hpp"
 #include "Player/Player.hpp"
 #include "Server.hpp"
+#include "Teams/Teams.hpp"
 #include <algorithm>
 #include <thread>
+
+void zappy::game::Game::_addPlayerToTeam(
+    zappy::game::Team &team, int clientSocket)
+{
+    zappy::server::Client user(clientSocket);
+    std::unique_ptr<zappy::game::ServerPlayer> newPlayer =
+        std::make_unique<zappy::game::ServerPlayer>(std::move(user));
+    user.setState(zappy::server::ClientState::CONNECTED);
+
+    team.addPlayer(std::move(newPlayer));
+}
+
+bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
+{
+    for (const auto &team : this->_teamList) {
+        for (const auto &player : team.getPlayerList()) {
+            const auto &socket = player->getClient();
+            if (socket.getSocket() == clientSocket) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 bool zappy::game::Game::handleTeamJoin(
     int clientSocket, const std::string &teamName)
@@ -19,28 +44,12 @@ bool zappy::game::Game::handleTeamJoin(
             return team.getName() == teamName;
         });
 
-    if (it == this->_teamList.end()) {
+    if (it == this->_teamList.end())
         return false;
-    }
 
-    for (const auto &team: this->_teamList) {
-        for (const auto &player: team.getPlayerList()) {
-            const auto &socket = player->getClient();
-            std::cout << "Socket: " << clientSocket << std::endl;
-            std::cout << "Client: " << socket.getSocket() << std::endl;
-            if (socket.getSocket() == clientSocket) {
-                std::cout << "Déjà dans une équipe" << std::endl;
-                return false;
-            }
-        }
-    }
-
-    zappy::server::Client user(clientSocket);
-    std::unique_ptr<zappy::game::ServerPlayer> newPlayer = std::make_unique<zappy::game::ServerPlayer>(std::move(user));
-    std::cout << "Name: " << clientSocket << " " << newPlayer->getClient().getSocket() << std::endl;
-    user.setState(zappy::server::ClientState::CONNECTED);
-
-    it->addPlayer(std::move(newPlayer));
+    if (this->_checkAlreadyInTeam(clientSocket) == true)
+        return false;
+    this->_addPlayerToTeam(*it, clientSocket);
     return true;
 }
 
@@ -66,7 +75,7 @@ void zappy::game::Game::runGame()
             lastUpdate = now;
             continue;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(1)); // temporaire
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(1));  // temporaire
     }
 }
-
