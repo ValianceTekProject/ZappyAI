@@ -26,15 +26,12 @@ void zappy::server::Server::_handleClientCommand(const std::string &command, str
         if (command.compare(team.getName()) == 0) {
             bool hasJoin = this->_game->handleTeamJoin(pfd.fd, team.getName());
             if (hasJoin) {
-                std::string msg = std::to_string(this->_clientNb - team.getPlayerList().size());
-                this->_socket->sendMessage(pfd.fd, msg);
-                msg = std::to_string(this->_width) + " " + std::to_string(this->_height);
-                this->_socket->sendMessage(pfd.fd, msg);
-                return;
+                this->_socket->sendMessage(pfd.fd, team.getName());
+                break;
             }
             this->_socket->sendMessage(pfd.fd, "Invalid team");
-            return;
-        }
+            break;
+        } else
+            handleClientMessage(pfd.fd, command);
     }
-    handleClientMessage(pfd.fd, command);
 }
