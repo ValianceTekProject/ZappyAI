@@ -10,6 +10,7 @@ import select
 from typing import Tuple
 from protocol.connection import Connection
 from protocol.commands import CommandManager, CommandStatus
+from protocol.message_manager import MessageManager
 from utils.timing import TimingManager
 from utils.game_state import GameState
 from utils.logger import logger
@@ -26,6 +27,7 @@ class Agent:
         self.timing = TimingManager(self.freq)
         self.state = GameState()
         self.commands = CommandManager(self.conn, self.timing, self.state)
+        self.msg_manager = MessageManager(self.commands)
         self.planner = Planner(self.commands, self.state)
         self.initialized = False
         self.init_stage = 0
@@ -40,13 +42,12 @@ class Agent:
         """
         while True:
             responses = self.read_non_blocking()
-            completed = self.commands.process_responses(responses)
+            completed = self.msg_manager.process_message(responses)
 
+            if self.msg_manager.is_dead:
+                logger.info(f"Agent is dead at level {self.state.level}")
+                return
             for cmd in completed:
-                if cmd.status == CommandStatus.DEAD:
-                    logger.info(f"Agent is dead at level {self.state.level}")
-                    return
-
                 if cmd.type == CommandType.LOOK:
                     self.state.update_vision(cmd.response, self.state.get_position(), self.state.get_orientation())
 
