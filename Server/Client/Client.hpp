@@ -40,6 +40,7 @@ namespace zappy {
             ~Client() = default;
 
             int getSocket() const { return this->_socket; }
+
             ClientState getState() const { return this->_state; }
 
             void setState(ClientState state) { this->_state = state; }

@@ -41,7 +41,6 @@ namespace zappy {
             int getClientNb() const { return this->_clientNb; }
 
             void runLoop();
-            void handleTeamJoin(int clientSocket, const std::string &teamName);
             void handleClientMessage(int clientSocket, std::string buffer);
 
             void attachObserver(std::shared_ptr<zappy::observer::IObserver> observer);
@@ -76,6 +75,7 @@ namespace zappy {
             void _parseFlags(int argc, char const *argv[]);
             void _parseName(int &index, char const *argv[]);
             void _parseFlagsInt(int &index, std::string arg, std::string value);
+            void _checkParams();
         };
 
     }  // namespace server
