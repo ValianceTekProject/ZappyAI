@@ -53,6 +53,20 @@ bool zappy::game::Game::handleTeamJoin(
     return true;
 }
 
+void zappy::game::Game::removeFromTeam(int clientSocket)
+{
+    std::cout << "Trying to remove: " << clientSocket << std::endl;
+    for (auto &team: this->_teamList) {
+        for (auto &player: team.getPlayerList()) {
+            std::cout << "Player: " << player->getClient().getSocket() << std::endl;
+            if (player->getClient().getSocket() == clientSocket) {
+                std::cout << "Player: " << clientSocket << " removed" << std::endl;
+                team.removePlayer(clientSocket);
+            }
+        }
+    }
+}
+
 void zappy::game::Game::runGame()
 {
     this->_isRunning = RunningState::RUN;
