@@ -16,9 +16,7 @@
 #include <sys/socket.h>
 #include <vector>
 
-
 namespace zappy {
-    
 
     namespace server {
         /**
@@ -97,9 +95,9 @@ namespace zappy {
             uint8_t _nbClients;
             int _port;           ///< Port number.
             socklen_t _addrlen;  ///< Length of the socket address.
-            std::unique_ptr<struct sockaddr_in>
-                _address = nullptr;  ///< Address structure for the socket.
-            
+            std::unique_ptr<struct sockaddr_in> _address =
+                nullptr;  ///< Address structure for the socket.
+
             void _initSocket();
         };
 

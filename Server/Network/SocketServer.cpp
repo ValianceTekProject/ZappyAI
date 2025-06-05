@@ -67,12 +67,13 @@ void zappy::server::SocketServer::createConnection()
     }
 }
 
-void zappy::server::SocketServer::sendMessage(int clientSocket, const std::string &msg) const
+void zappy::server::SocketServer::sendMessage(
+    int clientSocket, const std::string &msg) const
 {
     std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
             strlen(messageFormat.c_str()), 0) == -1) {
-        throw SocketError("Send Failed " + msg );
+        throw SocketError("Send Failed " + msg);
     }
 }
 
@@ -83,9 +84,9 @@ int zappy::server::SocketServer::getSocket() const
 
 std::string zappy::server::SocketServer::getServerInformation()
 {
-    constexpr short BUFFSIZE = 256;
+    constexpr short buffSize = 256;
 
-    char buf[BUFFSIZE];
+    char buf[buffSize];
     std::string str;
     ssize_t bytes_read = 0;
 
@@ -96,10 +97,10 @@ std::string zappy::server::SocketServer::getServerInformation()
         if (bytes_read == 0) {
             close(this->_socket);
             this->_socket = invalidSocket;
-            throw SocketError("Server disconected");
+            throw SocketError("Server disconnected");
         }
         str.append(buf, bytes_read);
-        if (bytes_read < BUFFSIZE)
+        if (bytes_read < buffSize)
             break;
     }
     std::cout << str << std::endl;
