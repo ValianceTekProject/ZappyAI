@@ -7,17 +7,16 @@
 
 #pragma once
 
+#include <cstdint>
 #include <exception>
 #include <memory>
 #include <netinet/in.h>
 #include <string>
 #include <sys/poll.h>
 #include <sys/socket.h>
-#include <cstdint>
-
+#include <vector>
 
 namespace zappy {
-    
 
     namespace server {
         /**
@@ -89,15 +88,16 @@ namespace zappy {
      * @return The socket descriptor as an integer.
      */
             int getSocket() const;
+            void getData(std::vector<struct pollfd> &fds) const;
 
            private:
-            int _socket;         ///< File descriptor for the socket.
+            int _socket;  ///< File descriptor for the socket.
             uint8_t _nbClients;
             int _port;           ///< Port number.
             socklen_t _addrlen;  ///< Length of the socket address.
-            std::unique_ptr<struct sockaddr_in>
-                _address = nullptr;  ///< Address structure for the socket.
-            
+            std::unique_ptr<struct sockaddr_in> _address =
+                nullptr;  ///< Address structure for the socket.
+
             void _initSocket();
         };
 
