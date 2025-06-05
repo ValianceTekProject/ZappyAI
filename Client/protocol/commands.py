@@ -151,8 +151,6 @@ class CommandManager:
         for raw in responses:
             response = raw.strip()
 
-            if self._handle_dead(response, completed):
-                continue
             if self._handle_elevation_underway(response):
                 continue
             if self._handle_current_level(response, completed):
@@ -160,34 +158,14 @@ class CommandManager:
             if self._handle_general_response(response, completed):
                 continue
 
-            logger.warning(f"Aucune commande en attente ne correspond à: {response!r}")
-
         self._handle_timeouts(completed)
         return completed
-
-    def _handle_dead(self, response: str, completed: List[Command]) -> bool:
-        """
-        Gère une réponse 'dead' (mort du joueur).
-        """
-        if Parser.is_dead_response(response):
-            if self.pending_responses:
-                cmd = self.pending_responses.pop(0)
-                cmd.response = response
-                cmd.status = CommandStatus.DEAD
-                self.command_history.append(cmd)
-                completed.append(cmd)
-                logger.debug(f"Commande {cmd.id} DEAD: {response}")
-            else:
-                logger.warning("Réception de 'dead' sans commande en attente.")
-            return True
-        return False
 
     def _handle_elevation_underway(self, response: str) -> bool:
         """
         Ignore la réponse intermédiaire 'Elevation underway'.
         """
         if Parser.is_elevation_underway(response):
-            logger.debug(f"Ignorée: incantation intermédiaire: {response}")
             return True
         return False
 
