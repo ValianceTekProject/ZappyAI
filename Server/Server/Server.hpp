@@ -76,6 +76,11 @@ namespace zappy {
             void _parseName(int &index, char const *argv[]);
             void _parseFlagsInt(int &index, std::string arg, std::string value);
             void _checkParams();
+
+            bool _handleNewConnection(struct pollfd &pfd);
+            std::string _getClientCommand(const struct pollfd &fd);
+            ClientState _handleClientDisconnection(const std::string &content, struct pollfd &fd);
+            void _handleClientCommand(const std::string &command, struct pollfd &pfd);
         };
 
     }  // namespace server
