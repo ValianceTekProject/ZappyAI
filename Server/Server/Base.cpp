@@ -66,6 +66,16 @@ void zappy::server::Server::_parseFlagsInt(int &index, std::string arg, std::str
     index += 1;
 }
 
+void zappy::server::Server::_checkParams()
+{
+    if (this->_port == zappy::noValue || this->_width == zappy::noValue ||
+        this->_height == zappy::noValue || this->_clientNb == zappy::noValue ||
+        this->_freq == zappy::noValue || this->_namesTeam.empty()) {
+        throw error::InvalidArg(
+            "Missing arguments: -p -x -y -c -f -n <names>");
+    }
+}
+
 void zappy::server::Server::_parseFlags(int argc, char const *argv[])
 {
     if (argv == nullptr || argv[0] == nullptr)
@@ -83,12 +93,7 @@ void zappy::server::Server::_parseFlags(int argc, char const *argv[])
         this->_parseFlagsInt(i, currentArg, argv[i + 1]);
     }
 
-    if (this->_port == zappy::noValue || this->_width == zappy::noValue ||
-        this->_height == zappy::noValue || this->_clientNb == zappy::noValue ||
-        this->_freq == zappy::noValue || this->_namesTeam.empty()) {
-        throw error::InvalidArg(
-            "Missing arguments: -p -x -y -c -f -n <names>");
-    }
+    this->_checkParams();
 }
 
 void zappy::server::Server::runServer()

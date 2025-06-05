@@ -72,7 +72,7 @@ void zappy::server::SocketServer::sendMessage(int clientSocket, const std::strin
     std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
             strlen(messageFormat.c_str()), 0) == -1) {
-        throw SocketError("Send Failed");
+        throw SocketError("Send Failed " + msg );
     }
 }
 
