@@ -7,8 +7,8 @@
 
 import argparse
 import sys
-from protocol.connection import Connection
-from ai.agent import Agent
+import time
+from agent_threads import AgentThreads
 from config import Constants
 from utils.logger import logger
 
@@ -21,14 +21,23 @@ def main():
         parser.add_argument('--freq', type=int, default=Constants.FREQ_DEFAULT.value)
         args = parser.parse_args()
 
-        conn = Connection(args.host, args.port)
-        conn.handshake(args.team)
+        pool = AgentThreads(args.host, args.port, args.team, args.freq)
+        pool.start_initial_agent()
 
-        agent = Agent(conn, freq=args.freq)
-        agent.run_loop()
+        while True:
+            with pool._lock:
+                alive = len(pool._agents)
+            if alive == 0:
+                logger.info("Tous les agents sont morts, arrêt automatique du programme.")
+                break
+            time.sleep(0.1)
+
+        pool.close_client()
+        return 0
+
     except Exception as e:
         logger.error(f"Erreur fatale: {e}")
-        sys.exit(84)
+        return 84
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
