@@ -4,15 +4,19 @@
 ## File description:
 ## dqn
 ##
-
-from typing import List, Dict, Any, Optional, Tuple
+import random
 from collections import deque
 import numpy as np
 from ...config import CommandType, GameStates
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
-class DeepQNetwork:
-    def __init__(self, hiddenLayerSize = 1, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
+
+class DeepQNetwork(nn.Module):
+    def __init__(self, hiddenLayerSize = 32, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
                  epsilon_min = 0.01, batch_size = 64):
+        super().__init__()
         self.hidden_layer_size = hiddenLayerSize
         self.learning_rate = learning_rate
         self.available_state = list(GameStates)
@@ -36,10 +40,32 @@ class DeepQNetwork:
         self.state_size = 10
         self.input_size = self.state_size
 
+        self.fc1 = nn.Linear(self.input_size, self.hidden_layer_size)
+        self.fc2 = nn.Linear(self.hidden_layer_size, self.output_size)
+
+        self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
+
     def get_action_form_index(self, index: int) -> CommandType:
         if index < 0:
             return CommandType.FORWARD
         return self.main_actions[index]
+
+    def forward(self, x):
+        logits = self.fc1(x)
+        logits = torch.relu(logits)
+        logits = self.fc2(logits)
+        return logits
+
+    def choose_action(self, state):
+        state = torch.from_numpy(state).float()
+        if random.random() < self.epsilon:
+            return random.randint(0, 4)
+        else:
+            state_batch = torch.unsqueeze(state, 0)
+            q_values = self.forward(state_batch)
+            maxQ = torch.argmax(q_values)
+            return maxQ.item()
+
 
     """State
     [
