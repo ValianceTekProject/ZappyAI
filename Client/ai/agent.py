@@ -18,12 +18,17 @@ from config import CommandType
 from ai.strategy.planner import Planner
 
 class Agent:
-    def __init__(self, connection: Connection, freq: int):
-        """
-        Initialise un nouvel agent"
-        """
+
+    _next_id = 0
+
+    def __init__(self, connection: Connection, freq: int, pool):
         self.conn = connection
         self.freq = freq
+        self.pool = pool
+
+        self.agent_id = Agent._next_id
+        Agent._next_id += 1
+
         self.timing = TimingManager(self.freq)
         self.state = GameState()
         self.commands = CommandManager(self.conn, self.timing, self.state)
@@ -45,6 +50,7 @@ class Agent:
             completed = self.msg_manager.process_message(responses)
 
             if self.msg_manager.is_dead:
+                self.pool.agent_dead(self)
                 logger.info(f"Agent is dead at level {self.state.level}")
                 return
             for cmd in completed:
