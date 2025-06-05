@@ -252,7 +252,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
     player.teamName = teamName;
 
     _gameState->addPlayer(player);
-    std::cout << "New player " << player.id <<
+    std::cout << "New player " << player.getId() <<
         " connected from team " << player.teamName << std::endl;
 }
 

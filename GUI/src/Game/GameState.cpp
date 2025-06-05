@@ -7,18 +7,6 @@
 
 #include "GameState.hpp"
 
-void zappy::game::GameState::addEgg(
-    const int &eggId,
-    const int &playerId,
-    const size_t &x,
-    const size_t &y
-) {
-    Player egg(playerId, x, y);
-    egg.eggId = eggId;
-
-    _players.push_back(egg);
-}
-
 void zappy::game::GameState::updatePlayerPosition(
     const int &id,
     const size_t &x,
@@ -48,31 +36,23 @@ void zappy::game::GameState::updatePlayerInventory(const int &id, const Inventor
 
 void zappy::game::GameState::hatchEgg(const int &eggId)
 {
-    Player &egg = getEggById(eggId);
+    Egg &egg = getEggById(eggId);
     size_t x = egg.x;
     size_t y = egg.y;
 
-    std::vector<Player &> players = getPlayersByCoord(x, y);
-
-    // remove players that have already hatched
-    for (auto it = players.begin(); it != players.end(); it++) {
-        if (it->hasHatch) {
-            players.erase(it);
-            it--;
-        }
-    }
+    std::vector<Player> players = getPlayersByCoord(x, y);
 
     if (players.size() == 0)
         return;
-    players[0].hatch();
+    players[0].setFatherId(egg.getFatherId());
     removeEgg(eggId);
 }
 
 void zappy::game::GameState::removeEgg(const int &eggId)
 {
-    for (auto it = _players.begin(); it != _players.end(); it++) {
-        if (it->eggId == eggId) {
-            _players.erase(it);
+    for (auto it = _eggs.begin(); it != _eggs.end(); it++) {
+        if (it->getId() == eggId) {
+            _eggs.erase(it);
             return;
         }
     }
@@ -82,7 +62,7 @@ void zappy::game::GameState::removeEgg(const int &eggId)
 void zappy::game::GameState::removePlayer(const int &id)
 {
     for (auto it = _players.begin(); it != _players.end(); it++) {
-        if (it->id == id) {
+        if (it->getId() == id) {
             _players.erase(it);
             return;
         }
@@ -90,22 +70,22 @@ void zappy::game::GameState::removePlayer(const int &id)
     throw GameError("Player " + std::to_string(id) + " not found", "Game");
 }
 
-std::vector<zappy::game::Player &> zappy::game::GameState::getPlayersByCoord(const size_t &x, const size_t &y)
+std::vector<zappy::game::Player> zappy::game::GameState::getPlayersByCoord(const size_t &x, const size_t &y)
 {
-    std::vector<Player &> players;
+    std::vector<Player> players;
 
     for (Player &player : _players) {
-        if (player.id != -1 && player.x == x && player.y == y)
+        if (player.getId() != -1 && player.x == x && player.y == y)
             players.push_back(player);
     }
     return players;
 }
 
-zappy::game::Player &zappy::game::GameState::getEggById(const int &eggId)
+zappy::game::Egg &zappy::game::GameState::getEggById(const int &eggId)
 {
-    for (Player &player : _players) {
-        if (player.eggId == eggId)
-            return player;
+    for (Egg &egg : this->_eggs) {
+        if (egg.getId() == eggId)
+            return egg;
     }
     throw GameError("Egg " + std::to_string(eggId) + " not found", "Game");
 }
@@ -113,7 +93,7 @@ zappy::game::Player &zappy::game::GameState::getEggById(const int &eggId)
 zappy::game::Player &zappy::game::GameState::getPlayerById(const int &id)
 {
     for (Player &player : _players) {
-        if (player.id == id)
+        if (player.getId() == id)
             return player;
     }
     throw GameError("Player " + std::to_string(id) + " not found", "Game");

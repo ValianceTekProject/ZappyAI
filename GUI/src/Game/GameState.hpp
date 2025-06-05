@@ -18,22 +18,22 @@ namespace zappy {
                 GameState() : _frequency(100) {}
                 ~GameState() = default;
 
-                void setFrequency(const size_t &frequency) { _frequency = frequency; }
-                void initMap(const size_t &width, const size_t &height) { _map.init(width, height); }
+                void setFrequency(const size_t &frequency) { this->_frequency = frequency; }
+                void initMap(const size_t &width, const size_t &height) { this->_map = Map(width, height); }
 
-                size_t getFrequency() const { return _frequency; }
+                size_t getFrequency() const { return this->_frequency; }
 
-                void updateTile(const size_t &x, const size_t &y, Tile &tile) { _map.setTile(x, y, tile); }
+                void updateTile(const size_t &x, const size_t &y, Tile &tile) { this->_map.setTile(x, y, tile); }
 
-                void addTeam(const std::string &teamName) { _teams.push_back(teamName); }
+                void addTeam(const std::string &teamName) { this->_teams.push_back(teamName); }
 
                 void addEgg(
                     const int &eggId,
-                    const int &playerId,
+                    const int &fatherId,
                     const size_t &x,
                     const size_t &y
-                );
-                void addPlayer(Player &player) { _players.push_back(player); }
+                ) { this->_eggs.push_back(Egg(eggId, fatherId, x, y)); }
+                void addPlayer(Player &player) {this-> _players.push_back(player); }
 
                 void updatePlayerPosition(
                     const int &id,
@@ -49,16 +49,17 @@ namespace zappy {
                 void removeEgg(const int &eggId);
                 void removePlayer(const int &id);
 
-                Player &getEggById(const int &eggId);
+                Egg &getEggById(const int &eggId);
                 Player &getPlayerById(const int &id);
 
                 void endGame(const std::string &teamName);
 
             private:
-                std::vector<Player &> getPlayersByCoord(const size_t &x, const size_t &y);
+                std::vector<Player> getPlayersByCoord(const size_t &x, const size_t &y);
 
                 size_t _frequency;
 
+                std::vector<Egg> _eggs;
                 std::vector<Player> _players;
                 std::vector<std::string> _teams;
 

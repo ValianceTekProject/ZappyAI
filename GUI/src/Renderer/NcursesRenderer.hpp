@@ -32,7 +32,7 @@ namespace zappy {
                 bool shouldClose() const override { return _shouldClose; }
 
             private:
-                std::weak_ptr<game::GameState> _gameState;
+                std::shared_ptr<game::GameState> _gameState;
                 bool _shouldClose;
 
                 WINDOW *_window;
