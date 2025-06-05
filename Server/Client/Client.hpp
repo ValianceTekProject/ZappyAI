@@ -12,9 +12,11 @@
 #include <mutex>
 #include <queue>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include "Inventory.hpp"
+#include "my_macros.hpp"
 
 namespace zappy {
     namespace server {
@@ -35,6 +37,7 @@ namespace zappy {
             ~Client() = default;
 
             int getSocket() const { return this->_socket; }
+
             ClientState getState() const { return this->_state; }
 
             void setState(ClientState state) { this->_state = state; }
