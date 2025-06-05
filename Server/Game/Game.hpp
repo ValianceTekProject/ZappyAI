@@ -32,6 +32,7 @@ namespace zappy {
             void setRunningState(RunningState run) { this->_isRunning = run; };
 
             bool handleTeamJoin(int clientSocket, const std::string &teamName);
+            void removeFromTeam(int clientSocket);
 
             MapServer &getMap() { return this->_map; }
             std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };

@@ -67,22 +67,12 @@ void zappy::server::SocketServer::createConnection()
     }
 }
 
-<<<<<<< HEAD
-void zappy::server::SocketServer::sendMessage(
-    int clientSocket, const std::string &msg) const
-=======
-<<<<<<<< HEAD:Server/Network/Socket.cpp
-void zappy::server::SocketServer::sendMessage(
-    int clientSocket, const std::string &msg) const
-========
 void zappy::server::SocketServer::sendMessage(int clientSocket, const std::string &msg) const
->>>>>>>> f32f21a (refacto: handle team logic in game):Server/Network/SocketServer.cpp
->>>>>>> f32f21a (refacto: handle team logic in game)
 {
     std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
             strlen(messageFormat.c_str()), 0) == -1) {
-        throw SocketError("Send Failed " + msg);
+        throw SocketError("Send Failed " + msg );
     }
 }
 
@@ -116,10 +106,6 @@ std::string zappy::server::SocketServer::getServerInformation()
     return str;
 }
 
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:Server/Network/Socket.cpp
->>>>>>> f32f21a (refacto: handle team logic in game)
 void zappy::server::SocketServer::getData(std::vector<struct pollfd> &fds) const
 {
     int poll_c = poll(fds.data(), fds.size(), 0);
@@ -127,11 +113,6 @@ void zappy::server::SocketServer::getData(std::vector<struct pollfd> &fds) const
         throw SocketError("Poll failed");
 }
 
-<<<<<<< HEAD
-=======
-========
->>>>>>>> f32f21a (refacto: handle team logic in game):Server/Network/SocketServer.cpp
->>>>>>> f32f21a (refacto: handle team logic in game)
 pollfd zappy::server::SocketServer::acceptConnection()
 {
     sockaddr_in clientAddr{};
