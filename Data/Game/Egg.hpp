@@ -31,7 +31,7 @@ namespace zappy {
                 void setFatherId(const int &id) { this->_fatherId = id; }
 
             private:
-                const int _id;
+                int _id;
                 int _fatherId;
         };
     }
