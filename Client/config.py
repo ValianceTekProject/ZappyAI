@@ -55,6 +55,7 @@ class CommandType(Enum):
     TAKE = 'Take'
     SET = 'Set'
     INCANTATION = 'Incantation'
+    DEATH = 'Death'
 
 class CommandStatus(Enum):
     PENDING = 'pending'
