@@ -43,6 +43,8 @@ namespace zappy {
             std::atomic<RunningState> _isRunning = RunningState::PAUSE;
 
             void _playTurn();
+            bool _checkAlreadyInTeam(int clientSocket);
+            void _addPlayerToTeam(Team &team, int clientSocket);
         };
     }  // namespace game
 }  // namespace zappy
