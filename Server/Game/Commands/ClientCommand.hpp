@@ -14,18 +14,18 @@
 
 
 namespace zappy {
-    namespace server {
+    namespace game {
 
         class CommandHandler {
            public:
             CommandHandler();
             ~CommandHandler() = default;
 
+            void processClientInput(const std::string &input);
            private:
             std::map<std::string, std::function<void()>> _commandMap;
 
             std::string _getFirstWord(const std::string &input) const;
-            void _processClientInput(const std::string &input);
         
             void handleForward() { std::cout << "Forward\n"; }
             void handleRight() { std::cout << "Right\n"; }

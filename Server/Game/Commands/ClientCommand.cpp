@@ -8,7 +8,7 @@
 #include "ClientCommand.hpp"
 #include <algorithm>
 
-zappy::server::CommandHandler::CommandHandler()
+zappy::game::CommandHandler::CommandHandler()
 {
     this->_commandMap = {
         {"Forward", [this]() { handleForward(); }},
@@ -26,14 +26,14 @@ zappy::server::CommandHandler::CommandHandler()
     };
 }
 
-std::string zappy::server::CommandHandler::_getFirstWord(
+std::string zappy::game::CommandHandler::_getFirstWord(
     const std::string &input) const
 {
     auto end = std::find_if(input.begin(), input.end(), ::isspace);
     return std::string(input.begin(), end);
 }
 
-void zappy::server::CommandHandler::_processClientInput(const std::string& input) {
+void zappy::game::CommandHandler::processClientInput(const std::string& input) {
     auto cmd = this->_getFirstWord(input);
     auto it = this->_commandMap.find(cmd);
     if (it != this->_commandMap.end()) {
