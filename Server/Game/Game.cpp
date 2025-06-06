@@ -78,8 +78,10 @@ void zappy::game::Game::runGame()
             now - lastUpdate);
         for (auto &team : this->getTeamList()) {
             for (auto &player : team.getPlayerList()) {
-                if (!player->getClient().queueMessage.empty())
-                    this->_commandHandler.processClientInput(player->getClient().queueMessage.front());
+                if (!player->getClient().queueMessage.empty()) {
+                    this->_commandHandler.processClientInput(player->getClient().queueMessage.front(), *player);
+                    player->getClient().queueMessage.pop();
+                }
             }
         }
         if (elapsed >= this->_baseFreqMs) {
