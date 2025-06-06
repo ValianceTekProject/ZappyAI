@@ -7,9 +7,11 @@
 
 #include "ClientCommand.hpp"
 #include <algorithm>
+#include "Game.hpp"
 
-zappy::game::CommandHandler::CommandHandler()
+void zappy::game::CommandHandler::initCommandMap(zappy::game::ServerPlayer &player)
 {
+    (void)player;
     this->_commandMap = {
         {"Forward", [this]() { handleForward(); }},
         {"Right", [this]() { handleRight(); }},
@@ -33,12 +35,14 @@ std::string zappy::game::CommandHandler::_getFirstWord(
     return std::string(input.begin(), end);
 }
 
-void zappy::game::CommandHandler::processClientInput(const std::string& input) {
+void zappy::game::CommandHandler::processClientInput(const std::string& input, zappy::game::ServerPlayer &player)
+{
+    this->initCommandMap(player);
     auto cmd = this->_getFirstWord(input);
     auto it = this->_commandMap.find(cmd);
     if (it != this->_commandMap.end()) {
         it->second();
         return;
     }
-    std::cerr << "Unknown command" << input << std::endl;
+    player.getClient().sendMessage("ko\n");
 }

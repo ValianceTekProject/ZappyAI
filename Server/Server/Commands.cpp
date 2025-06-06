@@ -30,13 +30,11 @@ void zappy::server::Server::_handleClientCommand(const std::string &command, str
                 this->_socket->sendMessage(pfd.fd, msg);
                 msg = std::to_string(this->_width) + " " + std::to_string(this->_height);
                 this->_socket->sendMessage(pfd.fd, msg);
-                break;
+                return;
             }
             this->_socket->sendMessage(pfd.fd, "Invalid team");
-            break;
-        } else {
-            std::cout << command << std::endl;
-            handleClientMessage(pfd.fd, command);
+            return;
         }
     }
+    handleClientMessage(pfd.fd, command);
 }
