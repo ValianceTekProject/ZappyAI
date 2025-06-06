@@ -44,7 +44,7 @@ bool zappy::game::Game::handleTeamJoin(
             return team.getName() == teamName;
         });
 
-    if (it == this->_teamList.end())
+    if (it == this->_teamList.end() || static_cast<int> (it->getPlayerList().size()) >= this->_clientNb)
         return false;
 
     if (this->_checkAlreadyInTeam(clientSocket) == true)
@@ -78,13 +78,11 @@ void zappy::game::Game::runGame()
             now - lastUpdate);
         for (auto &team : this->getTeamList()) {
             for (auto &player : team.getPlayerList()) {
-                if (!player->getClient().queueMessage.empty()) {
-                    this->_commandHandler.processClientInput(player->getClient().queueMessage.front(), *player);
-                    player->getClient().queueMessage.pop();
-                }
+                if (!player->getClient().queueMessage.empty())
+                    this->_commandHandler.processClientInput(player->getClient().queueMessage.front());
             }
         }
-        if (elapsed >= static_cast<std::chrono::seconds>(this->_baseFreqMs)) {
+        if (elapsed >= this->_baseFreqMs) {
             this->_playTurn();
             lastUpdate = now;
             continue;
