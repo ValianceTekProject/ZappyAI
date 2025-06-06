@@ -10,6 +10,7 @@
 #include "Teams/Teams.hpp"
 #include "Map/Map.hpp"
 #include "my_macros.hpp"
+#include "Commands/ClientCommand.hpp"
 #include <atomic>
 #include <chrono>
 
@@ -22,8 +23,8 @@ namespace zappy {
 
            public:
             Game(
-                int mapWidth, int mapHeight, std::vector<Team> teamList)
-                : _map(mapWidth, mapHeight), _teamList(std::move(teamList)), _baseFreqMs(baseGameFreqMs)
+                int mapWidth, int mapHeight, std::vector<Team> teamList, int clientNb)
+                : _map(mapWidth, mapHeight), _teamList(std::move(teamList)), _baseFreqMs(baseGameFreqMs), _clientNb(clientNb)
             {}
 
             ~Game() = default;
@@ -40,8 +41,10 @@ namespace zappy {
            private:
             int _idTot = 0;
             MapServer _map;
+            zappy::game::CommandHandler _commandHandler;
             std::vector<zappy::game::Team> _teamList;
             std::chrono::milliseconds _baseFreqMs;
+            int _clientNb;
             std::atomic<RunningState> _isRunning = RunningState::PAUSE;
 
             void _playTurn();
