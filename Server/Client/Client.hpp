@@ -45,6 +45,8 @@ namespace zappy {
 
             void setState(ClientState state) { this->_state = state; }
 
+            void sendMessage(const std::string &buf) { send(this->_socket, buf.c_str(), buf.size(), 0); }
+
             std::queue<std::string> queueMessage;
             std::shared_ptr<std::mutex> queueMutex = nullptr;
 

@@ -14,23 +14,22 @@
 void zappy::server::Server::handleClientMessage(
     int clientSocket, std::string buffer)
 {
-    std::cout << "Size: " << std::to_string(_clients.size()) << std::endl;
-    auto itClient = this->_clients.find(clientSocket);
-    if (itClient == this->_clients.end() ||
-        itClient->second.getState() != zappy::server::ClientState::CONNECTED) {
-            std::cout << "RETURN" << std::endl;
-            return;
+    for (auto &team : this->_game->getTeamList()) {
+        for (auto &player : team.getPlayerList()) {
+            if (clientSocket == player->getClient().getSocket() ||
+        player->getClient().getState() == zappy::server::ClientState::CONNECTED) {
+            std::lock_guard<std::mutex> lock(*(player->getClient().queueMutex));
+            player->getClient().queueMessage.push(buffer);
+            }
         }
+    }
 
-    std::lock_guard<std::mutex> lock(*(itClient->second.queueMutex));
-    std::cout << "AAAAAAAAAAA" << std::endl;
-    itClient->second.queueMessage.push(buffer);
 }
 
 zappy::server::ClientState zappy::server::Server::_handleClientDisconnection(
     const std::string &content, struct pollfd &pfd)
 {
-    if (content.empty() || content.compare("exit") == 0) {
+    if (content.compare("exit") == 0) {
         this->_clients.erase(pfd.fd);
         this->_game->removeFromTeam(pfd.fd);
         ::close(pfd.fd);
@@ -43,12 +42,7 @@ bool zappy::server::Server::_handleNewConnection(struct pollfd &pfd)
 {
     std::lock_guard<std::mutex> lock(this->_socketLock);
     if (pfd.fd == this->_socket->getSocket()) {
-        pollfd newPollfd = this->_socket->acceptConnection();
-        int clientFd = newPollfd.fd;
-
-        this->_clients.emplace(clientFd, zappy::server::Client(clientFd));
-
-        this->_fds.push_back(newPollfd);
+        this->_fds.push_back(this->_socket->acceptConnection());
         return true;
     }
     return false;
