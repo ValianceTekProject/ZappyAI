@@ -74,10 +74,13 @@ class DeepQNetwork(nn.Module):
         new_food = new_state[0] * 100
         if new_food > old_food:
             reward += 10
-        if old_state[1] > new_state[1]:
+        if new_food < 20:
+            reward -= 1
+        if new_state[1] > old_state[1]:
             reward += 30
         if result == "dead":
             reward -= 100
+        reward += 0.1
         return reward
 
     """State
