@@ -11,6 +11,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include "Player/Player.hpp"
 
 
 namespace zappy {
@@ -18,10 +19,14 @@ namespace zappy {
 
         class CommandHandler {
            public:
-            CommandHandler();
+            CommandHandler() = default;
             ~CommandHandler() = default;
 
-            void processClientInput(const std::string &input);
+            void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
+
+            void initCommandMap(zappy::game::ServerPlayer &player);
+
+
            private:
             std::map<std::string, std::function<void()>> _commandMap;
 
