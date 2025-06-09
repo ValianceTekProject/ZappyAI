@@ -65,12 +65,12 @@ class CommandStatus(Enum):
     TIMEOUT = 'timeout'
 
 class GameStates(Enum):
-    EXPLORE = 'explore'
-    COLLECT = 'collect'
-    INCANT_PREP = 'incant_prep'
-    INCANTING = 'incanting'
-    FLEEING = 'fleeing'
-    DEAD = 'dead'
+    EMERGENCY_FOOD    = 'emergency_food'    # Critique, fonce sur la bouffe la plus proche
+    SAFE_FOOD         = 'safe_food'         # Sous le seuil safe, collecte en sécurité
+    PREPARE_INCANT    = 'prepare_incant'    # Dépose ressources + broadcast demande
+    INCANTATE         = 'incantate'         # Lance l’incantation
+    COLLECT_RESOURCES = 'collect_resources' # Collecte pour incantation (hors nourriture)
+    EXPLORE           = 'explore'           # Balade aléatoire
 
 class Orientation(int):
     NORTH = 0
