@@ -25,6 +25,7 @@ class Agent:
         self.conn = connection
         self.freq = freq
         self.pool = pool
+        self.dimension_map = self.conn.get_map_size()
 
         self.agent_id = Agent._next_id
         Agent._next_id += 1
@@ -57,7 +58,6 @@ class Agent:
                 if cmd.type == CommandType.LOOK:
                     self.state.update_vision(cmd.response, self.state.get_position(), self.state.get_orientation())
 
-                print(f"CMD {cmd.type.name} completed with status {cmd.status.name}, response: {cmd.response}")
                 self.state.update(cmd)
 
             if not self.initialized:

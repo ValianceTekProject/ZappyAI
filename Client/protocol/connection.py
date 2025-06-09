@@ -151,13 +151,17 @@ class Connection:
         """Retourne l'état de la connexion."""
         return self._connected and self._sock is not None
 
-    def get_map_info(self) -> tuple[int, int, int]:
+    def get_serv_info(self) -> tuple[int, int, int]:
         """Retourne (largeur, hauteur, slots disponibles)."""
         if not self._connected:
             raise ConnectionError("Not connected")
         if None in (self._map_width, self._map_height, self._nb_clients):
             raise ValueError("Map info not available (handshake not completed)")
         return self._map_width, self._map_height, self._nb_clients
+
+    def get_map_size(self) -> tuple[int, int]:
+        """Retourne la taille de la carte."""
+        return self._map_width, self._map_height
 
     def receive_raw(self) -> str:
         """Lecture brute sans bloquer. Utilisé pour du debug ou pré-traitement."""
