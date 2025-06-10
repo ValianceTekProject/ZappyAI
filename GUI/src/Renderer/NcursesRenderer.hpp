@@ -7,13 +7,14 @@
 
 #pragma once
 
-#include "IRenderer.hpp"
+#include "ARenderer.hpp"
 
 #include <ncurses.h>
+#include <sstream>
 
 namespace zappy {
     namespace gui {
-        class NcursesRenderer : public IRenderer
+        class NcursesRenderer : public ARenderer
         {
             public:
                 NcursesRenderer();
@@ -29,13 +30,29 @@ namespace zappy {
 
                 void render() const override;
 
-                bool shouldClose() const override { return _shouldClose; }
+                bool shouldClose() const override;
+
+                void endGame(const std::string &teamName) override;
 
             private:
+                void _initWindow();
+                void _initColors();
+
+                void _drawMap() const;
+                void _drawTile(
+                    const game::Tile &tile,
+                    const std::vector<game::Egg> &eggs,
+                    const std::vector<game::Player> &players,
+                    size_t x, size_t y,
+                    size_t row, size_t col
+                ) const;
+
                 std::shared_ptr<game::GameState> _gameState;
                 bool _shouldClose;
 
                 WINDOW *_window;
+
+                bool _help;
         };
     }
 }
