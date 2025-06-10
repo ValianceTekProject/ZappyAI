@@ -14,7 +14,6 @@
 #include "Protocol.hpp"
 #include "GameState.hpp"
 #include "NcursesRenderer.hpp"
-#include "OpenGLRenderer.hpp"
 
 #include <string>
 #include <sstream>

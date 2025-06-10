@@ -7,8 +7,11 @@
 
 #include "Protocol.hpp"
 
-zappy::network::Protocol::Protocol(std::shared_ptr<game::GameState> gameState)  :
-    _network(std::make_unique<NetworkManager>()),
+zappy::network::Protocol::Protocol(
+    std::shared_ptr<gui::IRenderer> renderer,
+    std::shared_ptr<game::GameState> gameState
+) : _network(std::make_unique<NetworkManager>()),
+    _renderer(renderer),
     _gameState(gameState),
     _authenticated(false)
 {
@@ -251,7 +254,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
     );
     player.teamName = teamName;
 
-    _gameState->addPlayer(player);
+    _renderer->addPlayer(player);
     std::cout << "New player " << player.getId() <<
         " connected from team " << player.teamName << std::endl;
 }
@@ -269,7 +272,7 @@ void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
 
     iss >> playerId >> x >> y >> orientation;
 
-    _gameState->updatePlayerPosition(playerId, x, y, game::convertOrientation(orientation));
+    _renderer->updatePlayerPosition(playerId, x, y, game::convertOrientation(orientation));
 }
 
 void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
@@ -284,7 +287,7 @@ void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
 
     iss >> playerId >> level;
 
-    _gameState->updatePlayerLevel(playerId, level);
+    _renderer->updatePlayerLevel(playerId, level);
     std::cout << "Player " << playerId << " reached level " << level << std::endl;
 }
 
@@ -309,7 +312,7 @@ void zappy::network::Protocol::handlePlayerInventory(const std::string &params)
         inventory.addResource(static_cast<game::Resource>(i), resourceCount);
     }
 
-    _gameState->updatePlayerInventory(playerId, inventory);
+    _renderer->updatePlayerInventory(playerId, inventory);
 }
 
 void zappy::network::Protocol::handleGameEnd(const std::string &params)
@@ -319,7 +322,7 @@ void zappy::network::Protocol::handleGameEnd(const std::string &params)
 
     iss >> winningTeam;
 
-    _gameState->endGame(winningTeam);
+    _renderer->endGame(winningTeam);
     std::cout << "Game ended! Winning team: " << winningTeam << std::endl;
 }
 
@@ -337,6 +340,16 @@ void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
     std::cout << "Player " << playerId << " was expelled" << std::endl;
 }
 
+/**
+ * @brief Handles a player broadcast message
+ *
+ * Parses the broadcast parameters to extract the player ID and message.
+ * Removes the leading '#' from the parameters and logs the broadcast
+ * message to the console.
+ *
+ * @param params A string containing the broadcast parameters
+ *               Expected format: "PlayerID Message"
+ */
 void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params)
 {
     // remove # from the beginning of the string
@@ -405,6 +418,7 @@ void zappy::network::Protocol::handleIncantationEnd(const std::string &params)
 
     iss >> x >> y >> success;
 
+    // handle the incantation
     std::cout << "Incantation " << (success ? "succeeded" : "failed")
                 << " at (" << x << ", " << y << ")" << std::endl;
 }
@@ -464,13 +478,16 @@ void zappy::network::Protocol::handlePlayerDeath(const std::string &params)
 
     iss >> playerId;
 
-    _gameState->removePlayer(playerId);
+    _renderer->removePlayer(playerId);
     std::cout << "Player " << playerId << " died" << std::endl;
 }
 
 void zappy::network::Protocol::handleEggCreated(const std::string &params)
 {
-    std::istringstream iss(params);
+    std::string trueParams = params;
+    removeSharp(trueParams);
+
+    std::istringstream iss(trueParams);
 
     int eggId;
     int playerId;
@@ -478,8 +495,8 @@ void zappy::network::Protocol::handleEggCreated(const std::string &params)
 
     iss >> eggId >> playerId >> x >> y;
 
-    _gameState->addEgg(eggId, playerId, x, y);
-    std::cout << "Egg created at (" << x << ", " << y << ") by player " << playerId << std::endl;
+    _renderer->addEgg(eggId, playerId, x, y);
+    std::cout << "Egg " << eggId << " created at (" << x << ", " << y << ") by player " << playerId << std::endl;
 }
 
 void zappy::network::Protocol::handleEggHatch(const std::string &params)
@@ -492,7 +509,7 @@ void zappy::network::Protocol::handleEggHatch(const std::string &params)
 
     iss >> eggId;
 
-    _gameState->hatchEgg(eggId);
+    _renderer->hatchEgg(eggId);
     std::cout << "Egg " << eggId << " hatched" << std::endl;
 }
 
@@ -506,7 +523,7 @@ void zappy::network::Protocol::handleEggDeath(const std::string &params)
 
     iss >> eggId;
 
-    _gameState->removeEgg(eggId);
+    _renderer->removeEgg(eggId);
     std::cout << "Egg " << eggId << " died" << std::endl;
 }
 

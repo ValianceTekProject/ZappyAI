@@ -70,6 +70,17 @@ void zappy::game::GameState::removePlayer(const int &id)
     throw GameError("Player " + std::to_string(id) + " not found", "Game");
 }
 
+std::vector<zappy::game::Egg> zappy::game::GameState::getEggsByCoord(const size_t &x, const size_t &y)
+{
+    std::vector<Egg> eggs;
+
+    for (Egg &egg : _eggs) {
+        if (egg.x == x && egg.y == y)
+            eggs.push_back(egg);
+    }
+    return eggs;
+}
+
 std::vector<zappy::game::Player> zappy::game::GameState::getPlayersByCoord(const size_t &x, const size_t &y)
 {
     std::vector<Player> players;

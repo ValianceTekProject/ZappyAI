@@ -38,8 +38,6 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
             if (i + 1 >= argc)
                 throw ParsingError("Missing value for -h", "Parsing");
             _ip = argv[++i];
-        } else if (arg == "-gl" || arg == "-opengl") {
-            _renderer = std::make_shared<OpenGLRenderer>();
         } else
             throw ParsingError("Unknown option: " + arg, "Parsing");
     }
@@ -67,7 +65,7 @@ void zappy::gui::Gui::init()
 
 void zappy::gui::Gui::initNetwork()
 {
-    _protocol = std::make_unique<network::Protocol>(_gameState);
+    _protocol = std::make_unique<network::Protocol>(_renderer, _gameState);
     if (!_protocol->connectToServer(_ip, _port))
         throw network::NetworkError("Connection failed", "Network");
 }
@@ -76,27 +74,29 @@ void zappy::gui::Gui::run()
 {
     init();
 
-    const std::chrono::milliseconds frameDelay(1000 / _gameState->getFrequency());
+    // const std::chrono::milliseconds frameDelay(1 / _gameState->getFrequency());
 
-    _protocol->setTimeUnit(500);
+    // _protocol->setTimeUnit(500);
 
     bool running = true;
     while (running) {
-        auto frameStart = std::chrono::steady_clock::now();
+        // auto frameStart = std::chrono::steady_clock::now();
 
         _renderer->handleInput();
+
+        _protocol->update();
+        _renderer->update();
+
         if (_renderer->shouldClose()) {
             running = false;
             continue;
         }
 
-        _protocol->update();
-        _renderer->update();
         _renderer->render();
 
-        auto frameTime = std::chrono::steady_clock::now() - frameStart;
-        if (frameTime < frameDelay)
-            std::this_thread::sleep_for(frameDelay - frameTime);
+        // auto frameTime = std::chrono::steady_clock::now() - frameStart;
+        // if (frameTime < frameDelay)
+        //     std::this_thread::sleep_for(frameDelay - frameTime);
     }
 
     _protocol->disconnect();

@@ -55,8 +55,8 @@ set(SOURCES
 
     ${GAME_DIR}/GameState.cpp
 
+    ${RENDERER_DIR}/ARenderer.cpp
     ${RENDERER_DIR}/NcursesRenderer.cpp
-    ${RENDERER_DIR}/OpenGLRenderer.cpp
 )
 
 # === Exécutable principal ===

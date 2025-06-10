@@ -23,6 +23,13 @@ namespace zappy {
 
                 size_t getFrequency() const { return this->_frequency; }
 
+                const Map &getMap() const { return this->_map; }
+                const Tile &getTile(const size_t &x, const size_t &y) const { return this->_map.getTile(x, y); }
+
+                const std::vector<std::string> &getTeams() const { return this->_teams; }
+                const std::vector<Egg> &getEggs() const { return this->_eggs; }
+                const std::vector<Player> &getPlayers() const { return this->_players; }
+
                 void updateTile(const size_t &x, const size_t &y, Tile &tile) { this->_map.setTile(x, y, tile); }
 
                 void addTeam(const std::string &teamName) { this->_teams.push_back(teamName); }
@@ -33,7 +40,7 @@ namespace zappy {
                     const size_t &x,
                     const size_t &y
                 ) { this->_eggs.push_back(Egg(eggId, fatherId, x, y)); }
-                void addPlayer(Player &player) {this-> _players.push_back(player); }
+                void addPlayer(const Player &player) { this->_players.push_back(player); }
 
                 void updatePlayerPosition(
                     const int &id,
@@ -52,10 +59,12 @@ namespace zappy {
                 Egg &getEggById(const int &eggId);
                 Player &getPlayerById(const int &id);
 
+                std::vector<Egg> getEggsByCoord(const size_t &x, const size_t &y);
+                std::vector<Player> getPlayersByCoord(const size_t &x, const size_t &y);
+
                 void endGame(const std::string &teamName);
 
             private:
-                std::vector<Player> getPlayersByCoord(const size_t &x, const size_t &y);
 
                 size_t _frequency;
 

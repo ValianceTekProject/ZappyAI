@@ -9,7 +9,7 @@
 
 #include "GuiProtocol.hpp"
 #include "NetworkManager.hpp"
-#include "GameState.hpp"
+#include "IRenderer.hpp"
 
 #include <memory>
 #include <functional>
@@ -21,7 +21,10 @@ namespace zappy {
     namespace network {
         class Protocol {
             public:
-                explicit Protocol(std::shared_ptr<game::GameState> gameState);
+                explicit Protocol(
+                    std::shared_ptr<gui::IRenderer> renderer,
+                    std::shared_ptr<game::GameState> gameState
+                );
                 ~Protocol();
 
                 bool connectToServer(const std::string& host, int port);
@@ -70,6 +73,7 @@ namespace zappy {
                 void onServerMessage(const ServerMessage &msg);
 
                 std::unique_ptr<NetworkManager> _network;
+                std::shared_ptr<gui::IRenderer> _renderer;
                 std::shared_ptr<game::GameState> _gameState;
                 bool _authenticated;
 
