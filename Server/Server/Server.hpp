@@ -39,6 +39,7 @@ namespace zappy {
             int getWidth() const { return this->_width; }
             int getHeight() const { return this->_height; }
             int getClientNb() const { return this->_clientNb; }
+            int getFreq() const { return this->_freq; }
 
             void runLoop();
             void handleClientMessage(int clientSocket, std::string buffer);
@@ -48,6 +49,8 @@ namespace zappy {
 
             void setRunningState(RunningState state) { _serverRun = state; }
             void clearTeams() { _teamList.clear(); }
+
+            void sendMessage(const std::string &buf, int socket) { send(socket, buf.c_str(), buf.size(), 0); }
 
            private:
             std::vector<std::shared_ptr<zappy::observer::IObserver>> _observers;
