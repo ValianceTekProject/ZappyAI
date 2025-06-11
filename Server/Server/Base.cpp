@@ -23,7 +23,8 @@ zappy::server::Server::Server(int argc, char const *argv[])
     };
     this->_parseFlags(argc, argv);
     this->_game = std::make_unique<zappy::game::Game>(
-        this->_width, this->_height, std::move(this->_teamList), this->_clientNb);
+        this->_width, this->_height, std::move(this->_teamList), this->getFreq(), this->_clientNb);
+
     this->_socket =
         std::make_unique<server::SocketServer>(this->_port, this->_clientNb);
     this->_fds.push_back({this->_socket->getSocket(), POLLIN, 0});
@@ -69,11 +70,13 @@ void zappy::server::Server::_parseFlagsInt(int &index, std::string arg, std::str
 void zappy::server::Server::_checkParams()
 {
     if (this->_port == zappy::noValue || this->_width == zappy::noValue ||
-        this->_height == zappy::noValue || this->_clientNb == zappy::noValue ||
-        this->_freq == zappy::noValue || this->_namesTeam.empty()) {
+        this->_height == zappy::noValue || this->_freq <= 0 || this->_clientNb == zappy::noValue ||
+         this->_namesTeam.empty()) {
         throw error::InvalidArg(
-            "Missing arguments: -p -x -y -c -f -n <names>");
+            "Missing or Invalid arguments: -p -x -y -c -f -n <names>");
     }
+    if (this->_freq == zappy::noValue)
+        this->_freq = 100;
 }
 
 void zappy::server::Server::_parseFlags(int argc, char const *argv[])
