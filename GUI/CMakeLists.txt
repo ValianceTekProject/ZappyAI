@@ -75,6 +75,11 @@ add_executable(zappy_gui ${SOURCES})
 
 # === Dépendances ===
 
+## Raylib
+find_package(raylib REQUIRED)
+include_directories(${RAYLIB_INCLUDE_DIR})
+target_link_libraries(zappy_gui PRIVATE ${RAYLIB_LIBRARIES})
+
 ## Ncurses
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
