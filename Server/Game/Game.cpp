@@ -17,7 +17,8 @@ void zappy::game::Game::_addPlayerToTeam(
 {
     zappy::server::Client user(clientSocket);
     std::unique_ptr<zappy::game::ServerPlayer> newPlayer =
-        std::make_unique<zappy::game::ServerPlayer>(std::move(user));
+        std::make_unique<zappy::game::ServerPlayer>(std::move(user), _idTot, 0, 0, zappy::game::Orientation::NORTH, 1);
+    _idTot += 1;
     user.setState(zappy::server::ClientState::CONNECTED);
 
     team.addPlayer(std::move(newPlayer));
