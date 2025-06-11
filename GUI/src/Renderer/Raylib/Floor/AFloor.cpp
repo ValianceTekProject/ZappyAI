@@ -8,26 +8,45 @@
 #include "AFloor.hpp"
 
 zappy::gui::raylib::AFloor::AFloor()
-    : gridSize(10), spacing(5) {}
+    : _gridSize(10), _spacing(5) {}
 
 // Setters
 void zappy::gui::raylib::AFloor::setGridSize(int size)
 {
-    gridSize = size;
+    _gridSize = size;
 }
 
 void zappy::gui::raylib::AFloor::setSpacing(int spacing)
 {
-    this->spacing = spacing;
+    _spacing = spacing;
+}
+
+void zappy::gui::raylib::AFloor::setWidth(int width)
+{
+    _width = width;
+}
+
+void zappy::gui::raylib::AFloor::setHeight(int height)
+{
+    _height = height;
 }
 
 // Getters
 int zappy::gui::raylib::AFloor::getGridSize() const
 {
-    return gridSize;
+    return _gridSize;
 }
 
 int zappy::gui::raylib::AFloor::getSpacing() const
 {
-    return spacing;
+    return _spacing;
+}
+
+int zappy::gui::raylib::AFloor::getWidth() const
+{
+    return _width;
+}
+int zappy::gui::raylib::AFloor::getHeight() const
+{
+    return _height;
 }

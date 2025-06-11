@@ -20,14 +20,20 @@ namespace zappy {
                     // Setters
                     void setGridSize(int size) override;
                     void setSpacing(int spacing) override;
+                    void setWidth(int width);
+                    void setHeight(int height);
 
                     // Getters
                     int getGridSize() const override;
                     int getSpacing() const override;
+                    int getWidth() const override;
+                    int getHeight() const override;
 
                 private:
-                    int gridSize;
-                    int spacing;
+                    int _gridSize;
+                    int _spacing;
+                    int _width;
+                    int _height;
             };
         }
     } // namespace gui

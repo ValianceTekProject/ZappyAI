@@ -20,10 +20,14 @@ namespace zappy {
                     // Setters
                     virtual void setGridSize(int size) = 0;
                     virtual void setSpacing(int spacing) = 0;
+                    virtual void setWidth(int width) = 0;
+                    virtual void setHeight(int height) = 0;
 
                     // Getters
                     virtual int getGridSize() const = 0;
                     virtual int getSpacing() const = 0;
+                    virtual int getWidth() const = 0;
+                    virtual int getHeight() const = 0;
 
             };
         }
