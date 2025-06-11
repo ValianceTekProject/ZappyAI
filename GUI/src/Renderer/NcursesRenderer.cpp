@@ -81,9 +81,9 @@ void zappy::gui::NcursesRenderer::_drawMap() const
     size_t tileHeight = 5;
     size_t tileWidth = 30;
 
-    for (size_t y = 0; y < map.getHeight(); ++y) {
-        for (size_t x = 0; x < map.getWidth(); ++x) {
-            const auto &tile = map.getTile(x, y);
+    for (size_t y = 0; y < map->getHeight(); ++y) {
+        for (size_t x = 0; x < map->getWidth(); ++x) {
+            const auto &tile = map->getTile(x, y);
             const auto eggs = _gameState->getEggsByCoord(x, y);
             const auto players = _gameState->getPlayersByCoord(x, y);
             _drawTile(tile, eggs, players, x, y, 1 + y * tileHeight, 1 + x * tileWidth);

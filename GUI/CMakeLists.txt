@@ -14,6 +14,9 @@ set(NETWORK_DIR ${SRC_DIR}/Network)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
 set(RAYLIB_DIR ${RENDERER_DIR}/Raylib)
+set(RAYLIB_SCENE_DIR ${RAYLIB_DIR}/Scene)
+set(RAYLIB_FLOOR_DIR ${RAYLIB_DIR}/Floor)
+set(RAYLIB_MODEL_DIR ${RAYLIB_DIR}/Model)
 
 set(DATA_DIR ${CMAKE_SOURCE_DIR}/../Data)
 set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
@@ -32,6 +35,9 @@ include_directories(
     ${GAME_DIR}
     ${RENDERER_DIR}
     ${RAYLIB_DIR}
+    ${RAYLIB_SCENE_DIR}
+    ${RAYLIB_FLOOR_DIR}
+    ${RAYLIB_MODEL_DIR}
 )
 
 # === Fichiers sources ===
