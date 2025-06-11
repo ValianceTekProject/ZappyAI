@@ -18,11 +18,13 @@ void zappy::server::Server::handleClientMessage(
         for (auto &player : team.getPlayerList()) {
             if (clientSocket == player->getClient().getSocket() ||
         player->getClient().getState() == zappy::server::ClientState::CONNECTED) {
-            std::lock_guard<std::mutex> lock(*(player->getClient().queueMutex));
-            player->getClient().queueMessage.push(buffer);
+                std::lock_guard<std::mutex> lock(*(player->getClient().queueMutex));
+                player->getClient().queueMessage.push(buffer);
+                return;
             }
         }
     }
+    sendMessage("ko\n", clientSocket);
 
 }
 
