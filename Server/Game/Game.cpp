@@ -84,7 +84,7 @@ void zappy::game::Game::runGame()
                 }
             }
         }
-        if (elapsed >= this->_baseFreqMs) {
+        if (elapsed >= static_cast<std::chrono::seconds>(this->_baseFreqMs)) {
             this->_playTurn();
             lastUpdate = now;
             continue;

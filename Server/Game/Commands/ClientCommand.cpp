@@ -5,27 +5,115 @@
 ** ClientCommand
 */
 
-#include "ClientCommand.hpp"
 #include <algorithm>
+#include "ClientCommand.hpp"
 #include "Game.hpp"
 
 void zappy::game::CommandHandler::initCommandMap(zappy::game::ServerPlayer &player)
 {
-    (void)player;
     this->_commandMap = {
-        {"Forward", [this]() { handleForward(); }},
-        {"Right", [this]() { handleRight(); }},
-        {"Left", [this]() { handleLeft(); }},
-        {"Look", [this]() { handleLook(); }},
-        {"Inventory", [this]() { handleInventory(); }},
-        {"Broadcast", [this]() { handleBroadcast(); }},
-        {"Connect_nbr", [this]() { handleConnectNbr(); }},
-        {"Fork", [this]() { handleFork(); }},
-        {"Eject", [this]() { handleEject(); }},
-        {"Take", [this]() { handleTake(); }},
-        {"Set", [this]() { handleDrop(); }},
-        {"Incantation", [this]() { handleIncantation(); }}
+        {"Forward", [this, &player]() { handleForward(player); }},
+        {"Right", [this, &player]() { handleRight(player); }},
+        {"Left", [this, &player]() { handleLeft(player); }},
+        {"Look", [this, &player]() { handleLook(player); }},
+        {"Inventory", [this, &player]() { handleInventory(player); }},
+        {"Broadcast", [this, &player]() { handleBroadcast(player); }},
+        {"Connect_nbr", [this, &player]() { handleConnectNbr(player); }},
+        {"Fork", [this, &player]() { handleFork(player); }},
+        {"Eject", [this, &player]() { handleEject(player); }},
+        {"Take", [this, &player]() { handleTake(player); }},
+        {"Set", [this, &player]() { handleDrop(player); }},
+        {"Incantation", [this, &player]() { handleIncantation(player); }}
     };
+}
+
+void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &player)
+{
+    if (!player.getChonoStart()) {
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    double seconds = static_cast<double>(static_cast<int>(timeLimit::FORWARD)) / this->_freq;
+    auto timeNeed = std::chrono::duration<double>(seconds);
+    if (player.getChrono() >= timeNeed) {
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else
+        player.getClient().sendMessage("ko\n");
+
+}
+
+void zappy::game::CommandHandler::handleRight(zappy::game::ServerPlayer &player)
+{
+    if (!player.getChonoStart()) {
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    double seconds = static_cast<double>(static_cast<int>(timeLimit::RIGHT)) / this->_freq;
+    auto timeNeed = std::chrono::duration<double>(seconds);
+    if (player.getChrono() >= timeNeed) {
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else
+        player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandler::handleLeft(zappy::game::ServerPlayer &player)
+{
+    if (!player.getChonoStart()) {
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    double seconds = static_cast<double>(static_cast<int>(timeLimit::LEFT)) / this->_freq;
+    auto timeNeed = std::chrono::duration<double>(seconds);
+    if (player.getChrono() >= timeNeed) {
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else
+        player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandler::handleBroadcast(zappy::game::ServerPlayer &player)
+{
+    if (!player.getChonoStart()) {
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    double seconds = static_cast<double>(static_cast<int>(timeLimit::BROADCAST)) / this->_freq;
+    auto timeNeed = std::chrono::duration<double>(seconds);
+    if (player.getChrono() >= timeNeed) {
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else
+        player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
+{
+    if (!player.getChonoStart()) {
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::FORWARD) / this->_freq)) {
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else
+        player.getClient().sendMessage("ko\n");
 }
 
 std::string zappy::game::CommandHandler::_getFirstWord(
