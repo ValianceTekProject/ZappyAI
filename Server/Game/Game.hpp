@@ -44,6 +44,7 @@ namespace zappy {
             std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };
 
            private:
+            int _idTot = 0;
             MapServer _map;
             zappy::game::CommandHandler _commandHandler;
             std::vector<zappy::game::Team> _teamList;
