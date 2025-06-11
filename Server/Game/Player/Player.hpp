@@ -10,13 +10,24 @@
 #include <chrono>
 
 #include "Client.hpp"
+#include "Data/Game/Player.hpp"
+#include "Teams/Teams.hpp"
 
 namespace zappy {
     namespace game {
-        class ServerPlayer {
+        class ServerPlayer : public Player {
 
            public:
-            explicit ServerPlayer(zappy::server::Client user) : _user(std::move(user)), _startTime(std::chrono::steady_clock::now()) {}
+            ServerPlayer(zappy::server::Client user,
+                 size_t id,
+                 size_t x,
+                 size_t y,
+                 Orientation orientation,
+                 size_t level = 1)
+                : Player(id, x, y, orientation, level),
+                _user(std::move(user)),
+                _startTime(std::chrono::steady_clock::now()) {}
+
             ~ServerPlayer() = default;
 
             zappy::server::Client &getClient() {return this->_user;};
