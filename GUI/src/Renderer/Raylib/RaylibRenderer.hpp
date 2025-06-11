@@ -19,9 +19,12 @@ namespace zappy {
                 ~RaylibRenderer() override = default;
 
                 void init() override;
+
                 void handleInput() override;
                 void update() override;
+
                 void render() const override;
+
                 bool shouldClose() const override;
 
                 void addEgg(const int &eggId, const int &fatherId, const size_t &x, const size_t &y) override;
