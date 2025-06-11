@@ -15,7 +15,7 @@ zappy::game::MapServer::MapServer(int width, int height)
 
     this->_width = width;
     this->_height = height;
-    this->init(width, height);
+    this->_init(width, height);
     this->_placeResources();
 }
 

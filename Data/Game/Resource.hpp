@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "GameError.hpp"
+#include "Data/Errors/GameError.hpp"
 
 #include <array>
 
