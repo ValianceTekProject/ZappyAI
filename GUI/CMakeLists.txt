@@ -75,11 +75,6 @@ add_executable(zappy_gui ${SOURCES})
 
 # === Dépendances ===
 
-## GLEW
-find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
-target_link_libraries(zappy_gui PRIVATE GLEW::GLEW)
-
 ## Ncurses
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
