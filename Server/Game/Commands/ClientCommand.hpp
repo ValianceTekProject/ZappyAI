@@ -11,7 +11,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "Player/Player.hpp"
+#include "Player/ServerPlayer.hpp"
 
 
 namespace zappy {
