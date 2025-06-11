@@ -23,7 +23,8 @@ namespace zappy {
             public:
                 explicit Protocol(
                     std::shared_ptr<gui::IRenderer> renderer,
-                    std::shared_ptr<game::GameState> gameState
+                    std::shared_ptr<game::GameState> gameState,
+                    bool debug = false
                 );
                 ~Protocol();
 
@@ -71,6 +72,8 @@ namespace zappy {
 
                 void initHandlers();
                 void onServerMessage(const ServerMessage &msg);
+
+                bool _debug;
 
                 std::unique_ptr<NetworkManager> _network;
                 std::shared_ptr<gui::IRenderer> _renderer;

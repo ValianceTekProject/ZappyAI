@@ -10,10 +10,12 @@
 #include "GuiError.hpp"
 #include "ParsingError.hpp"
 
-#include "NetworkManager.hpp"
-#include "Protocol.hpp"
 #include "GameState.hpp"
 #include "NcursesRenderer.hpp"
+#include "DebugRenderer.hpp"
+
+#include "NetworkManager.hpp"
+#include "Protocol.hpp"
 
 #include <string>
 #include <sstream>
@@ -34,6 +36,8 @@ namespace zappy {
 
             private:
                 void initNetwork();
+
+                bool _debug;
 
                 std::string _ip;
                 size_t _port;

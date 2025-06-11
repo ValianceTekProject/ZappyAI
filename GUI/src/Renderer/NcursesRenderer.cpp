@@ -8,7 +8,10 @@
 #include "NcursesRenderer.hpp"
 
 zappy::gui::NcursesRenderer::NcursesRenderer() :
-    _gameState(nullptr), _shouldClose(false), _window(nullptr), _help(false)
+    ARenderer::ARenderer(),
+    _shouldClose(false),
+    _window(nullptr),
+    _help(false)
 {}
 
 void zappy::gui::NcursesRenderer::init()

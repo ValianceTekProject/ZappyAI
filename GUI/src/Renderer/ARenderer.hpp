@@ -16,7 +16,7 @@ namespace zappy {
     namespace gui {
         class ARenderer : public IRenderer {
             public:
-                ARenderer() = default;
+                ARenderer() : _gameState(nullptr) {}
                 virtual ~ARenderer() override = default;
 
                 virtual void init() override = 0;

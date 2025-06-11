@@ -22,9 +22,6 @@ namespace zappy {
 
                 void init() override;
 
-                void setGameState(std::shared_ptr<game::GameState> gameState) override
-                    { _gameState = gameState; }
-
                 void handleInput() override;
                 void update() override;
 
@@ -47,7 +44,6 @@ namespace zappy {
                     size_t row, size_t col
                 ) const;
 
-                std::shared_ptr<game::GameState> _gameState;
                 bool _shouldClose;
 
                 WINDOW *_window;

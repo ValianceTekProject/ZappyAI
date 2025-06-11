@@ -13,6 +13,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(NETWORK_DIR ${SRC_DIR}/Network)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
+set(RAYLIB_DIR ${RENDERER_DIR}/Raylib)
 
 set(DATA_DIR ${CMAKE_SOURCE_DIR}/../Data)
 set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
@@ -30,6 +31,7 @@ include_directories(
     ${NETWORK_DIR}
     ${GAME_DIR}
     ${RENDERER_DIR}
+    ${RAYLIB_DIR}
 )
 
 # === Fichiers sources ===
@@ -56,17 +58,16 @@ set(SOURCES
     ${GAME_DIR}/GameState.cpp
 
     ${RENDERER_DIR}/ARenderer.cpp
+    ${RENDERER_DIR}/DebugRenderer.cpp
     ${RENDERER_DIR}/NcursesRenderer.cpp
+
+    ${RAYLIB_DIR}/RaylibRenderer.cpp
 )
 
 # === Exécutable principal ===
 add_executable(zappy_gui ${SOURCES})
 
 # === Dépendances ===
-
-## OpenGL
-find_package(OpenGL REQUIRED)
-target_link_libraries(zappy_gui PRIVATE OpenGL::GL)
 
 ## GLEW
 find_package(GLEW REQUIRED)

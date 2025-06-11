@@ -9,14 +9,21 @@
 
 zappy::network::Protocol::Protocol(
     std::shared_ptr<gui::IRenderer> renderer,
-    std::shared_ptr<game::GameState> gameState
-) : _network(std::make_unique<NetworkManager>()),
+    std::shared_ptr<game::GameState> gameState,
+    bool debug
+) : _debug(debug),
+    _network(std::make_unique<NetworkManager>()),
     _renderer(renderer),
     _gameState(gameState),
     _authenticated(false)
 {
     initHandlers();
     _network->setMessageCallback([this](const ServerMessage &msg) {
+        if (!_debug) {
+            // close stdout / stderr
+            std::cout.setstate(std::ios_base::failbit);
+            std::cerr.setstate(std::ios_base::failbit);
+        }
         std::cout << "Command: " << msg.command << " " << msg.params << std::endl;
 
         GP cmd = getGuiProtocol(msg.command);
@@ -25,6 +32,16 @@ zappy::network::Protocol::Protocol(
             _handlers[cmd](msg.params);
         } catch (const std::exception &e) {
             std::cerr << "Error handling command \"" + msg.command + " " + msg.params + "\": " << e.what() << std::endl;
+            if (!_debug) {
+                // reopen stdout / stderr
+                std::cout.setstate(std::ios_base::goodbit);
+                std::cerr.setstate(std::ios_base::goodbit);
+            }
+        }
+        if (!_debug) {
+            // reopen stdout / stderr
+            std::cout.setstate(std::ios_base::goodbit);
+            std::cerr.setstate(std::ios_base::goodbit);
         }
     });
 }
@@ -238,14 +255,13 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
     removeSharp(trueParams);
 
     std::istringstream iss(trueParams);
-    std::string command;
     int playerId;
     size_t x, y;
     std::string orientation;
     size_t level;
     std::string teamName;
 
-    iss >> command >> playerId >> x >> y >> orientation >> level >> teamName;
+    iss >> playerId >> x >> y >> orientation >> level >> teamName;
 
     game::Player player(
         playerId, x, y,

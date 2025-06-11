@@ -8,6 +8,7 @@
 #include "Gui.hpp"
 
 zappy::gui::Gui::Gui() :
+    _debug(false),
     _ip("127.0.0.1"),
     _port(4242),
     _protocol(nullptr),
@@ -25,6 +26,8 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
         exit(0);
     }
 
+    bool raylib = false;
+
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
 
@@ -38,6 +41,10 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
             if (i + 1 >= argc)
                 throw ParsingError("Missing value for -h", "Parsing");
             _ip = argv[++i];
+        } else if (arg == "-debug" || arg == "-d") {
+            _debug = true;
+        } else if (arg == "-raylib" || arg == "-r") {
+            raylib = true;
         } else
             throw ParsingError("Unknown option: " + arg, "Parsing");
     }
@@ -49,8 +56,15 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
         throw ParsingError("Port out of range: " + std::to_string(_port), "Parsing");
     }
 
-    if (!_renderer)
-        _renderer = std::make_shared<NcursesRenderer>();
+    if (_debug) {
+        _renderer = std::make_shared<DebugRenderer>();
+    } else if (!_renderer) {
+        if (raylib)
+            // _renderer = std::make_shared<RaylibRenderer>();
+            return; //! to remove
+        else
+            _renderer = std::make_shared<NcursesRenderer>();
+    }
 }
 
 void zappy::gui::Gui::init()
@@ -65,7 +79,7 @@ void zappy::gui::Gui::init()
 
 void zappy::gui::Gui::initNetwork()
 {
-    _protocol = std::make_unique<network::Protocol>(_renderer, _gameState);
+    _protocol = std::make_unique<network::Protocol>(_renderer, _gameState, _debug);
     if (!_protocol->connectToServer(_ip, _port))
         throw network::NetworkError("Connection failed", "Network");
 }
