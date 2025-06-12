@@ -16,7 +16,8 @@
 namespace zappy {
     namespace gui {
         namespace raylib {
-            class IScene {
+            class IScene
+            {
                 public:
                     virtual ~IScene() = default;
 
