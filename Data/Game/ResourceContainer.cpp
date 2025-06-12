@@ -6,7 +6,6 @@
 */
 
 #include "ResourceContainer.hpp"
-#include "Data/Game/Resource.hpp"
 
 void zappy::game::ResourceContainer::clear()
 {
