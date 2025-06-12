@@ -5,6 +5,8 @@
 ** Player.hpp
 */
 
+#pragma once
+
 #include "Egg.hpp"
 #include "Inventory.hpp"
 #include <string>
