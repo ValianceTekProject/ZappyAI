@@ -21,6 +21,7 @@ namespace zappy {
         };
         void operator++(Orientation &orientation, int);
         void operator--(Orientation &orientation, int);
+        Orientation operator-(const Orientation &orientation);
         Orientation convertOrientation(const std::string &orientation);
 
         class Player : public Egg
@@ -48,7 +49,7 @@ namespace zappy {
 
                 void stepForward();
 
-                void ejectFrom(Orientation direction);
+                void ejectFrom(Orientation playerOrientation);
 
                 void setInventory(const Inventory &inventory) { this->_inventory = inventory; }
                 const Inventory &getInventory() const { return this->_inventory; }
