@@ -17,7 +17,7 @@ void zappy::game::operator--(zappy::game::Orientation &orientation, int)
     orientation = static_cast<zappy::game::Orientation>((static_cast<int>(orientation) - 1 + 4) % 4);
 }
 
-zappy::game::Orientation operator-(const zappy::game::Orientation &orientation)
+zappy::game::Orientation zappy::game::operator-(const zappy::game::Orientation &orientation)
 {
     return static_cast<zappy::game::Orientation>((static_cast<int>(orientation) + 2) % 4);
 }
