@@ -22,3 +22,10 @@ assets/
 zappy_ref-v3.0.0/
 __pycache__/
 .idea
+build
+client
+client.spec
+dist
+zappy_ref-v3.0.1.tgz
+zappy_server
+zip

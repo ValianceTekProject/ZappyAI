@@ -7,17 +7,17 @@
 import random
 from collections import deque
 import numpy as np
-from ...config import CommandType, GameStates
+from config import CommandType, GameStates
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+from dqn_state import DQNState
 
 class DeepQNetwork(nn.Module):
-    def __init__(self, hiddenLayerSize = 32, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
+    def __init__(self, hidden_layer_size = 32, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
                  epsilon_min = 0.01, batch_size = 64):
         super().__init__()
-        self.hidden_layer_size = hiddenLayerSize
+        self.hidden_layer_size = hidden_layer_size
         self.learning_rate = learning_rate
         self.available_state = list(GameStates)
         self.main_actions = [
@@ -37,7 +37,7 @@ class DeepQNetwork(nn.Module):
 
         self.memory = deque(maxlen=10000)
 
-        self.state_size = 10
+        self.state_size = 12
         self.input_size = self.state_size
 
         self.fc1 = nn.Linear(self.input_size, self.hidden_layer_size)
@@ -63,8 +63,8 @@ class DeepQNetwork(nn.Module):
         else:
             state_batch = torch.unsqueeze(state, 0)
             q_values = self.forward(state_batch)
-            maxQ = torch.argmax(q_values)
-            return maxQ.item()
+            maxq = torch.argmax(q_values)
+            return maxq.item()
 
     def calculate_reward(self, action, result, old_state, new_state):
         reward = 0
@@ -83,37 +83,10 @@ class DeepQNetwork(nn.Module):
         reward += 0.1
         return reward
 
-    """State
-    [
-      food_inventory,
-      level,
-      food_on_current_tile,
-      food_visible_nearby,
-      linemate_inventory,
-      deraumere_inventory,
-      sibur_inventory,
-      mendiane_inventory,
-      phiras_inventory,
-      thystame_inventory
-    ]"""
-
     def build_state_vector(self, game_state):
-        state = np.zeros(10)
-
-        state[0] = game_state.inventory.get('food', 0) / 100.0
-        state[1] = game_state.level / 8.0
-
-        state[2] = 0
-        state[3] = 0
-
-        state[4] = game_state.inventory.get('linemate', 0) / 20.0
-        state[5] = game_state.inventory.get('deraumere', 0) / 20.0
-        state[6] = game_state.inventory.get('sibur', 0) / 20.0
-        state[7] = game_state.inventory.get('mendiane', 0) / 20.0
-        state[8] = game_state.inventory.get('phiras', 0) / 20.0
-        state[9] = game_state.inventory.get('thystame', 0) / 20.0
-
-        return state
+        state = DQNState()
+        state.set_state(game_state, self.state_size)
+        return state.get_state()
 
     def save_experience(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
