@@ -12,12 +12,17 @@
 #include <algorithm>
 #include <thread>
 
+const constexpr int nbOrientation = 4;
+
 void zappy::game::Game::_addPlayerToTeam(
     zappy::game::Team &team, int clientSocket)
 {
+    std::srand(std::time({}));
+    int randVal = std::rand() % nbOrientation;
+    zappy::game::Orientation tmp = static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
     std::unique_ptr<zappy::game::ServerPlayer> newPlayer =
-        std::make_unique<zappy::game::ServerPlayer>(std::move(user), _idTot, 0, 0, zappy::game::Orientation::NORTH, 1);
+        std::make_unique<zappy::game::ServerPlayer>(std::move(user), _idTot, 0, 0, tmp, 1);
     _idTot += 1;
     user.setState(zappy::server::ClientState::CONNECTED);
 
