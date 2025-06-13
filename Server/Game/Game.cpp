@@ -8,6 +8,8 @@
 #include "Game.hpp"
 #include "Server.hpp"
 #include "ServerPlayer.hpp"
+#include "ServerPlayer.hpp"
+#include "Server.hpp"
 #include "Teams.hpp"
 #include <algorithm>
 #include <thread>
