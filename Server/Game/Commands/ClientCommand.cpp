@@ -30,6 +30,7 @@ void zappy::game::CommandHandler::initCommandMap(zappy::game::ServerPlayer &play
 void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {
+        player.stepForward();
         player.startChrono();
         player.setChronoStart(true);
         player.getClient().sendMessage("ok\n");
