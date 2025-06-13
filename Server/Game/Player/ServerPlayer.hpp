@@ -24,7 +24,7 @@ namespace zappy {
                  size_t y,
                  Orientation orientation,
                  size_t level = 1)
-                : Player(id, x, y, orientation, level),
+                : Player::Player(id, x, y, orientation, level),
                 _user(std::move(user)),
                 _startTime(std::chrono::steady_clock::now()) {}
 

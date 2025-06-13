@@ -19,14 +19,17 @@ void zappy::game::Game::_addPlayerToTeam(
 {
     std::srand(std::time({}));
     int randVal = std::rand() % nbOrientation;
-    zappy::game::Orientation tmp = static_cast<zappy::game::Orientation>(randVal);
+    zappy::game::Orientation orientation = static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
-    std::unique_ptr<zappy::game::ServerPlayer> newPlayer =
-        std::make_unique<zappy::game::ServerPlayer>(std::move(user), _idTot, 0, 0, tmp, 1);
-    _idTot += 1;
+    zappy::game::Egg egg = this->_eggList.front();
+    std::cout << "x: " << egg.x << "y: " << egg.y << std::endl;
+    this->_eggList.pop();
     user.setState(zappy::server::ClientState::CONNECTED);
-
+    auto newPlayer =
+        std::make_shared<zappy::game::ServerPlayer>(std::move(user), _idPlayerTot, egg.x, egg.y, orientation, 1);
+    _idPlayerTot += 1;
     team.addPlayer(std::move(newPlayer));
+    this->_playerList.push_back(std::move(newPlayer));
 }
 
 bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
@@ -55,6 +58,7 @@ bool zappy::game::Game::handleTeamJoin(
 
     if (this->_checkAlreadyInTeam(clientSocket) == true)
         return false;
+    
     this->_addPlayerToTeam(*it, clientSocket);
     return true;
 }
@@ -72,6 +76,18 @@ void zappy::game::Game::removeFromTeam(int clientSocket)
         }
     }
 }
+
+void zappy::game::Game::setEggsonMap()
+{
+    for (int i = 0; i < static_cast<int>((_clientNb * _teamList.size())); i += 1) {
+        size_t x = std::rand() % _map.getWidth();
+        size_t y = std::rand() % _map.getHeight();
+        zappy::game::Egg newEgg(_idEggTot, SERVER_FATHER_ID, x, y);
+        _idEggTot += 1;
+        this->_eggList.push(newEgg);
+    }
+}
+
 
 void zappy::game::Game::runGame()
 {
