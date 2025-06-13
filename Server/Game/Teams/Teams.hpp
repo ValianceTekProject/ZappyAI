@@ -8,9 +8,9 @@
 #pragma once
 
 #include "Client.hpp"
-#include "Data/Game/Player.hpp"
+#include "Player.hpp"
 #include "Inventory.hpp"
-#include "Player/ServerPlayer.hpp"
+#include "ServerPlayer.hpp"
 #include <memory>
 #include <mutex>
 #include <queue>

@@ -7,7 +7,7 @@
 
 #include "Server.hpp"
 #include "SocketServer.hpp"
-#include "Error/Error.hpp"
+#include "Error.hpp"
 #include "Game.hpp"
 #include "my_macros.hpp"
 #include <memory>

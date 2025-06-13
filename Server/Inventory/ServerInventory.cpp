@@ -5,7 +5,7 @@
 // Inventory
 //
 
-#include "Inventory.hpp"
+#include "ServerInventory.hpp"
 #include <cstddef>
 #include <sstream>
 
