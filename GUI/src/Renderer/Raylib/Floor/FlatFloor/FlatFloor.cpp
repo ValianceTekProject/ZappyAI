@@ -7,20 +7,16 @@
 
 #include "FlatFloor.hpp"
 #include "raylib.h"
+#include <algorithm>
 
-zappy::gui::raylib::FlatFloor::FlatFloor()
-    : AFloor() {}
-
-void zappy::gui::raylib::FlatFloor::draw(const Map &map) const
+zappy::gui::raylib::FlatFloor::FlatFloor(const zappy::game::Map &map)
+    : AFloor(map)
 {
-    int gridSize = getGridSize();
-    int spacing = getSpacing();
+    setWidth(static_cast<int>(map.getWidth()));
+    setHeight(static_cast<int>(map.getHeight()));
+}
 
-    for (int x = 0; x < map.getWidth(); ++x) {
-        for (int y = 0; y < map.getHeight(); ++y) {
-            Vector2 position = { static_cast<float>(x * (gridSize + spacing)),
-                                 static_cast<float>(y * (gridSize + spacing)) };
-            DrawRectangleV(position, { static_cast<float>(gridSize), static_cast<float>(gridSize) }, DARKGRAY);
-        }
-    }
+void zappy::gui::raylib::FlatFloor::draw() const
+{
+   DrawGrid(std::max(getWidth(), getHeight()), static_cast<float>(getSpacing()));
 }
