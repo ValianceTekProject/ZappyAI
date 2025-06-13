@@ -7,45 +7,54 @@
 
 #pragma once
 
+#include "Teams/Teams.hpp"
+#include "Map/Map.hpp"
+#include "my_macros.hpp"
+#include "Commands/ClientCommand.hpp"
 #include <atomic>
 #include <chrono>
-#include <ctime>
-#include <functional>
-
-#include "Data/Game/Map.hpp"
 
 namespace zappy {
     namespace game {
 
-        class MapServer : public Map {
-           public:
-            MapServer(const size_t &x, const size_t &y) : Map(x, y) {}
-            ~MapServer() = default;
-
-            void mapInit();
-
-           private:
-        };
+        // constexpr int baseGameFreqMs = 1000;
 
         class Game {
 
            public:
-            Game(): _baseFreqMs(1000) {}
+            Game(int mapWidth, int mapHeight, std::vector<Team> teamList, int freq, int clientNb)
+                : _map(mapWidth, mapHeight),
+                _commandHandler(freq),
+                _teamList(std::move(teamList)),
+                _baseFreqMs(freq),
+                _clientNb(clientNb)
+            {}
+
 
             ~Game() = default;
 
-            void gameLoop();
+            void runGame();
+            void setRunningState(RunningState run) { this->_isRunning = run; };
 
-            MapServer &getMap() { return _map; }
+            bool handleTeamJoin(int clientSocket, const std::string &teamName);
+            void removeFromTeam(int clientSocket);
 
-            void setRun(bool run) {this->_isRunning = run;};
+            int getFreq() { return this->_baseFreqMs; }
+            MapServer &getMap() { return this->_map; }
+            std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };
 
            private:
+            int _idTot = 0;
             MapServer _map;
-            std::chrono::milliseconds _baseFreqMs;
-            std::atomic<bool>_isRunning = false;
-        
+            zappy::game::CommandHandler _commandHandler;
+            std::vector<zappy::game::Team> _teamList;
+            int _baseFreqMs;
+            int _clientNb;
+            std::atomic<RunningState> _isRunning = RunningState::PAUSE;
+
             void _playTurn();
+            bool _checkAlreadyInTeam(int clientSocket);
+            void _addPlayerToTeam(Team &team, int clientSocket);
         };
     }  // namespace game
 }  // namespace zappy

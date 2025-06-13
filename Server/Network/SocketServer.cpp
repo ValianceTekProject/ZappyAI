@@ -5,7 +5,7 @@
 // Socket
 //
 
-#include "Socket.hpp"
+#include "SocketServer.hpp"
 #include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
@@ -16,13 +16,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-zappy::server::Socket::Socket(int port, std::uint8_t nbClients)
+zappy::server::SocketServer::SocketServer(int port, std::uint8_t nbClients)
 {
     this->_port = port;
     this->_nbClients = nbClients;
-    this->_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->_socket < 0)
-        throw SocketError("Socket failed");
     if (this->_port <= 0)
         throw SocketError("Wrong Port for socket");
 
@@ -34,26 +31,34 @@ zappy::server::Socket::Socket(int port, std::uint8_t nbClients)
     this->_address->sin_port = htons(this->_port);
     this->_address->sin_family = AF_INET;
 
-    std::cout << "Port: " << port << std::endl;
-    std::cout << "Socket: " << this->_socket << std::endl;
+    this->_initSocket();
+}
+
+void zappy::server::SocketServer::_initSocket()
+{
+    this->_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (this->_socket < 0)
+        throw SocketError("Socket failed");
+
     if (bind(this->_socket, (struct sockaddr *)this->_address.get(),
             sizeof(struct sockaddr_in)) < 0) {
         if (errno == EADDRINUSE)
             throw SocketError("Port already used");
         throw SocketError("Bind failed");
     }
-    if (listen(this->_socket, nbClients) < 0)
+
+    if (listen(this->_socket, this->_nbClients) < 0)
         throw SocketError("Listen failed");
 }
 
-zappy::server::Socket::~Socket()
+zappy::server::SocketServer::~SocketServer()
 {
     if (this->_socket > 0) {
         close(this->_socket);
     }
 }
 
-void zappy::server::Socket::createConnection()
+void zappy::server::SocketServer::createConnection()
 {
     if (connect(this->_socket,
             reinterpret_cast<sockaddr *>(this->_address.get()),
@@ -62,23 +67,26 @@ void zappy::server::Socket::createConnection()
     }
 }
 
-void zappy::server::Socket::sendMessage(int clientSocket, const std::string &msg) const
+void zappy::server::SocketServer::sendMessage(
+    int clientSocket, const std::string &msg) const
 {
     std::string messageFormat = msg + "\n";
     if (send(clientSocket, messageFormat.c_str(),
             strlen(messageFormat.c_str()), 0) == -1) {
-        throw SocketError("Send Failed");
+        throw SocketError("Send Failed " + msg);
     }
 }
 
-int zappy::server::Socket::getSocket() const
+int zappy::server::SocketServer::getSocket() const
 {
     return this->_socket;
 }
 
-std::string zappy::server::Socket::getServerInformation()
+std::string zappy::server::SocketServer::getServerInformation()
 {
-    char buf[256];
+    constexpr short buffSize = 256;
+
+    char buf[buffSize];
     std::string str;
     ssize_t bytes_read = 0;
 
@@ -88,29 +96,36 @@ std::string zappy::server::Socket::getServerInformation()
             break;
         if (bytes_read == 0) {
             close(this->_socket);
-            this->_socket = -1;
-            throw SocketError("Server disconected");
+            this->_socket = invalidSocket;
+            throw SocketError("Server disconnected");
         }
         str.append(buf, bytes_read);
-        if (bytes_read < 256)
+        if (bytes_read < buffSize)
             break;
     }
+    std::cout << str << std::endl;
     return str;
 }
 
-pollfd zappy::server::Socket::acceptConnection()
+void zappy::server::SocketServer::getData(std::vector<struct pollfd> &fds) const
+{
+    int poll_c = poll(fds.data(), fds.size(), 0);
+    if (poll_c < 0)
+        throw SocketError("Poll failed");
+}
+
+pollfd zappy::server::SocketServer::acceptConnection()
 {
     sockaddr_in clientAddr{};
     socklen_t clientLen = sizeof(clientAddr);
-    int clientSocket = accept(this->_socket, (sockaddr *)&clientAddr, &clientLen);
+    int clientSocket =
+        accept(this->_socket, (sockaddr *)&clientAddr, &clientLen);
 
     if (clientSocket < 0)
         throw SocketError("Accept failed");
 
-    std::cout << "New connection: " << clientSocket << std::endl;
     pollfd fd = {clientSocket, POLLIN, 0};
 
     this->sendMessage(clientSocket, "WELCOME\n");
     return fd;
 }
-

@@ -17,14 +17,16 @@ include_directories(
     Error
     Inventory
     Client
-    EncapsuledFunction
+    Network
     Game
     Player
+    Server
     ..
     ../Data/
+    ../Utils/
 )
 
-file(GLOB_RECURSE SOURCES ./*.cpp ../Data/*.cpp)
+file(GLOB_RECURSE SOURCES ./*.cpp ../Data/*.cpp ../Utils/*.cpp)
 
 # Add executable
 add_executable(zappy_server ${SOURCES})

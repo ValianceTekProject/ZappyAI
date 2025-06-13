@@ -17,6 +17,11 @@ void zappy::game::operator--(zappy::game::Orientation &orientation, int)
     orientation = static_cast<zappy::game::Orientation>((static_cast<int>(orientation) - 1 + 4) % 4);
 }
 
+zappy::game::Orientation zappy::game::operator-(const zappy::game::Orientation &orientation)
+{
+    return static_cast<zappy::game::Orientation>((static_cast<int>(orientation) + 2) % 4);
+}
+
 zappy::game::Orientation zappy::game::convertOrientation(const std::string &orientation)
 {
     if (orientation == "NORTH" || orientation == "N")
@@ -61,10 +66,11 @@ void zappy::game::Player::stepForward()
     }
 }
 
-void zappy::game::Player::ejectFrom(Orientation orientation)
+void zappy::game::Player::ejectFrom(Orientation playerOrientation)
 {
     stopPraying();
-    switch (orientation) {
+    Orientation ejectFromOrientation = -playerOrientation;
+    switch (ejectFromOrientation) {
         case Orientation::NORTH:
             this->y++;
             break;

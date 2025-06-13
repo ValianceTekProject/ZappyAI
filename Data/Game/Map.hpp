@@ -25,6 +25,8 @@ namespace zappy {
                 Tile &getTile(const size_t &x, const size_t &y) { return this->_map[x][y]; }
                 const Tile &getTile(const size_t &x, const size_t &y) const { return this->_map[x][y]; }
 
+                size_t getResourceQuantity(const Resource &type) const;
+
                 void clearTile(const size_t &x, const size_t &y);
                 void clear();
 
