@@ -9,49 +9,31 @@ import random
 from protocol.commands import CommandManager
 from utils.game_state import GameState
 from config import CommandType, Constants
-from dqn import DeepQNetwork
+from ai.strategy.DQN.dqn_planner import DQNPlanner
 
 class Planner:
-    def __init__(self, command_manager: CommandManager, game_state: GameState, use_dqn=True):
+    def __init__(self, command_manager: CommandManager, game_state: GameState, use_dqn=False):
         self.cmd_manager = command_manager
         self.state = game_state
 
         self.use_dqn = use_dqn
-        self.dqn = DeepQNetwork() if use_dqn else None
+        self.dqn_planner = DQNPlanner(game_state, command_manager)
 
         self.last_state = None
         self.last_action_index = None
 
-    def dqn_decision(self):
-        if self.state.command_already_send:
-            return None
-        current_state = self.dqn.build_state_vector(self.state)
-        action_index = self.dqn.choose_action(current_state)
-        action = self.dqn.get_action_form_index(action_index)
-        self.last_state = current_state
-        self.last_action_index = action_index
-        return self.execute_dqn_action(action)
-
-    def execute_dqn_action(self, action):
-        if action == CommandType.FORWARD:
-            return self.cmd_manager.forward()
-        elif action == CommandType.LEFT:
-            return self.cmd_manager.left()
-        elif action == CommandType.RIGHT:
-            return self.cmd_manager.right()
-        elif action == CommandType.TAKE:
-            return self.cmd_manager.take(Constants.FOOD.value)
-        elif action == CommandType.LOOK:
-            return self.cmd_manager.look()
-        return None
-
     def decide_next_action(self):
         if self.use_dqn:
-            return self.dqn_decision()
+            return self.dqn_planner.dqn_decision()
 
         if self.state.command_already_send:
             return None
 
+        pos = self.state.vision.find_closest_resource("food")
+        if pos:
+            print("Cosest ressource is at")
+            print("POS X = {}".format(pos[0]))
+            print("POS Y = {}".format(pos[1]))
         if self.state.needs_look:
             return self.cmd_manager.look()
 
@@ -161,3 +143,4 @@ class Planner:
             return self.cmd_manager.left()
         elif choice == CommandType.RIGHT:
             return self.cmd_manager.right()
+        return None
