@@ -5,8 +5,7 @@
 // Base functions for map
 //
 
-#include "Data/Game/Resource.hpp"
-#include "Map.hpp"
+#include "ServerMap.hpp"
 #include <chrono>
 
 zappy::game::MapServer::MapServer(int width, int height)

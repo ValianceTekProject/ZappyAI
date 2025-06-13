@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <map>
 
-#include "Data/Game/Inventory.hpp"
+#include "Inventory.hpp"
 
 namespace zappy {
     namespace game {

@@ -6,9 +6,9 @@
 */
 
 #include "Game.hpp"
-#include "Player/ServerPlayer.hpp"
+#include "ServerPlayer.hpp"
 #include "Server.hpp"
-#include "Teams/Teams.hpp"
+#include "Teams.hpp"
 #include <algorithm>
 #include <thread>
 

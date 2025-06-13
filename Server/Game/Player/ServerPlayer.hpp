@@ -10,8 +10,9 @@
 #include <chrono>
 
 #include "Client.hpp"
-#include "Data/Game/Player.hpp"
-#include "Teams/Teams.hpp"
+#include "Player.hpp"
+#include "Teams.hpp"
+#include "ServerInventory.hpp"
 
 namespace zappy {
     namespace game {

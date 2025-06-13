@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "Teams/Teams.hpp"
-#include "Map/Map.hpp"
+#include "Teams.hpp"
+#include "ServerMap.hpp"
 #include "my_macros.hpp"
-#include "Commands/ClientCommand.hpp"
+#include "ClientCommand.hpp"
 #include <atomic>
 #include <chrono>
 
