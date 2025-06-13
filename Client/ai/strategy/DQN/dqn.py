@@ -4,6 +4,7 @@
 ## File description:
 ## dqn
 ##
+
 import random
 from collections import deque
 import numpy as np
@@ -11,7 +12,8 @@ from config import CommandType, GameStates
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from dqn_state import DQNState
+from ai.strategy.DQN.dqn_state import DQNState
+from utils.game_state import GameState
 
 class DeepQNetwork(nn.Module):
     def __init__(self, hidden_layer_size = 32, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
@@ -37,7 +39,6 @@ class DeepQNetwork(nn.Module):
 
         self.memory = deque(maxlen=10000)
 
-        self.state_size = 12
         self.input_size = self.state_size
 
         self.fc1 = nn.Linear(self.input_size, self.hidden_layer_size)
@@ -83,10 +84,8 @@ class DeepQNetwork(nn.Module):
         reward += 0.1
         return reward
 
-    def build_state_vector(self, game_state):
-        state = DQNState()
-        state.set_state(game_state, self.state_size)
-        return state.get_state()
+    def build_state(self, game_state: GameState, actualize_food: bool = False):
+        return DQNState(game_state, actualize_food)
 
     def save_experience(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
