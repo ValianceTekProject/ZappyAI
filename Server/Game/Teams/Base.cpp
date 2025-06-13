@@ -5,7 +5,7 @@
 // Base
 //
 
-#include "Teams/Teams.hpp"
+#include "Teams.hpp"
 const std::vector<std::shared_ptr<zappy::game::ServerPlayer>> &zappy::game::Team::getPlayerList() const
 {
     return this->_playerList;
