@@ -37,8 +37,8 @@ zappy::game::Orientation zappy::game::convertOrientation(const std::string &orie
 
 zappy::game::Player::Player(
     int id,
-    size_t x,
-    size_t y,
+    int x,
+    int y,
     Orientation orientation,
     size_t level
 ) :
@@ -48,7 +48,7 @@ zappy::game::Player::Player(
     _isPraying(false)
 {}
 
-void zappy::game::Player::stepForward()
+void zappy::game::Player::stepForward(int width, int height)
 {
     switch (orientation) {
         case Orientation::NORTH:
@@ -64,6 +64,10 @@ void zappy::game::Player::stepForward()
             this->x--;
             break;
     }
+    if (x > width || x < 0)
+        x = (x + width) % width;
+    if (y > height || y < 0)
+        y = (y + height) % height;
 }
 
 void zappy::game::Player::ejectFrom(Orientation playerOrientation)
