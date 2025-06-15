@@ -256,7 +256,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
 
     std::istringstream iss(trueParams);
     int playerId;
-    size_t x, y;
+    int x, y;
     std::string orientation;
     size_t level;
     std::string teamName;
@@ -283,7 +283,7 @@ void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
 
     std::istringstream iss(trueParams);
     int playerId;
-    size_t x, y;
+    int x, y;
     std::string orientation;
 
     iss >> playerId >> x >> y >> orientation;
@@ -507,7 +507,7 @@ void zappy::network::Protocol::handleEggCreated(const std::string &params)
 
     int eggId;
     int playerId;
-    size_t x, y;
+    int x, y;
 
     iss >> eggId >> playerId >> x >> y;
 

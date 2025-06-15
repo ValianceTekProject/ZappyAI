@@ -9,8 +9,8 @@
 
 void zappy::game::GameState::updatePlayerPosition(
     const int &id,
-    const size_t &x,
-    const size_t &y,
+    const int &x,
+    const int &y,
     const Orientation &orientation
 ) {
     Player &player = getPlayerById(id);
@@ -37,8 +37,8 @@ void zappy::game::GameState::updatePlayerInventory(const int &id, const Inventor
 void zappy::game::GameState::hatchEgg(const int &eggId)
 {
     Egg &egg = getEggById(eggId);
-    size_t x = egg.x;
-    size_t y = egg.y;
+    int x = egg.x;
+    int y = egg.y;
 
     std::vector<Player> players = getPlayersByCoord(x, y);
 
@@ -70,7 +70,7 @@ void zappy::game::GameState::removePlayer(const int &id)
     throw GameError("Player " + std::to_string(id) + " not found", "Game");
 }
 
-std::vector<zappy::game::Egg> zappy::game::GameState::getEggsByCoord(const size_t &x, const size_t &y)
+std::vector<zappy::game::Egg> zappy::game::GameState::getEggsByCoord(const int &x, const int &y)
 {
     std::vector<Egg> eggs;
 
@@ -81,7 +81,7 @@ std::vector<zappy::game::Egg> zappy::game::GameState::getEggsByCoord(const size_
     return eggs;
 }
 
-std::vector<zappy::game::Player> zappy::game::GameState::getPlayersByCoord(const size_t &x, const size_t &y)
+std::vector<zappy::game::Player> zappy::game::GameState::getPlayersByCoord(const int &x, const int &y)
 {
     std::vector<Player> players;
 
