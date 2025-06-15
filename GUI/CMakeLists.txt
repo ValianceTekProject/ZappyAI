@@ -68,6 +68,8 @@ set(SOURCES
     ${RENDERER_DIR}/NcursesRenderer.cpp
 
     ${RAYLIB_DIR}/RaylibRenderer.cpp
+    ${RAYLIB_SCENE_DIR}/AScene.cpp
+    ${RAYLIB_SCENE_DIR}/BasicScene.cpp
 )
 
 # === Exécutable principal ===

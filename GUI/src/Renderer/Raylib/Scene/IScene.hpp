@@ -9,6 +9,8 @@
 
 #include "IPlayerModel.hpp"
 #include "IFloor.hpp"
+#include "InputManager.hpp"
+
 #include "GameState.hpp"
 
 #include "raylib.h"
@@ -21,17 +23,17 @@ namespace zappy {
                 public:
                     virtual ~IScene() = default;
 
-                    virtual void init(const std::shared_ptr<game::Map> &map) = 0;
+                    virtual void init(const std::shared_ptr<game::GameState> &gameState) = 0;
 
                     virtual void update() = 0;
                     virtual void render() const = 0;
 
-                    virtual void handleInput() = 0;
+                    virtual void handleInput(InputManager &inputManager) = 0;
 
                     virtual bool shouldClose() const = 0;
 
-                    virtual void addEgg(const game::Egg &egg) = 0;
-                    virtual void addPlayer(const game::Player &player) = 0;
+                    virtual void addEgg(const int &eggId) = 0;
+                    virtual void addPlayer(const int &id) = 0;
 
                     virtual void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) = 0;
                     virtual void updatePlayerLevel(const int &id, const size_t &level) = 0;

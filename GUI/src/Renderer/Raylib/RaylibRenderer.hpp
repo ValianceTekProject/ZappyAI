@@ -42,6 +42,8 @@ namespace zappy {
 
             private:
                 std::unique_ptr<raylib::IScene> _scene;
+
+                raylib::InputManager _inputManager;
         };
     }
 }

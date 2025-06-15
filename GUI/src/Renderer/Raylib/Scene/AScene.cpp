@@ -8,5 +8,60 @@
 #include "AScene.hpp"
 
 zappy::gui::raylib::AScene::AScene() :
-    _map(nullptr)
+    _gameState(nullptr)
 {}
+
+void zappy::gui::raylib::AScene::init(const std::shared_ptr<game::GameState> &gameState)
+{
+    _gameState = gameState;
+}
+
+void zappy::gui::raylib::AScene::handleInput(InputManager &inputManager)
+{
+    // Gérer les entrées de l'utilisateur
+}
+
+void zappy::gui::raylib::AScene::addEgg(const int &eggId)
+{
+    // Ajouter un œuf à la scène
+}
+
+void zappy::gui::raylib::AScene::addPlayer(const int &id)
+{
+    // Ajouter un joueur à la scène
+}
+
+void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)
+{
+    // Mettre à jour la position d'un joueur
+}
+
+void zappy::gui::raylib::AScene::updatePlayerLevel(const int &id, const size_t &level)
+{
+    // Mettre à jour le niveau d'un joueur
+}
+
+void zappy::gui::raylib::AScene::updatePlayerInventory(const int &id, const game::Inventory &inventory)
+{
+    // Mettre à jour l'inventaire d'un joueur
+}
+
+void zappy::gui::raylib::AScene::hatchEgg(const int &eggId)
+{
+    // Incuber un œuf
+}
+
+void zappy::gui::raylib::AScene::removeEgg(const int &eggId)
+{
+    // Supprimer un œuf
+}
+
+void zappy::gui::raylib::AScene::removePlayer(const int &id)
+{
+    // Supprimer un joueur
+}
+
+void zappy::gui::raylib::AScene::endGame(const std::string &teamName)
+{
+    // Afficher le résultat de la partie
+}

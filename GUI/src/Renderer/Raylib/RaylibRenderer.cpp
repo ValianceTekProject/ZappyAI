@@ -13,71 +13,81 @@ zappy::gui::RaylibRenderer::RaylibRenderer() :
 {}
 
 void zappy::gui::RaylibRenderer::init()
-{}
+{
+    // Initialisation Raylib ici
+    InitWindow(1280, 720, "Zappy GUI");
+    SetTargetFPS(60);
+
+    _scene->init(_gameState);
+}
 
 void zappy::gui::RaylibRenderer::handleInput()
-{}
+{
+    _inputManager.update();
+    _scene->handleInput(_inputManager);
+}
 
 void zappy::gui::RaylibRenderer::update()
-{}
+{
+    _scene->update();
+}
 
 void zappy::gui::RaylibRenderer::render() const
-{}
+{
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+
+    _scene->render();
+
+    EndDrawing();
+}
 
 bool zappy::gui::RaylibRenderer::shouldClose() const
 {
-    return false;
+    return WindowShouldClose();
 }
 
 void zappy::gui::RaylibRenderer::addEgg(const int &eggId, const int &fatherId, const size_t &x, const size_t &y)
 {
-    (void)eggId;
-    (void)fatherId;
-    (void)x;
-    (void)y;
+    ARenderer::addEgg(eggId, fatherId, x, y);
 }
 
 void zappy::gui::RaylibRenderer::addPlayer(const game::Player &player)
 {
-    (void)player;
+    ARenderer::addPlayer(player);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)
 {
-    (void)id;
-    (void)x;
-    (void)y;
-    (void)orientation;
+    ARenderer::updatePlayerPosition(id, x, y, orientation);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerLevel(const int &id, const size_t &level)
 {
-    (void)id;
-    (void)level;
+    ARenderer::updatePlayerLevel(id, level);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerInventory(const int &id, const game::Inventory &inventory)
 {
-    (void)id;
-    (void)inventory;
+    ARenderer::updatePlayerInventory(id, inventory);
 }
 
 void zappy::gui::RaylibRenderer::hatchEgg(const int &eggId)
 {
-    (void)eggId;
+    ARenderer::hatchEgg(eggId);
 }
 
 void zappy::gui::RaylibRenderer::removeEgg(const int &eggId)
 {
-    (void)eggId;
+    ARenderer::removeEgg(eggId);
 }
 
 void zappy::gui::RaylibRenderer::removePlayer(const int &id)
 {
-    (void)id;
+    ARenderer::removePlayer(id);
 }
 
 void zappy::gui::RaylibRenderer::endGame(const std::string &teamName)
 {
-    (void)teamName;
+    ARenderer::endGame(teamName);
 }
