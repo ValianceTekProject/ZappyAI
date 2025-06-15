@@ -33,8 +33,8 @@ namespace zappy {
 
                 explicit Player(
                     int id,
-                    size_t x,
-                    size_t y,
+                    int x,
+                    int y,
                     Orientation orientation = Orientation::NORTH,
                     size_t level = 1
                 );
@@ -47,7 +47,7 @@ namespace zappy {
                 void lookLeft() { this->orientation--; }
                 void lookRight() { this->orientation++; }
 
-                void stepForward();
+                void stepForward(int width, int height);
 
                 void ejectFrom(Orientation playerOrientation);
 
