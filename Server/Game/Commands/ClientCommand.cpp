@@ -30,7 +30,7 @@ void zappy::game::CommandHandler::initCommandMap(zappy::game::ServerPlayer &play
 void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {
-        player.stepForward();
+        player.stepForward(this->_widthMap, this->_heightMap);
         player.startChrono();
         player.setChronoStart(true);
         player.getClient().sendMessage("ok\n");
@@ -40,6 +40,7 @@ void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &playe
     double seconds = static_cast<double>(static_cast<int>(timeLimit::FORWARD)) / this->_freq;
     auto timeNeed = std::chrono::duration<double>(seconds);
     if (player.getChrono() >= timeNeed) {
+        player.stepForward(this->_widthMap, this->_heightMap);
         player.startChrono();
         player.getClient().sendMessage("ok\n");
     } else
