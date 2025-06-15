@@ -14,13 +14,13 @@ namespace zappy {
         class Egg
         {
             public:
-                size_t x;
-                size_t y;
+                int x;
+                int y;
 
-                explicit Egg(const int &id, const int &fatherId, const size_t &x, const size_t &y) :
+                explicit Egg(const int &id, const int &fatherId, const int &x, const int &y) :
                     x(x), y(y), _id(id), _fatherId(fatherId)
                 {}
-                explicit Egg(const int &id, const size_t &x, const size_t &y) :
+                explicit Egg(const int &id, const int &x, const int &y) :
                     Egg(id, -1, x, y)
                 {}
                 ~Egg() = default;
