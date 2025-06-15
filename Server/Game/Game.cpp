@@ -93,6 +93,7 @@ void zappy::game::Game::runGame()
 {
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
+    this->_commandHandler = CommandHandler(this->getFreq(), this->getMap().getWidth(), this->getMap().getHeight());
 
     while (this->_isRunning != RunningState::STOP) {
         auto now = std::chrono::steady_clock::now();
