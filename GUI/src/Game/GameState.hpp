@@ -40,15 +40,15 @@ namespace zappy {
                 void addEgg(
                     const int &eggId,
                     const int &fatherId,
-                    const size_t &x,
-                    const size_t &y
+                    const int &x,
+                    const int &y
                 ) { this->_eggs.push_back(Egg(eggId, fatherId, x, y)); }
                 void addPlayer(const Player &player) { this->_players.push_back(player); }
 
                 void updatePlayerPosition(
                     const int &id,
-                    const size_t &x,
-                    const size_t &y,
+                    const int &x,
+                    const int &y,
                     const Orientation &orientation
                 );
                 void updatePlayerLevel(const int &id, const size_t &level);
@@ -62,8 +62,8 @@ namespace zappy {
                 Egg &getEggById(const int &eggId);
                 Player &getPlayerById(const int &id);
 
-                std::vector<Egg> getEggsByCoord(const size_t &x, const size_t &y);
-                std::vector<Player> getPlayersByCoord(const size_t &x, const size_t &y);
+                std::vector<Egg> getEggsByCoord(const int &x, const int &y);
+                std::vector<Player> getPlayersByCoord(const int &x, const int &y);
 
                 void endGame(const std::string &teamName);
 
