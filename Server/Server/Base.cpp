@@ -43,16 +43,22 @@ int handleFlag(const std::string &flag)
 
 void zappy::server::Server::_parseName(int &index, char const *argv[])
 {
+    constexpr uint8_t gui_only = 1;
+
     index += 1;
     while (argv[index]) {
         if (std::string(argv[index]).find("-") == 0)
             break;
         this->_namesTeam.push_back(argv[index]);
+        if (std::string(argv[index]) == "GRAPHIC")
+            throw error::InvalidArg("GRAPHIC is reserved for the gui");
         this->_teamList.emplace_back(argv[index]);
         index += 1;
     }
 
-    if (this->_teamList.empty())
+    this->_namesTeam.push_back("GRAPHIC");
+    this->_teamList.emplace_back(this->_namesTeam);
+    if (this->_teamList.size() == gui_only)
         throw error::InvalidArg("Flag -n must have at least on argument !");
     index -= 1;
 }
