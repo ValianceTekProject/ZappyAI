@@ -81,13 +81,11 @@ void zappy::gui::Gui::initNetwork()
     _protocol = std::make_unique<network::Protocol>(_renderer, _gameState, _debug);
     if (!_protocol->connectToServer(_ip, _port))
         throw network::NetworkError("Connection failed", "Network");
-    std::cout << "Connected to server" << std::endl;
 }
 
 void zappy::gui::Gui::run()
 {
     init();
-    std::cout << "intialized" << std::endl;
 
     // const std::chrono::milliseconds frameDelay(1 / _gameState->getFrequency());
 

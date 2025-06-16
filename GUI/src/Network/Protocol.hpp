@@ -71,8 +71,8 @@ namespace zappy {
                 void handleTimeUnit(const std::string &params);
                 void handleGameEnd(const std::string &params);
                 void handleServerMessage(const std::string &params);
-                //! void handleUnknownCommand(const std::string &params);
-                //! void handleBadCommand(const std::string &params);
+                void handleUnknownCommand(const std::string &params);
+                void handleBadCommand(const std::string &params);
 
                 void initHandlers();
                 void onServerMessage(const ServerMessage &msg);
