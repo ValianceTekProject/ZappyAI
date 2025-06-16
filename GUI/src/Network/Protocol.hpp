@@ -45,6 +45,8 @@ namespace zappy {
 
             private:
                 void removeSharp(std::string &message);
+                // string / outputs stream default cout
+                void printDebug(const std::string &message, std::ostream &stream = std::cout);
 
                 // Message handlers
                 void handleMapSize(const std::string &params);
@@ -69,6 +71,8 @@ namespace zappy {
                 void handleTimeUnit(const std::string &params);
                 void handleGameEnd(const std::string &params);
                 void handleServerMessage(const std::string &params);
+                //! void handleUnknownCommand(const std::string &params);
+                //! void handleBadCommand(const std::string &params);
 
                 void initHandlers();
                 void onServerMessage(const ServerMessage &msg);
