@@ -57,7 +57,7 @@ void zappy::server::Server::_parseName(int &index, char const *argv[])
     }
 
     this->_namesTeam.push_back("GRAPHIC");
-    this->_teamList.emplace_back(this->_namesTeam);
+    this->_teamList.emplace_back("GRAPHIC");
     if (this->_teamList.size() == gui_only)
         throw error::InvalidArg("Flag -n must have at least on argument !");
     index -= 1;

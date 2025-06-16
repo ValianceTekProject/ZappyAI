@@ -118,7 +118,7 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
     if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::FORWARD) / this->_freq)) {
         player.startChrono();
         player.getClient().sendMessage("ok\n");
-    } else
+    } else 
         player.getClient().sendMessage("ko\n");
 }
 
@@ -138,5 +138,6 @@ void zappy::game::CommandHandler::processClientInput(const std::string& input, z
         it->second();
         return;
     }
+    std::cout << static_cast<int>(player.getClient().getState()) << std::endl;
     player.getClient().sendMessage("ko\n");
 }

@@ -36,5 +36,9 @@ namespace zappy {
             public:
                 ServerConnection(std::string msg) : Error(msg) {}
         };
+            class SocketError : public error::Error {
+               public:
+                SocketError(std::string msg): Error(msg) {};
+            };
     }
 }

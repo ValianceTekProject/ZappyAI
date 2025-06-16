@@ -6,8 +6,8 @@
 */
 
 #include "Game.hpp"
-#include "ServerPlayer.hpp"
 #include "Server.hpp"
+#include "ServerPlayer.hpp"
 #include "Teams.hpp"
 #include <algorithm>
 #include <thread>
@@ -19,14 +19,16 @@ void zappy::game::Game::_addPlayerToTeam(
 {
     std::srand(std::time({}));
     int randVal = std::rand() % nbOrientation;
-    zappy::game::Orientation orientation = static_cast<zappy::game::Orientation>(randVal);
+    zappy::game::Orientation orientation =
+        static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
     zappy::game::Egg egg = this->_eggList.front();
     std::cout << "x: " << egg.x << "y: " << egg.y << std::endl;
     this->_eggList.pop();
     user.setState(zappy::server::ClientState::CONNECTED);
-    auto newPlayer =
-        std::make_shared<zappy::game::ServerPlayer>(std::move(user), _idPlayerTot, egg.x, egg.y, orientation, 1);
+    std::cout << "Socket:" << user.getSocket() << std::endl;
+    auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
+        std::move(user), _idPlayerTot, egg.x, egg.y, orientation, 1);
     _idPlayerTot += 1;
     team.addPlayer(std::move(newPlayer));
     this->_playerList.push_back(std::move(newPlayer));
@@ -45,6 +47,20 @@ bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
     return false;
 }
 
+bool zappy::game::Game::_checkGraphicalFull(const std::string &teamName)
+{
+    if (teamName == "GRAPHIC") {
+        auto graphicTeam = std::find_if(this->_teamList.begin(),
+            this->_teamList.end(), [](const zappy::game::Team &team) {
+                return team.getName() == "GRAPHIC";
+            });
+        if (graphicTeam->getPlayerList().size() >= 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool zappy::game::Game::handleTeamJoin(
     int clientSocket, const std::string &teamName)
 {
@@ -53,12 +69,15 @@ bool zappy::game::Game::handleTeamJoin(
             return team.getName() == teamName;
         });
 
-    if (it == this->_teamList.end() || static_cast<int> (it->getPlayerList().size()) >= this->_clientNb)
+    if (it == this->_teamList.end() ||
+        static_cast<int>(it->getPlayerList().size()) >= this->_clientNb)
         return false;
 
+    if (this->_checkGraphicalFull(teamName) == true)
+        return false;
     if (this->_checkAlreadyInTeam(clientSocket) == true)
         return false;
-    
+
     this->_addPlayerToTeam(*it, clientSocket);
     return true;
 }
@@ -66,11 +85,13 @@ bool zappy::game::Game::handleTeamJoin(
 void zappy::game::Game::removeFromTeam(int clientSocket)
 {
     std::cout << "Trying to remove: " << clientSocket << std::endl;
-    for (auto &team: this->_teamList) {
-        for (auto &player: team.getPlayerList()) {
-            std::cout << "Player: " << player->getClient().getSocket() << std::endl;
+    for (auto &team : this->_teamList) {
+        for (auto &player : team.getPlayerList()) {
+            std::cout << "Player: " << player->getClient().getSocket()
+                      << std::endl;
             if (player->getClient().getSocket() == clientSocket) {
-                std::cout << "Player: " << clientSocket << " removed" << std::endl;
+                std::cout << "Player: " << clientSocket << " removed"
+                          << std::endl;
                 team.removePlayer(clientSocket);
             }
         }
@@ -79,7 +100,8 @@ void zappy::game::Game::removeFromTeam(int clientSocket)
 
 void zappy::game::Game::setEggsonMap()
 {
-    for (int i = 0; i < static_cast<int>((_clientNb * _teamList.size())); i += 1) {
+    for (int i = 0; i < static_cast<int>((_clientNb * _teamList.size()));
+        i += 1) {
         size_t x = std::rand() % _map.getWidth();
         size_t y = std::rand() % _map.getHeight();
         zappy::game::Egg newEgg(_idEggTot, SERVER_FATHER_ID, x, y);
@@ -87,7 +109,6 @@ void zappy::game::Game::setEggsonMap()
         this->_eggList.push(newEgg);
     }
 }
-
 
 void zappy::game::Game::runGame()
 {
@@ -102,7 +123,8 @@ void zappy::game::Game::runGame()
         for (auto &team : this->getTeamList()) {
             for (auto &player : team.getPlayerList()) {
                 if (!player->getClient().queueMessage.empty()) {
-                    this->_commandHandler.processClientInput(player->getClient().queueMessage.front(), *player);
+                    this->_commandHandler.processClientInput(
+                        player->getClient().queueMessage.front(), *player);
                     player->getClient().queueMessage.pop();
                 }
             }
