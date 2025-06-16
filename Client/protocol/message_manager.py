@@ -11,33 +11,23 @@ from utils.logger import logger
 from protocol.parser import Parser
 
 class MessageManager:
-    def __init__(self, command_manager: CommandManager):
-        self.cmd_mgr = command_manager
+    def __init__(self, cmd_mgr, bus):
+        self.cmd_mgr = cmd_mgr
+        self.bus = bus
         self.is_dead = False
 
-    def process_message(self, raw_responses: List[str]) -> List[Command]:
-        """
-        Sépare les messages serveur :
-         - réponses de commande (redirigées vers CommandManager)
-         - événements asynchrones (stockés dans une liste séparée)
-        """
+    def process_responses(self, raw_responses: List[str]):
         command_responses = []
-        async_messages = []
-
         for response in raw_responses:
             response = response.strip()
-
             if Parser.is_dead_response(response):
-                command_responses.append(response)
                 self.is_dead = True
-                continue
-
-                #  TODO : Parser les messages broadcast
-            # if response.startswith("message "):
-            #     async_messages.append(response)
-            #     continue
-
-            command_responses.append(response)
-
-        completed = self.cmd_mgr.process_responses(command_responses)
-        return completed
+                return
+            if Parser.is_broadcast(response):
+                logger.info(f"Received response broadcast: {response}")
+                dir_, token = Parser.parse_broadcast_response(response).values()
+                self.bus.publish_raw(dir_, token)
+            else:
+                command_responses.append(response)
+        # On ne renvoie plus les broadcasts au CmdMgr
+        return self.cmd_mgr.process_responses(command_responses)

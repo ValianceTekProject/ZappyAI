@@ -11,6 +11,7 @@ from typing import Tuple
 from protocol.connection import Connection
 from protocol.commands import CommandManager, CommandStatus
 from protocol.message_manager import MessageManager
+from teams.message_checker import MessageBus
 from utils.timing import TimingManager
 from utils.game_state import GameState
 from utils.logger import logger
@@ -21,20 +22,21 @@ class Agent:
 
     _next_id = 0
 
-    def __init__(self, connection: Connection, freq: int, pool):
+    def __init__(self, connection: Connection, freq: int, team_id: str, agent_thread):
         self.conn = connection
         self.freq = freq
-        self.pool = pool
+        self.agent_thread = agent_thread
         self.dimension_map = self.conn.get_map_size()
 
         self.agent_id = Agent._next_id
         Agent._next_id += 1
 
         self.timing = TimingManager(self.freq)
-        self.state = GameState()
+        self.state = GameState(team_id)
         self.commands = CommandManager(self.conn, self.timing, self.state)
-        self.msg_manager = MessageManager(self.commands)
-        self.planner = Planner(self.commands, self.state)
+        self.msg_bus = MessageBus(self.state.level, team_id)
+        self.msg_manager = MessageManager(self.commands, self.msg_bus)
+        self.planner = Planner(self.commands, self.state, self.msg_bus)
         self.initialized = False
         self.init_stage = 0
 
@@ -48,12 +50,19 @@ class Agent:
         """
         while True:
             responses = self.read_non_blocking()
-            completed = self.msg_manager.process_message(responses)
+            completed = self.msg_manager.process_responses(responses)
 
             if self.msg_manager.is_dead:
-                self.pool.agent_dead(self)
+                self.agent_thread.agent_dead(self)
                 logger.info(f"Agent is dead at level {self.state.level}")
                 return
+
+            if self.planner.new_agent:
+                self.agent_thread.create_new_agent()
+                self.planner.new_agent = False
+                logger.info("New baby was born !")
+                continue
+
             for cmd in completed:
                 if cmd.type == CommandType.LOOK:
                     self.state.update_vision(cmd.response, self.state.get_position(), self.state.get_orientation())

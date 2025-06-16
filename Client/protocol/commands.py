@@ -118,6 +118,7 @@ class CommandManager:
             return self._send(cmd)
 
     def broadcast(self, msg):
+        logger.debug(f"Broadcast: {msg}")
         cmd = self._build_command(CommandType.BROADCAST, [msg])
         if cmd is not None:
             return self._send(cmd)

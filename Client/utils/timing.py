@@ -17,6 +17,7 @@ class TimingManager:
         self.time_unit = 1.0 / freq
         self.last_action_time = 0.0
         self.last_food_tick_time = time.time()
+        self.last_fork_tick_time = time.time()
 
     def calculate_action_duration(self, cmd_type: CommandType) -> float:
         """

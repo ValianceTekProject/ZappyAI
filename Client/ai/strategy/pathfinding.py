@@ -42,7 +42,6 @@ class Pathfinder:
         """
         Trouve dans vision_data la ressource target_resource la plus proche.
         """
-        logger.debug(f"Recherche de {target_resource} dans vision")
         targets: List[RelativeTarget] = []
 
         for tile_data in vision_data:
@@ -55,14 +54,11 @@ class Pathfinder:
                         resource_type=target_resource,
                         distance=abs(pos[0]) + abs(pos[1])
                     ))
-                    logger.debug(f"  Trouvé {target_resource} à {pos} (distance {abs(pos[0]) + abs(pos[1])})")
 
         if not targets:
-            logger.debug(f"  Aucun {target_resource} trouvé dans la vision")
             return None
 
         closest = min(targets, key=lambda t: t.distance)
-        logger.debug(f"  Cible la plus proche: {target_resource} à {closest.rel_position}")
         return closest
 
     def get_resource_priority_list(self, requirements: Dict[str, int],
@@ -93,12 +89,10 @@ class Pathfinder:
         Utilise BFS avec validation stricte de la grille de vision.
         """
         dest = target.rel_position
-        logger.debug(f"Calcul du chemin vers {dest} depuis orientation {current_orientation}")
         valid_positions: Set[Tuple[int, int]] = set()
         for tile_data in vision_data:
             valid_positions.add(tile_data.rel_pos)
 
-        logger.debug(f"Positions valides dans la vision: {valid_positions}")
 
         if dest not in valid_positions:
             logger.warning(f"Cible {dest} hors de la vision valide")
@@ -115,7 +109,6 @@ class Pathfinder:
             x, y, ori = queue.popleft()
             if (x, y) == dest:
                 found_state = (x, y, ori)
-                logger.debug(f"Destination trouvée à l'état {found_state}")
                 break
 
             transitions = self._get_valid_transitions(x, y, ori, valid_positions)
@@ -128,7 +121,6 @@ class Pathfinder:
             logger.warning(f"Aucun chemin trouvé vers {dest}")
             return None
         commands = self._reconstruct_path(parent_map, start_state, found_state)
-        logger.debug(f"Chemin trouvé: {commands}")
         return commands
 
     def _get_valid_transitions(self, x: int, y: int, ori: int, 
@@ -172,6 +164,7 @@ class Pathfinder:
         """
         safe_orientations = self._get_safe_directions(vision_data)
         if not safe_orientations:
+            logger.warning("Aucune direction d'exploration sûre trouvée")
             return CommandType.RIGHT
 
         preferred = self._filter_exploration_directions(safe_orientations)
@@ -230,8 +223,10 @@ class Pathfinder:
         diff = (target_orientation - current_orientation) % 4
 
         if diff == 1 or diff == 3:
-            return CommandType.RIGHT if diff == 1 else CommandType.LEFT
+            logger.warning(f"Différence de direction inattendue : {diff}")
+            return CommandType.FORWARD if diff == 1 else CommandType.LEFT
         elif diff == 2:
+            logger.warning(f"Différence de direction inattendue : {diff}")
             return CommandType.RIGHT
 
         return CommandType.FORWARD
