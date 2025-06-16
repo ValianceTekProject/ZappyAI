@@ -18,7 +18,9 @@ void zappy::gui::RaylibRenderer::init()
 {
     // Initialisation Raylib ici
     InitWindow(1280, 720, "Zappy");
+    // ToggleFullscreen();
     SetTargetFPS(60);
+    DisableCursor();
 
     _scene = std::make_unique<raylib::BasicScene>(_gameState);
     _scene->init();
@@ -37,6 +39,9 @@ void zappy::gui::RaylibRenderer::update()
 
 void zappy::gui::RaylibRenderer::render() const
 {
+    UpdateCamera(&_scene->getCamera(), CAMERA_FREE);
+
+    BeginDrawing();
     ClearBackground(RAYWHITE);
 
     _scene->render();
