@@ -17,13 +17,17 @@ namespace zappy {
         namespace raylib {
             class BasicScene : public AScene {
                 public:
-                    void init(const std::shared_ptr<game::GameState> &gameState) override;
+                    BasicScene(const std::shared_ptr<game::GameState> &gameState);
+                    ~BasicScene() override = default;
 
-                    void update() override;
-
-                    void render() const override;
+                    void init() override;
 
                     void handleInput(InputManager &inputManager);
+
+                    void update() override;
+                    void render() const override;
+
+                    bool shouldClose() const override;
 
                     void addEgg(const int &id) override;
 

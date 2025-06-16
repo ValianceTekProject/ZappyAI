@@ -17,12 +17,13 @@ namespace zappy {
             class AScene : public IScene
             {
                 public:
-                    AScene();
+                    AScene(const std::shared_ptr<game::GameState> &gameState);
                     ~AScene() override = default;
 
-                    virtual void init(const std::shared_ptr<game::GameState> &gameState) override;
+                    virtual void init() override;
 
                     virtual void handleInput(InputManager &inputManager) override;
+                    virtual void update() override;
 
                     virtual void addEgg(const int &eggId) override;
                     virtual void addPlayer(const int &id) override;
@@ -36,10 +37,8 @@ namespace zappy {
                     virtual void removeEgg(const int &eggId) override;
                     virtual void removePlayer(const int &id) override;
 
-                    virtual void endGame(const std::string &teamName) override;
-
                 protected:
-                    std::shared_ptr<game::GameState> _gameState;
+                    const std::shared_ptr<game::GameState> _gameState;
             };
         } // namespace raylib
     } // namespace gui

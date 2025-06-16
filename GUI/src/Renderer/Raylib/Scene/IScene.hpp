@@ -23,12 +23,12 @@ namespace zappy {
                 public:
                     virtual ~IScene() = default;
 
-                    virtual void init(const std::shared_ptr<game::GameState> &gameState) = 0;
-
-                    virtual void update() = 0;
-                    virtual void render() const = 0;
+                    virtual void init() = 0;
 
                     virtual void handleInput(InputManager &inputManager) = 0;
+                    virtual void update() = 0;
+
+                    virtual void render() const = 0;
 
                     virtual bool shouldClose() const = 0;
 

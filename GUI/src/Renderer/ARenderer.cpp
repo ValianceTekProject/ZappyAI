@@ -10,8 +10,8 @@
 void zappy::gui::ARenderer::addEgg(
     const int &eggId,
     const int &fatherId,
-    const size_t &x,
-    const size_t &y
+    const int &x,
+    const int &y
 ) {
     _checkGameState();
     _gameState->addEgg(eggId, fatherId, x, y);
@@ -25,8 +25,8 @@ void zappy::gui::ARenderer::addPlayer(const game::Player &player)
 
 void zappy::gui::ARenderer::updatePlayerPosition(
     const int &id,
-    const size_t &x,
-    const size_t &y,
+    const int &x,
+    const int &y,
     const game::Orientation &orientation
 ) {
     _checkGameState();
