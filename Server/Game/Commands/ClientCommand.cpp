@@ -138,6 +138,5 @@ void zappy::game::CommandHandler::processClientInput(const std::string& input, z
         it->second();
         return;
     }
-    std::cout << static_cast<int>(player.getClient().getState()) << std::endl;
     player.getClient().sendMessage("ko\n");
 }

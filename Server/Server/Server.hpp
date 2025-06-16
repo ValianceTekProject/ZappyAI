@@ -62,7 +62,6 @@ namespace zappy {
             std::vector<pollfd> _fds;
 
             std::vector<zappy::game::Team> _teamList;
-            std::unordered_map<int, zappy::server::Client> _clients;
             std::unordered_map<std::string, std::function<void(int)>> _flags;
 
             std::mutex _socketLock;
