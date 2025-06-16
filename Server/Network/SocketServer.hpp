@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Error.hpp"
 #include <cstdint>
 #include <exception>
 #include <memory>
@@ -31,26 +32,6 @@ namespace zappy {
      * @class SocketError
      * @brief Exception class for socket-related errors.
      */
-            class SocketError : public std::exception {
-               public:
-                /**
-         * @brief Constructs a new SocketError with a message.
-         * @param msg The error message.
-         */
-                SocketError(const std::string &msg) { this->_msg = msg; }
-
-                /**
-         * @brief Returns the error message.
-         * @return A C-string describing the error.
-         */
-                const char *what() const noexcept override
-                {
-                    return this->_msg.c_str();
-                }
-
-               private:
-                std::string _msg;  ///< Error message.
-            };
 
             /**
      * @brief Constructs a new Socket object.

@@ -24,8 +24,6 @@ void zappy::server::Server::handleClientMessage(
             }
         }
     }
-    sendMessage("ko\n", clientSocket);
-
 }
 
 zappy::server::ClientState zappy::server::Server::_handleClientDisconnection(

@@ -62,6 +62,7 @@ namespace zappy {
             std::atomic<RunningState> _isRunning = RunningState::PAUSE;
 
             void _playTurn();
+            bool _checkGraphicalFull(const std::string &teamName);
             bool _checkAlreadyInTeam(int clientSocket);
             void _addPlayerToTeam(Team &team, int clientSocket);
         };
