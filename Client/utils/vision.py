@@ -65,9 +65,6 @@ class Vision:
             dist = abs(rel_pos[0]) + abs(rel_pos[1])
             vision_data = VisionData(distance=dist, angle=0, content=content, rel_pos=rel_pos)
             self.last_vision_data.append(vision_data)
-        for idx, data in enumerate(self.last_vision_data):
-            logger.debug("idx=%d → rel_pos=%s content=%s", idx, data.rel_pos, data.content)
-
 
         return self.last_vision_data
 

@@ -13,9 +13,10 @@ from utils.logger import logger
 from utils.vision import Vision
 
 class GameState:
-    def __init__(self):
+    def __init__(self, team_id: str):
         self.inventory = {"food": 10, "linemate": 0, "deraumere": 0, "sibur": 0, "mendiane": 0, "phiras": 0, "thystame": 0}
         self.level = 1
+        self.team_id = team_id
         self.position = (0, 0)
         self.direction = Orientation.SOUTH
 
@@ -24,10 +25,16 @@ class GameState:
 
         self.command_already_send = False
         self.needs_look = False
+        self.needs_repro = False
 
     def update(self, command: Command):
         """Met à jour l'état du jeu après l'exécution d'une commande."""
         self.command_already_send = False
+
+        if command.type == CommandType.INCANTATION and command.status == CommandStatus.FAILED:
+            logger.info("[GameState] Incantation échouée, besoin de look")
+            self.needs_look = True
+            self.needs_repro = False
 
         if command.status != CommandStatus.SUCCESS:
             logger.warning(f"[GameState] Ignored failed command: {command.type}")
@@ -48,6 +55,7 @@ class GameState:
             self.level += 1
             logger.info(f"[GameState] Leveled up to {self.level}")
             self.needs_look = True
+            self.needs_repro = True
 
         elif command.type == CommandType.FORWARD:
             self.update_position_after_forward()

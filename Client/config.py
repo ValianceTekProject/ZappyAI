@@ -68,6 +68,7 @@ class GameStates(Enum):
     EMERGENCY_FOOD    = 'emergency_food'    # Critique, fonce sur la bouffe la plus proche
     SAFE_FOOD         = 'safe_food'         # Sous le seuil safe, collecte en sécurité
     PREPARE_INCANT    = 'prepare_incant'    # Dépose ressources + broadcast demande
+    HELP_INCANT       = 'help_incant'       # Aide à l’incantation
     INCANTATE         = 'incantate'         # Lance l’incantation
     COLLECT_RESOURCES = 'collect_resources' # Collecte pour incantation (hors nourriture)
     EXPLORE           = 'explore'           # Balade aléatoire

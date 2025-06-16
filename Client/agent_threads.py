@@ -32,7 +32,7 @@ class AgentThreads:
         conn = Connection(self.host, self.port)
         conn.handshake(self.team_name)
 
-        agent = Agent(conn, self.freq, self)
+        agent = Agent(conn, self.freq, self.team_name, self)
         t = threading.Thread(target=agent.run_loop, daemon=True)
         with self._lock:
             self._threads.append(t)
@@ -49,7 +49,7 @@ class AgentThreads:
         conn = Connection(self.host, self.port)
         conn.handshake(self.team_name)
 
-        agent = Agent(conn, self.freq, self)
+        agent = Agent(conn, self.freq, self.team_name ,self)
         t = threading.Thread(target=agent.run_loop, daemon=True)
         with self._lock:
             self._threads.append(t)
