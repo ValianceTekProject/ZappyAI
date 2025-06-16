@@ -60,8 +60,8 @@ void zappy::network::Protocol::initHandlers()
         {GP::TIME_UNIT_MODIFICATION, [this](auto &p){ setTimeUnit(std::stoi(p)); }},
         {GP::GAME_END,               [this](auto &p){ handleGameEnd(p); }},
         {GP::SERVER_MESSAGE,         [this](auto &p){ handleServerMessage(p); }},
-        {GP::UNKNOWN_COMMAND,        [](auto &){ std::cerr << "Server: Unknown command\n"; }},
-        {GP::COMMAND_PARAMETER,      [](auto &){ std::cerr << "Server: Bad parameter\n"; }}
+        {GP::UNKNOWN_COMMAND,        [this](auto &p){ handleUnknownCommand(p); }},
+        {GP::COMMAND_PARAMETER,      [this](auto &p){ handleBadCommand(p); }}
     };
 }
 
@@ -593,6 +593,16 @@ void zappy::network::Protocol::handleTimeUnit(const std::string &params)
 void zappy::network::Protocol::handleServerMessage(const std::string &params)
 {
     printDebug("Server message: " + params);
+}
+
+void zappy::network::Protocol::handleUnknownCommand(const std::string &params)
+{
+    printDebug("Unknown command: " + params);
+}
+
+void zappy::network::Protocol::handleBadCommand(const std::string &params)
+{
+    printDebug("Bad command: " + params);
 }
 
 void zappy::network::Protocol::removeSharp(std::string &message)
