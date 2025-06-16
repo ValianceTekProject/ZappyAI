@@ -71,12 +71,16 @@ void zappy::gui::Gui::init()
     _gameState = std::make_shared<game::GameState>();
 
     _renderer->setGameState(_gameState);
-    _renderer->init();
 
-    initNetwork();
+    _initNetwork();
+
+    while(!_isMapCreated())
+        _protocol->update();
+
+    _renderer->init();
 }
 
-void zappy::gui::Gui::initNetwork()
+void zappy::gui::Gui::_initNetwork()
 {
     _protocol = std::make_unique<network::Protocol>(_renderer, _gameState, _debug);
     if (!_protocol->connectToServer(_ip, _port))
@@ -87,14 +91,8 @@ void zappy::gui::Gui::run()
 {
     init();
 
-    // const std::chrono::milliseconds frameDelay(1 / _gameState->getFrequency());
-
-    // _protocol->setTimeUnit(500);
-
     bool running = true;
     while (running) {
-        // auto frameStart = std::chrono::steady_clock::now();
-
         _renderer->handleInput();
 
         _protocol->update();
@@ -106,10 +104,6 @@ void zappy::gui::Gui::run()
         }
 
         _renderer->render();
-
-        // auto frameTime = std::chrono::steady_clock::now() - frameStart;
-        // if (frameTime < frameDelay)
-        //     std::this_thread::sleep_for(frameDelay - frameTime);
     }
 
     _protocol->disconnect();

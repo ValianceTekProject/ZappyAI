@@ -15,6 +15,7 @@ set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
 set(RAYLIB_DIR ${RENDERER_DIR}/Raylib)
 set(RAYLIB_SCENE_DIR ${RAYLIB_DIR}/Scene)
+
 set(RAYLIB_MAP_DIR ${RAYLIB_DIR}/Map)
 
 set(RAYLIB_FLOOR_DIR ${RAYLIB_MAP_DIR}/Floor)
@@ -42,9 +43,11 @@ include_directories(
     ${RAYLIB_DIR}
     ${RAYLIB_SCENE_DIR}
     ${RAYLIB_MAP_DIR}
+
     ${RAYLIB_FLOOR_DIR}
     ${RAYLIB_FLATFLOOR_DIR}
     ${RAYLIB_GLOBEFLOOR_DIR}
+
     ${RAYLIB_MODEL_DIR}
 )
 

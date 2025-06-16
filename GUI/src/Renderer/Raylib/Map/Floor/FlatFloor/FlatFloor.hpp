@@ -13,10 +13,12 @@ namespace zappy {
         namespace raylib {
             class FlatFloor : public AFloor {
                 public:
-                    FlatFloor(const zappy::game::Map &map);
+                    FlatFloor(size_t width, size_t height, size_t tileSize = 10);
                     ~FlatFloor() = default;
 
-                    void draw() const override;
+                    void init() override;
+
+                    void render() const override;
             };
         }
     } // namespace gui

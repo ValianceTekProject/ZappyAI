@@ -14,20 +14,26 @@ namespace zappy {
         namespace raylib {
             class AFloor : public IFloor {
                 public:
-                    AFloor();
+                    AFloor(size_t width, size_t height, size_t tileSize);
                     ~AFloor() = default;
 
+                    virtual void init() override;
+
                     // Setters
-                    void setGridSize(int size) override;
-                    void setSpacing(int spacing) override;
+                    void setWidth(size_t width) override { this->_width = width; }
+                    void setHeight(size_t height) override { this->_height = height; }
+                    void setTileSize(size_t tileSize) override { this->_tileSize = tileSize; }
 
                     // Getters
-                    int getGridSize() const override;
-                    int getSpacing() const override;
+                    size_t getWidth() const override { return _width; }
+                    size_t getHeight() const override { return _height; }
+                    size_t getTileSize() const override { return _tileSize; }
 
                 private:
-                    int gridSize;
-                    int spacing;
+                    size_t _width;
+                    size_t _height;
+
+                    size_t _tileSize;
             };
         }
     } // namespace gui

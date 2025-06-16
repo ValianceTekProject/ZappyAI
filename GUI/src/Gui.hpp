@@ -37,7 +37,8 @@ namespace zappy {
                 void run();
 
             private:
-                void initNetwork();
+                void _initNetwork();
+                bool _isMapCreated() { return _gameState->getMap() != nullptr; }
 
                 bool _debug;
 

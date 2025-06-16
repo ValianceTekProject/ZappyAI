@@ -37,7 +37,6 @@ void zappy::gui::RaylibRenderer::update()
 
 void zappy::gui::RaylibRenderer::render() const
 {
-    BeginDrawing();
     ClearBackground(RAYWHITE);
 
     _scene->render();

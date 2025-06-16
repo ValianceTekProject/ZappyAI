@@ -24,6 +24,9 @@ namespace zappy {
 
                     virtual void init() override;
 
+                    Camera &getCamera() override { return _camera; }
+                    const Camera &getCamera() const override { return _camera; }
+
                     virtual void handleInput(InputManager &inputManager) override;
                     virtual void update() override;
 
@@ -40,7 +43,10 @@ namespace zappy {
                     virtual void removePlayer(const int &id) override;
 
                 protected:
+                    Camera _camera;
+
                     const std::shared_ptr<game::GameState> _gameState;
+
                     const std::unique_ptr<MapRenderer> _mapRenderer;
             };
         } // namespace raylib

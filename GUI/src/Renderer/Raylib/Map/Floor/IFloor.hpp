@@ -17,14 +17,19 @@ namespace zappy {
                 public:
                     virtual ~IFloor() = default;
 
+                    virtual void init() = 0;
+
                     // Setters
-                    virtual void setGridSize(int size) = 0;
-                    virtual void setSpacing(int spacing) = 0;
+                    virtual void setWidth(size_t width) = 0;
+                    virtual void setHeight(size_t height) = 0;
+                    virtual void setTileSize(size_t tileSize) = 0;
 
                     // Getters
-                    virtual int getGridSize() const = 0;
-                    virtual int getSpacing() const = 0;
+                    virtual size_t getWidth() const = 0;
+                    virtual size_t getHeight() const = 0;
+                    virtual size_t getTileSize() const = 0;
 
+                    virtual void render() const = 0;
             };
         }
     } // namespace gui

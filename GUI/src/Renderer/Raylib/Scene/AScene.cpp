@@ -8,17 +8,26 @@
 #include "AScene.hpp"
 
 zappy::gui::raylib::AScene::AScene(const std::shared_ptr<game::GameState> &gameState) :
-    _gameState(gameState)
+    _camera(Camera()),
+    _gameState(gameState),
+    _mapRenderer(std::make_unique<MapRenderer>(_gameState->getMap()))
 {}
 
 void zappy::gui::raylib::AScene::init()
 {
-    // Initialiser la scène
+    // Initialize Camera
+    _camera.position = Vector3{ 10.0f, 10.0f, 10.0f };
+    _camera.target = Vector3{ 0.0f, 0.0f, 0.0f };
+    _camera.up = Vector3{ 0.0f, 1.0f, 0.0f };
+    _camera.fovy = 45.0f;
+    _camera.projection = CAMERA_PERSPECTIVE;
+
+    _mapRenderer->init();
 }
 
 void zappy::gui::raylib::AScene::update()
 {
-    // Mettre à jour la logique de la scène
+    _mapRenderer->update();
 }
 
 void zappy::gui::raylib::AScene::handleInput(InputManager &inputManager)

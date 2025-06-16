@@ -9,32 +9,36 @@
 #include "raylib.h"
 #include <algorithm>
 
-zappy::gui::raylib::FlatFloor::FlatFloor(const zappy::game::Map &map)
-    : AFloor(map)
+zappy::gui::raylib::FlatFloor::FlatFloor(size_t width, size_t height, size_t tileSize) :
+    AFloor::AFloor(width, height, tileSize)
+{}
+
+void zappy::gui::raylib::FlatFloor::init()
 {
-    setWidth(static_cast<int>(map.getWidth()));
-    setHeight(static_cast<int>(map.getHeight()));
+    AFloor::init();
 }
 
-void zappy::gui::raylib::FlatFloor::draw() const
+void zappy::gui::raylib::FlatFloor::render() const
 {
-    float gridWidth = getWidth() * getSpacing();
-    float gridHeight = getHeight() * getSpacing();
-    
+    size_t tileSize = getTileSize();
+
+    float gridWidth = getWidth() * tileSize;
+    float gridHeight = getHeight() * tileSize;
+
     float startX = -gridWidth / 2.0f;
     float startZ = -gridHeight / 2.0f;
     float endX = gridWidth / 2.0f;
     float endZ = gridHeight / 2.0f;
-    
-    for (int i = 0; i <= getWidth(); i++) {
-        float x = startX + i * getSpacing();
+
+    for (size_t i = 0; i <= getWidth(); i++) {
+        float x = startX + i * tileSize;
         Vector3 start = {x, 0.0f, startZ};
         Vector3 end = {x, 0.0f, endZ};
         DrawLine3D(start, end, GRAY);
     }
-    
-    for (int j = 0; j <= getHeight(); j++) {
-        float z = startZ + j * getSpacing();
+
+    for (size_t j = 0; j <= getHeight(); j++) {
+        float z = startZ + j * tileSize;
         Vector3 start = {startX, 0.0f, z};
         Vector3 end = {endX, 0.0f, z};
         DrawLine3D(start, end, GRAY);

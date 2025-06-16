@@ -13,13 +13,10 @@ namespace zappy {
         namespace raylib {
             class GlobeFloor : public AFloor {
                 public:
-                    GlobeFloor(const zappy::game::Map &map, int radius = 10);
+                    GlobeFloor(size_t width, size_t height, size_t tileSize);
                     ~GlobeFloor() = default;
 
-                    void draw() const override;
-
-                    int getRadius() const {return _radius;}
-                    void setRadius(int radius) {_radius = radius;}
+                    void render() const override;
 
                 private:
                     int _radius;

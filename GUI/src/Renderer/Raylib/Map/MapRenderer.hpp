@@ -6,8 +6,10 @@
 */
 
 #pragma once
-#include "IFloor.hpp"
+
 #include "Map.hpp"
+#include "FlatFloor.hpp"
+
 #include <memory>
 
 namespace zappy {
@@ -15,14 +17,19 @@ namespace zappy {
         namespace raylib {
             class MapRenderer {
                 public:
-                    MapRenderer();
+                    MapRenderer(const std::shared_ptr<game::Map> map);
                     ~MapRenderer() = default;
 
                     void init();
 
+                    void update();
+
+                    void render();
+
                 private:
                     const std::shared_ptr<game::Map> _map;
-                    IFloor _floor;
+
+                    std::unique_ptr<IFloor> _floor;
             };
         }
     }

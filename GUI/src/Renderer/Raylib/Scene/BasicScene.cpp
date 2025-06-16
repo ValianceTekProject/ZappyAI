@@ -28,41 +28,11 @@ void zappy::gui::raylib::BasicScene::update()
 
 void zappy::gui::raylib::BasicScene::render() const
 {
-    if (!_gameState || !_gameState->getMap())
-        return;
+    BeginMode3D(getCamera());
 
-    const auto &map = _gameState->getMap();
+    _mapRenderer->render();
 
-    for (size_t x = 0; x < map->getWidth(); ++x) {
-        for (size_t y = 0; y < map->getHeight(); ++y) {
-            // Coordonnées du coin haut-gauche de la case
-            Vector2 pos = {(float)x * 40.0f, (float)y * 40.0f};
-
-            // Sol en bleu clair
-            DrawRectangleV(pos, {40, 40}, SKYBLUE);
-
-            // Bordure de case
-            DrawRectangleLines(pos.x, pos.y, 40, 40, DARKBLUE);
-
-            // Dessiner les joueurs comme des cercles bleus
-            if (!_gameState->getPlayers().empty()) {
-                for (const auto &player : _gameState->getPlayers()) {
-                    if (player.x == (int)x && player.y == (int)y) {
-                        DrawCircle(pos.x + 20, pos.y + 20, 10, BLUE); // cercle centré
-                    }
-                }
-            }
-
-            // Dessiner les œufs comme des petits cercles violets
-            if (!_gameState->getEggs().empty()) {
-                for (const auto &egg : _gameState->getEggs()) {
-                    if (egg.x == (int)x && egg.y == (int)y) {
-                        DrawCircle(pos.x + 20, pos.y + 20, 5, PURPLE);
-                    }
-                }
-            }
-        }
-    }
+    EndMode3D();
 }
 
 bool zappy::gui::raylib::BasicScene::shouldClose() const

@@ -7,27 +7,13 @@
 
 #include "AFloor.hpp"
 
-zappy::gui::raylib::AFloor::AFloor()
-    : gridSize(10), spacing(5) {}
+zappy::gui::raylib::AFloor::AFloor(size_t width, size_t height, size_t tileSize) :
+    _width(width),
+    _height(height),
+    _tileSize(tileSize)
+{}
 
-// Setters
-void zappy::gui::raylib::AFloor::setGridSize(int size)
+void zappy::gui::raylib::AFloor::init()
 {
-    gridSize = size;
-}
-
-void zappy::gui::raylib::AFloor::setSpacing(int spacing)
-{
-    this->spacing = spacing;
-}
-
-// Getters
-int zappy::gui::raylib::AFloor::getGridSize() const
-{
-    return gridSize;
-}
-
-int zappy::gui::raylib::AFloor::getSpacing() const
-{
-    return spacing;
+    // Initialiser la grille
 }
