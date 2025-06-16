@@ -68,6 +68,7 @@ set(SOURCES
     ${RENDERER_DIR}/NcursesRenderer.cpp
 
     ${RAYLIB_DIR}/RaylibRenderer.cpp
+    ${RAYLIB_SCENE_DIR}/InputManager.cpp
     ${RAYLIB_SCENE_DIR}/AScene.cpp
     ${RAYLIB_SCENE_DIR}/BasicScene.cpp
 )
@@ -77,9 +78,12 @@ add_executable(zappy_gui ${SOURCES})
 
 # === Dépendances ===
 
-## Raylib
-find_package(raylib REQUIRED)
-include_directories(${RAYLIB_INCLUDE_DIR})
+# Raylib via pkg-config
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(RAYLIB REQUIRED raylib)
+
+include_directories(${RAYLIB_INCLUDE_DIRS})
+link_directories(${RAYLIB_LIBRARY_DIRS})
 target_link_libraries(zappy_gui PRIVATE ${RAYLIB_LIBRARIES})
 
 ## Ncurses

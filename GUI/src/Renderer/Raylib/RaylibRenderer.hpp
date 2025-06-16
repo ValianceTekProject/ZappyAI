@@ -9,7 +9,7 @@
 
 #include "ARenderer.hpp"
 
-#include "IScene.hpp"
+#include "BasicScene.hpp"
 
 namespace zappy {
     namespace gui {
@@ -27,10 +27,18 @@ namespace zappy {
 
                 bool shouldClose() const override;
 
-                void addEgg(const int &eggId, const int &fatherId, const size_t &x, const size_t &y) override;
+                void addEgg(const int &eggId,
+                    const int &fatherId,
+                    const int &x,
+                    const int &y
+                ) override;
                 void addPlayer(const game::Player &player) override;
 
-                void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) override;
+                void updatePlayerPosition(const int &id,
+                    const int &x,
+                    const int &y,
+                    const game::Orientation &orientation
+                ) override;
                 void updatePlayerLevel(const int &id, const size_t &level) override;
                 void updatePlayerInventory(const int &id, const game::Inventory &inventory) override;
 

@@ -10,15 +10,18 @@
 zappy::gui::RaylibRenderer::RaylibRenderer() :
     ARenderer::ARenderer(),
     _scene(nullptr)
-{}
+{
+    SetTraceLogLevel(LOG_NONE);
+}
 
 void zappy::gui::RaylibRenderer::init()
 {
     // Initialisation Raylib ici
-    InitWindow(1280, 720, "Zappy GUI");
+    InitWindow(1280, 720, "Zappy");
     SetTargetFPS(60);
 
-    _scene->init(_gameState);
+    _scene = std::make_unique<raylib::BasicScene>(_gameState);
+    _scene->init();
 }
 
 void zappy::gui::RaylibRenderer::handleInput()
@@ -47,8 +50,11 @@ bool zappy::gui::RaylibRenderer::shouldClose() const
     return WindowShouldClose();
 }
 
-void zappy::gui::RaylibRenderer::addEgg(const int &eggId, const int &fatherId, const size_t &x, const size_t &y)
-{
+void zappy::gui::RaylibRenderer::addEgg(const int &eggId,
+    const int &fatherId,
+    const int &x,
+    const int &y
+) {
     ARenderer::addEgg(eggId, fatherId, x, y);
 }
 
@@ -57,8 +63,11 @@ void zappy::gui::RaylibRenderer::addPlayer(const game::Player &player)
     ARenderer::addPlayer(player);
 }
 
-void zappy::gui::RaylibRenderer::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)
-{
+void zappy::gui::RaylibRenderer::updatePlayerPosition(const int &id,
+    const int &x,
+    const int &y,
+    const game::Orientation &orientation
+) {
     ARenderer::updatePlayerPosition(id, x, y, orientation);
 }
 

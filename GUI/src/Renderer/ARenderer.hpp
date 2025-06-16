@@ -34,15 +34,15 @@ namespace zappy {
                 virtual void addEgg(
                     const int &eggId,
                     const int &fatherId,
-                    const size_t &x,
-                    const size_t &y
+                    const int &x,
+                    const int &y
                 ) override;
                 virtual void addPlayer(const game::Player &player) override;
 
                 virtual void updatePlayerPosition(
                     const int &id,
-                    const size_t &x,
-                    const size_t &y,
+                    const int &x,
+                    const int &y,
                     const game::Orientation &orientation
                 ) override;
                 virtual void updatePlayerLevel(const int &id, const size_t &level) override;

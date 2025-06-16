@@ -60,8 +60,7 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
         _renderer = std::make_shared<DebugRenderer>();
     } else if (!_renderer) {
         if (raylib)
-            // _renderer = std::make_shared<RaylibRenderer>();
-            return; //! to remove
+            _renderer = std::make_shared<RaylibRenderer>();
         else
             _renderer = std::make_shared<NcursesRenderer>();
     }
@@ -71,8 +70,8 @@ void zappy::gui::Gui::init()
 {
     _gameState = std::make_shared<game::GameState>();
 
-    _renderer->init();
     _renderer->setGameState(_gameState);
+    _renderer->init();
 
     initNetwork();
 }
@@ -82,11 +81,13 @@ void zappy::gui::Gui::initNetwork()
     _protocol = std::make_unique<network::Protocol>(_renderer, _gameState, _debug);
     if (!_protocol->connectToServer(_ip, _port))
         throw network::NetworkError("Connection failed", "Network");
+    std::cout << "Connected to server" << std::endl;
 }
 
 void zappy::gui::Gui::run()
 {
     init();
+    std::cout << "intialized" << std::endl;
 
     // const std::chrono::milliseconds frameDelay(1 / _gameState->getFrequency());
 

@@ -11,6 +11,8 @@
 #include "ParsingError.hpp"
 
 #include "GameState.hpp"
+
+#include "RaylibRenderer.hpp"
 #include "NcursesRenderer.hpp"
 #include "DebugRenderer.hpp"
 
