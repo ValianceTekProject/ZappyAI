@@ -23,10 +23,8 @@ void zappy::game::Game::_addPlayerToTeam(
         static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
     zappy::game::Egg egg = this->_eggList.front();
-    std::cout << "x: " << egg.x << "y: " << egg.y << std::endl;
     this->_eggList.pop();
     user.setState(zappy::server::ClientState::CONNECTED);
-    std::cout << "Socket:" << user.getSocket() << std::endl;
     auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
         std::move(user), _idPlayerTot, egg.x, egg.y, orientation, 1);
     _idPlayerTot += 1;
@@ -70,8 +68,9 @@ bool zappy::game::Game::handleTeamJoin(
         });
 
     if (it == this->_teamList.end() ||
-        static_cast<int>(it->getPlayerList().size()) >= this->_clientNb)
+        static_cast<int>(it->getPlayerList().size()) >= this->_clientNb) {
         return false;
+    }
 
     if (this->_checkGraphicalFull(teamName) == true)
         return false;
@@ -84,14 +83,9 @@ bool zappy::game::Game::handleTeamJoin(
 
 void zappy::game::Game::removeFromTeam(int clientSocket)
 {
-    std::cout << "Trying to remove: " << clientSocket << std::endl;
     for (auto &team : this->_teamList) {
         for (auto &player : team.getPlayerList()) {
-            std::cout << "Player: " << player->getClient().getSocket()
-                      << std::endl;
             if (player->getClient().getSocket() == clientSocket) {
-                std::cout << "Player: " << clientSocket << " removed"
-                          << std::endl;
                 team.removePlayer(clientSocket);
             }
         }

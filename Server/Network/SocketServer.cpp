@@ -103,7 +103,6 @@ std::string zappy::server::SocketServer::getServerInformation()
         if (bytes_read < buffSize)
             break;
     }
-    std::cout << str << std::endl;
     return str;
 }
 
