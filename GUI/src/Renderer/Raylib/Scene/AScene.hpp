@@ -8,7 +8,9 @@
 #pragma once
 
 #include "IScene.hpp"
+#include "MapRenderer.hpp"
 
+#include <memory>
 #include <unordered_map>
 
 namespace zappy {
@@ -39,6 +41,7 @@ namespace zappy {
 
                 protected:
                     const std::shared_ptr<game::GameState> _gameState;
+                    const std::unique_ptr<MapRenderer> _mapRenderer;
             };
         } // namespace raylib
     } // namespace gui

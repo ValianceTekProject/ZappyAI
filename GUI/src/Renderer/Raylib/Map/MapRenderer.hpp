@@ -18,7 +18,7 @@ namespace zappy {
                     MapRenderer();
                     ~MapRenderer() = default;
 
-                    void init()
+                    void init();
 
                 private:
                     const std::shared_ptr<game::Map> _map;
