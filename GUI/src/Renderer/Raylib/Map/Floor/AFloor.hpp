@@ -18,6 +18,8 @@ namespace zappy {
                     ~AFloor() = default;
 
                     virtual void init() override;
+                    virtual void update() const override;
+                    virtual void render() const override;
 
                     // Setters
                     void setWidth(size_t width) override { this->_width = width; }
