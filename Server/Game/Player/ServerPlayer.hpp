@@ -16,6 +16,8 @@
 
 namespace zappy {
     namespace game {
+        class Team;
+
         class ServerPlayer : public Player {
 
            public:
@@ -24,10 +26,13 @@ namespace zappy {
                  size_t x,
                  size_t y,
                  Orientation orientation,
-                 size_t level = 1)
+                 zappy::game::Team &team,
+                 size_t level = 1
+                )
                 : Player::Player(id, x, y, orientation, level),
                 _user(std::move(user)),
-                _startTime(std::chrono::steady_clock::now()) {}
+                _startTime(std::chrono::steady_clock::now()),
+                _team(team) {}
 
             ~ServerPlayer() = default;
 
@@ -42,6 +47,7 @@ namespace zappy {
 
             bool getChonoStart() { return _chronoStarted; }
             void setChronoStart(bool status) { _chronoStarted = status; }
+            zappy::game::Team &getTeam() { return _team; }
 
 
            private:
@@ -50,6 +56,7 @@ namespace zappy {
             std::chrono::steady_clock::time_point _startTime;
 
             bool _chronoStarted = false;
+            zappy::game::Team &_team;
         };
     }
 }

@@ -137,6 +137,14 @@ void zappy::game::CommandHandler::handleBroadcast(zappy::game::ServerPlayer &pla
         player.getClient().sendMessage("ko\n");
 }
 
+void zappy::game::CommandHandler::handleConnectNbr(zappy::game::ServerPlayer &player)
+{
+        player.getClient().sendMessage(std::to_string(this->_clientNb - player.getTeam().getPlayerList().size()) + "\n");
+        player.startChrono();
+        player.setChronoStart(true);
+        return;
+}
+
 void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {
