@@ -28,7 +28,9 @@ namespace zappy {
                 _teamList(std::move(teamList)),
                 _baseFreqMs(freq),
                 _clientNb(clientNb)
-            { 
+            {
+                for (auto &team : _teamList)
+                    team.setClientNb(_clientNb);
                 std::srand(std::time(nullptr));
                 setEggsonMap();
             
@@ -44,6 +46,7 @@ namespace zappy {
             void removeFromTeam(int clientSocket);
 
             int getFreq() { return this->_baseFreqMs; }
+            int getClientNb() const { return this->_clientNb; }
             MapServer &getMap() { return this->_map; }
             std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };
 
