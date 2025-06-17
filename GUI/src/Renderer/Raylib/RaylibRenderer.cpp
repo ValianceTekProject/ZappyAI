@@ -42,7 +42,7 @@ void zappy::gui::RaylibRenderer::render() const
     UpdateCamera(&_scene->getCamera(), CAMERA_FREE);
 
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(SKYBLUE);
 
     _scene->render();
 

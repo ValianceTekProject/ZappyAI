@@ -17,8 +17,12 @@ namespace zappy {
                     ~FlatFloor() = default;
 
                     void init() override;
-
+                    void update() const override;
                     void render() const override;
+
+                private:
+                    Texture2D _texture;
+                    Model _model;
             };
         }
     } // namespace gui

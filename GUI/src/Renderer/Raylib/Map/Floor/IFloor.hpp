@@ -18,6 +18,8 @@ namespace zappy {
                     virtual ~IFloor() = default;
 
                     virtual void init() = 0;
+                    virtual void update() const = 0;
+                    virtual void render() const = 0;
 
                     // Setters
                     virtual void setWidth(size_t width) = 0;
@@ -28,8 +30,6 @@ namespace zappy {
                     virtual size_t getWidth() const = 0;
                     virtual size_t getHeight() const = 0;
                     virtual size_t getTileSize() const = 0;
-
-                    virtual void render() const = 0;
             };
         }
     } // namespace gui
