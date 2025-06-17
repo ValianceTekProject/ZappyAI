@@ -6,6 +6,7 @@
 */
 
 #include "BasicScene.hpp"
+#include <memory>
 
 zappy::gui::raylib::BasicScene::BasicScene(const std::shared_ptr<game::GameState> &gameState) :
     AScene::AScene(gameState)
@@ -14,6 +15,11 @@ zappy::gui::raylib::BasicScene::BasicScene(const std::shared_ptr<game::GameState
 void zappy::gui::raylib::BasicScene::init()
 {
     AScene::init();
+    // std::unique_ptr<BasicPlayerModel> player = std::make_unique<BasicPlayerModel>;
+    // _mapRenderer->addPlayer(player);
+    std::unique_ptr<IPlayerModel> player = std::make_unique<BasicPlayerModel>(0);
+    player->init();
+    _mapRenderer->addPlayer(std::move(player));
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)

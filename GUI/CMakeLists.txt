@@ -23,6 +23,7 @@ set(RAYLIB_FLATFLOOR_DIR ${RAYLIB_FLOOR_DIR}/FlatFloor)
 set(RAYLIB_GLOBEFLOOR_DIR ${RAYLIB_FLOOR_DIR}/GlobeFloor)
 
 set(RAYLIB_MODEL_DIR ${RAYLIB_DIR}/Model)
+set(RAYLIB_MODEL_BASIC_DIR ${RAYLIB_MODEL_DIR}/Basic)
 
 set(DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
 set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
@@ -49,6 +50,7 @@ include_directories(
     ${RAYLIB_GLOBEFLOOR_DIR}
 
     ${RAYLIB_MODEL_DIR}
+    ${RAYLIB_MODEL_BASIC_DIR}
 )
 
 # === Fichiers sources ===
@@ -88,6 +90,9 @@ set(SOURCES
 
     ${RAYLIB_FLATFLOOR_DIR}/FlatFloor.cpp
     ${RAYLIB_GLOBEFLOOR_DIR}/GlobeFloor.cpp
+
+    ${RAYLIB_MODEL_DIR}/APlayerModel.cpp
+    ${RAYLIB_MODEL_BASIC_DIR}/BasicPlayerModel.cpp
 )
 
 # === Exécutable principal ===

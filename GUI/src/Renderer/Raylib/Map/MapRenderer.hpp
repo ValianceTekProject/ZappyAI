@@ -9,8 +9,10 @@
 
 #include "Map.hpp"
 #include "FlatFloor.hpp"
+#include "IPlayerModel.hpp"
 
 #include <memory>
+#include <vector>
 
 namespace zappy {
     namespace gui {
@@ -26,10 +28,16 @@ namespace zappy {
 
                     void render();
 
+                    void addPlayer(std::unique_ptr<IPlayerModel> player);
+
+                    void removePlayer(const int &id);
+
                 private:
                     const std::shared_ptr<game::Map> _map;
 
                     std::unique_ptr<IFloor> _floor;
+
+                    std::vector<std::unique_ptr<IPlayerModel>> _players;
             };
         }
     }

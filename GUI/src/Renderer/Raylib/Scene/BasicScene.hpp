@@ -11,6 +11,7 @@
 
 #include <raylib.h>
 #include <unordered_map>
+#include "BasicPlayerModel.hpp"
 
 namespace zappy {
     namespace gui {

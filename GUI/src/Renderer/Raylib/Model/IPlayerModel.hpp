@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <raylib.h>
+#include "AssetPaths.hpp"
 
 namespace zappy {
     namespace gui {
@@ -32,6 +33,7 @@ namespace zappy {
                     virtual void setOrigin(const Vector3 &origin) = 0;
 
                     // Getters
+                    virtual int getId() const = 0;
                     virtual Vector3 getPosition() const = 0;
                     virtual Vector3 getRotation() const = 0;
                     virtual Vector3 getScale() const = 0;
