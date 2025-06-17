@@ -27,6 +27,8 @@ namespace zappy {
 
             Team(Team&&) noexcept = default;
             std::string getName() const { return this->_name; }
+            void setClientNb( const int clientNb) { _clientNb = clientNb; }
+            int &getClientNb() { return this->_clientNb; }
             void removePlayer(int playerSocket);
 
             const std::vector<std::shared_ptr<ServerPlayer>> &getPlayerList() const;
@@ -35,6 +37,7 @@ namespace zappy {
 
            private:
             const std::string _name;
+            int _clientNb;
             std::vector<std::shared_ptr<ServerPlayer>> _playerList;
         };
     }  // namespace game
