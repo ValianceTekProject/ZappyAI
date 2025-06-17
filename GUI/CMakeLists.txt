@@ -9,7 +9,7 @@ add_compile_options(-Wall -Wextra -Werror -pedantic)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-gnu-unique -Wl,--export-dynamic")
 
 # === Dossiers sources ===
-set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(NETWORK_DIR ${SRC_DIR}/Network)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
@@ -24,10 +24,10 @@ set(RAYLIB_GLOBEFLOOR_DIR ${RAYLIB_FLOOR_DIR}/GlobeFloor)
 
 set(RAYLIB_MODEL_DIR ${RAYLIB_DIR}/Model)
 
-set(DATA_DIR ${CMAKE_SOURCE_DIR}/../Data)
+set(DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
 set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
 set(DATA_GUI_DIR ${DATA_DIR}/Gui)
-set(DATA_GAME_DIR ${DATA_DIR}/Game)
+set(DATA_GAME_DIR ${DATA_DIR}/Game) # GameError ici
 
 # === Include paths ===
 include_directories(
@@ -109,4 +109,4 @@ include_directories(${CURSES_INCLUDE_DIR})
 target_link_libraries(zappy_gui PRIVATE ${CURSES_LIBRARIES})
 
 # === Dossier de sortie du binaire ===
-set_target_properties(zappy_gui PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_target_properties(zappy_gui PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
