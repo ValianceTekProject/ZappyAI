@@ -69,6 +69,36 @@ bool zappy::gui::NcursesRenderer::shouldClose() const
     return _shouldClose;
 }
 
+void zappy::gui::NcursesRenderer::PlayerExpulsion(const int &id)
+{
+    (void)id;
+}
+
+void zappy::gui::NcursesRenderer::PlayerBroadcast(const int &id, const std::string &message)
+{
+    (void)id;
+    (void)message;
+}
+
+void zappy::gui::NcursesRenderer::StartIncantation(
+    const int &x, const int &y,
+    const int &level,
+    const std::vector<int> &playerIds
+)
+{
+    (void)x;
+    (void)y;
+    (void)level;
+    (void)playerIds;
+}
+
+void zappy::gui::NcursesRenderer::EndIncantation(const int &x, const int &y, const bool &result)
+{
+    (void)x;
+    (void)y;
+    (void)result;
+}
+
 void zappy::gui::NcursesRenderer::endGame(const std::string &teamName)
 {
     _shouldClose = true;

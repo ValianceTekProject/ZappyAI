@@ -85,6 +85,36 @@ void zappy::gui::RaylibRenderer::updatePlayerInventory(const int &id, const game
     ARenderer::updatePlayerInventory(id, inventory);
 }
 
+void zappy::gui::RaylibRenderer::PlayerExpulsion(const int &id)
+{
+    (void)id;
+}
+
+void zappy::gui::RaylibRenderer::PlayerBroadcast(const int &id, const std::string &message)
+{
+    (void)id;
+    (void)message;
+}
+
+void zappy::gui::RaylibRenderer::StartIncantation(
+    const int &x, const int &y,
+    const int &level,
+    const std::vector<int> &playerIds
+)
+{
+    (void)x;
+    (void)y;
+    (void)level;
+    (void)playerIds;
+}
+
+void zappy::gui::RaylibRenderer::EndIncantation(const int &x, const int &y, const bool &result)
+{
+    (void)x;
+    (void)y;
+    (void)result;
+}
+
 void zappy::gui::RaylibRenderer::hatchEgg(const int &eggId)
 {
     ARenderer::hatchEgg(eggId);
