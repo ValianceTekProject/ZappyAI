@@ -40,14 +40,14 @@ namespace zappy {
 
             void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
 
-            void initCommandMap(zappy::game::ServerPlayer &player);
+            void initCommandMap();
 
            private:
             int _freq;
             int _widthMap;
             int _heightMap;
             int _clientNb;
-            std::map<std::string, std::function<void()>> _commandMap;
+            std::unordered_map<std::string, std::function<void(ServerPlayer &, const std::string &)>> _commandMap;
 
             std::string _getFirstWord(const std::string &input) const;
         
@@ -58,12 +58,12 @@ namespace zappy {
             void handleLeft(zappy::game::ServerPlayer &player);
             void handleLook(zappy::game::ServerPlayer &player) { (void)player; }
             void handleInventory(zappy::game::ServerPlayer &player);
-            void handleBroadcast(zappy::game::ServerPlayer &player);
+            void handleBroadcast(zappy::game::ServerPlayer &player, const std::string &arg);
             void handleConnectNbr(zappy::game::ServerPlayer &player);
             void handleFork(zappy::game::ServerPlayer &player);
             void handleEject(zappy::game::ServerPlayer &player) { (void)player; }
-            void handleTake(zappy::game::ServerPlayer &player) { (void)player; }
-            void handleDrop(zappy::game::ServerPlayer &player) { (void)player; }
+            void handleTake(zappy::game::ServerPlayer &player, const std::string &arg);
+            void handleDrop(zappy::game::ServerPlayer &player, const std::string &arg) { (void)player, (void)arg; }
             void handleIncantation(zappy::game::ServerPlayer &player) { (void)player; }
         };
 

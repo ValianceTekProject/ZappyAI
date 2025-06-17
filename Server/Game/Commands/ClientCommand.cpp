@@ -9,21 +9,21 @@
 #include "ClientCommand.hpp"
 #include "Game.hpp"
 
-void zappy::game::CommandHandler::initCommandMap(zappy::game::ServerPlayer &player)
+void zappy::game::CommandHandler::initCommandMap()
 {
     this->_commandMap = {
-        {"Forward", [this, &player]() { handleForward(player); }},
-        {"Right", [this, &player]() { handleRight(player); }},
-        {"Left", [this, &player]() { handleLeft(player); }},
-        {"Look", [this, &player]() { handleLook(player); }},
-        {"Inventory", [this, &player]() { handleInventory(player); }},
-        {"Broadcast", [this, &player]() { handleBroadcast(player); }},
-        {"Connect_nbr", [this, &player]() { handleConnectNbr(player); }},
-        {"Fork", [this, &player]() { handleFork(player); }},
-        {"Eject", [this, &player]() { handleEject(player); }},
-        {"Take", [this, &player]() { handleTake(player); }},
-        {"Set", [this, &player]() { handleDrop(player); }},
-        {"Incantation", [this, &player]() { handleIncantation(player); }}
+        {"Forward", [this](ServerPlayer &player, const std::string &) { handleForward(player); }},
+        {"Right", [this](ServerPlayer &player, const std::string &) { handleRight(player); }},
+        {"Left", [this](ServerPlayer &player, const std::string &) { handleLeft(player); }},
+        {"Look", [this](ServerPlayer &player, const std::string &) { handleLook(player); }},
+        {"Inventory", [this](ServerPlayer &player, const std::string &) { handleInventory(player); }},
+        {"Broadcast", [this](ServerPlayer &player, const std::string &arg) { handleBroadcast(player, arg); }},
+        {"Connect_nbr", [this](ServerPlayer &player, const std::string &) { handleConnectNbr(player); }},
+        {"Fork", [this](ServerPlayer &player, const std::string &) { handleFork(player); }},
+        {"Eject", [this](ServerPlayer &player, const std::string &) { handleEject(player); }},
+        {"Take", [this](ServerPlayer &player, const std::string &arg) { handleTake(player, arg); }},
+        {"Set", [this](ServerPlayer &player, const std::string &arg) { handleDrop(player, arg); }},
+        {"Incantation", [this](ServerPlayer &player, const std::string &) { handleIncantation(player); }}
     };
 }
 
@@ -119,8 +119,9 @@ void zappy::game::CommandHandler::handleInventory(zappy::game::ServerPlayer &pla
         player.getClient().sendMessage("ko\n");
 }
 
-void zappy::game::CommandHandler::handleBroadcast(zappy::game::ServerPlayer &player)
+void zappy::game::CommandHandler::handleBroadcast(zappy::game::ServerPlayer &player, const std::string &arg)
 {
+    (void)arg;
     if (!player.getChonoStart()) {
         player.startChrono();
         player.setChronoStart(true);
@@ -162,6 +163,22 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
         player.getClient().sendMessage("ko\n");
 }
 
+void zappy::game::CommandHandler::handleTake(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    if (!player.getChonoStart()) {
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::TAKE) / this->_freq)) {
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else 
+        player.getClient().sendMessage("ko\n");
+}
+
 std::string zappy::game::CommandHandler::_getFirstWord(
     const std::string &input) const
 {
@@ -169,14 +186,22 @@ std::string zappy::game::CommandHandler::_getFirstWord(
     return std::string(input.begin(), end);
 }
 
-void zappy::game::CommandHandler::processClientInput(const std::string& input, zappy::game::ServerPlayer &player)
+void zappy::game::CommandHandler::processClientInput(const std::string &input, zappy::game::ServerPlayer &player)
 {
-    this->initCommandMap(player);
-    auto cmd = this->_getFirstWord(input);
+    if (this->_commandMap.empty())
+        this->initCommandMap();
+
+    auto spacePos = input.find(' ');
+    std::string cmd = input.substr(0, spacePos);
+    std::string args = (spacePos != std::string::npos) ? input.substr(spacePos + 1) : "";
+
+    if (!args.empty() && args.back() == '\n')
+        args.pop_back();
+
     auto it = this->_commandMap.find(cmd);
     if (it != this->_commandMap.end()) {
-        it->second();
-        return;
-    }
-    player.getClient().sendMessage("ko\n");
+        it->second(player, args);
+    } else
+        player.getClient().sendMessage("ko\n");
 }
+
