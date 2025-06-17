@@ -27,7 +27,7 @@ set(RAYLIB_MODEL_DIR ${RAYLIB_DIR}/Model)
 set(DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
 set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
 set(DATA_GUI_DIR ${DATA_DIR}/Gui)
-set(DATA_GAME_DIR ${DATA_DIR}/Game) # GameError ici
+set(DATA_GAME_DIR ${DATA_DIR}/Game)
 
 # === Include paths ===
 include_directories(
