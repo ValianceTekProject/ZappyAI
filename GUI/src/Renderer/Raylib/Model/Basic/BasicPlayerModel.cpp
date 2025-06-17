@@ -9,6 +9,12 @@
 #include <raylib.h>
 #include <stdio.h>
 
+zappy::gui::raylib::BasicPlayerModel::BasicPlayerModel(const int &id) : APlayerModel::APlayerModel(id)
+{
+    constexpr float scale = 0.2;
+    setScale(scale);
+}
+
 void zappy::gui::raylib::BasicPlayerModel::init()
 {
     _initModel();
@@ -23,7 +29,7 @@ void zappy::gui::raylib::BasicPlayerModel::update()
 
 void zappy::gui::raylib::BasicPlayerModel::render()
 {
-    DrawModel(_model, _position, 15.0f, WHITE);
+    DrawModel(_model, _position, getScale(), WHITE);
 }
 
 void zappy::gui::raylib::BasicPlayerModel::_initModel()

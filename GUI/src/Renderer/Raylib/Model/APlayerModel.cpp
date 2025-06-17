@@ -13,7 +13,7 @@ zappy::gui::raylib::APlayerModel::APlayerModel(const int &id) :
     _model(),
     _position(Vector3{0, 0, 0}),
     _rotation(Vector3{0, 0, 0}),
-    _scale(Vector3{1, 1, 1}),
+    _scale(1),
     _origin(Vector3{0, 0, 0}),
     _animsCount(0),
     _animIndex(0),

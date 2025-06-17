@@ -22,14 +22,14 @@ namespace zappy {
                     // Setters
                     void setPosition(const Vector3 &position) override { _position = position; }
                     void setRotation(const Vector3 &rotation) override { _rotation = rotation; }
-                    void setScale(const Vector3 &scale) override { _scale = scale; }
+                    void setScale(const float &scale) override { _scale = scale; }
                     void setOrigin(const Vector3 &origin) override { _origin = origin; }
 
                     // Getters
                     int getId() const override { return _id; }
                     Vector3 getPosition() const override { return _position; }
                     Vector3 getRotation() const override { return _rotation; }
-                    Vector3 getScale() const override { return _scale; }
+                    float getScale() const override { return _scale; }
                     Vector3 getOrigin() const override { return _origin; }
                     State getState() const override { return _state; }
 
@@ -52,7 +52,7 @@ namespace zappy {
 
                     Vector3 _position;
                     Vector3 _rotation;
-                    Vector3 _scale;
+                    float _scale;
 
                     Vector3 _origin;
 

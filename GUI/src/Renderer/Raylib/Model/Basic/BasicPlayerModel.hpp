@@ -14,7 +14,7 @@ namespace zappy {
         namespace raylib {
             class BasicPlayerModel : public APlayerModel {
                 public:
-                    BasicPlayerModel(const int &id) : APlayerModel::APlayerModel(id) {}
+                    BasicPlayerModel(const int &id);
                     ~BasicPlayerModel() override = default;
 
                     void init() override;
