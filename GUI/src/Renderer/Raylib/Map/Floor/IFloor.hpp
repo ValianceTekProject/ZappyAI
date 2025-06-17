@@ -9,6 +9,7 @@
 
 #include "Map.hpp"
 #include "raylib.h"
+#include "AssetPaths.hpp"
 
 namespace zappy {
     namespace gui {
