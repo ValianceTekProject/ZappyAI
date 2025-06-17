@@ -22,6 +22,10 @@ void zappy::gui::raylib::MapRenderer::init()
 void zappy::gui::raylib::MapRenderer::update()
 {
     _floor->update();
+    if (!_players.empty()) {
+        for (const auto &player : _players)
+            player->update();
+    }
     // Mettre à jour la carte
 }
 

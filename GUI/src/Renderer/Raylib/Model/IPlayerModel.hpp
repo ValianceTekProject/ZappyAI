@@ -29,14 +29,14 @@ namespace zappy {
                     // Setters
                     virtual void setPosition(const Vector3 &position) = 0;
                     virtual void setRotation(const Vector3 &rotation) = 0;
-                    virtual void setScale(const Vector3 &scale) = 0;
+                    virtual void setScale(const float &scale) = 0;
                     virtual void setOrigin(const Vector3 &origin) = 0;
 
                     // Getters
                     virtual int getId() const = 0;
                     virtual Vector3 getPosition() const = 0;
                     virtual Vector3 getRotation() const = 0;
-                    virtual Vector3 getScale() const = 0;
+                    virtual float getScale() const = 0;
                     virtual Vector3 getOrigin() const = 0;
                     virtual State getState() const = 0;
 
