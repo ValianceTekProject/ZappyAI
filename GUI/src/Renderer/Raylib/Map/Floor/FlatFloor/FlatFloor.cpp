@@ -45,18 +45,5 @@ void zappy::gui::raylib::FlatFloor::render() const
             DrawModelEx(_model, position, {0.0f, 1.0f, 0.0f}, 0.0f, scale, WHITE);
         }
     }
-    for (size_t i = 0; i <= getWidth(); i++) {
-        float x = startX + i * tileSize;
-        Vector3 start = {x, 0.01f, startZ};
-        Vector3 end = {x, 0.01f, startZ + getHeight() * tileSize};
-        DrawLine3D(start, end, GRAY);
-    }
-
-    for (size_t j = 0; j <= getHeight(); j++) {
-        float z = startZ + j * tileSize;
-        Vector3 start = {startX, 0.01f, z};
-        Vector3 end = {startX + getWidth() * tileSize, 0.01f, z};
-        DrawLine3D(start, end, GRAY);
-    }
 }
 
