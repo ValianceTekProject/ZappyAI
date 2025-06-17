@@ -42,6 +42,9 @@ class MathUtils:
         positions = []
         for depth in range(vision_range + 1):
             for lateral in range(-depth, depth + 1):
-                rel_pos = MathUtils.rotate(lateral, depth, orientation)
+                if orientation:
+                    rel_pos = MathUtils.rotate(lateral, depth, orientation)
+                else:
+                    rel_pos = (lateral, depth)
                 positions.append(rel_pos)
         return positions

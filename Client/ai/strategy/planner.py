@@ -29,11 +29,6 @@ class Planner:
         if self.state.command_already_send:
             return None
 
-        pos = self.state.vision.find_closest_resource("food")
-        if pos:
-            print("Cosest ressource is at")
-            print("POS X = {}".format(pos[0]))
-            print("POS Y = {}".format(pos[1]))
         if self.state.needs_look:
             return self.cmd_manager.look()
 

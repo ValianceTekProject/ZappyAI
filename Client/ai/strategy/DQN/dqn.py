@@ -17,7 +17,7 @@ from utils.game_state import GameState
 
 class DeepQNetwork(nn.Module):
     def __init__(self, hidden_layer_size = 32, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
-                 epsilon_min = 0.01, batch_size = 64):
+                 epsilon_min = 0.01, batch_size = 64, state_size = 11):
         super().__init__()
         self.hidden_layer_size = hidden_layer_size
         self.learning_rate = learning_rate
@@ -39,7 +39,7 @@ class DeepQNetwork(nn.Module):
 
         self.memory = deque(maxlen=10000)
 
-        self.input_size = self.state_size
+        self.input_size = state_size
 
         self.fc1 = nn.Linear(self.input_size, self.hidden_layer_size)
         self.fc2 = nn.Linear(self.hidden_layer_size, self.output_size)
@@ -84,8 +84,8 @@ class DeepQNetwork(nn.Module):
         reward += 0.1
         return reward
 
-    def build_state(self, game_state: GameState, actualize_food: bool = False):
-        return DQNState(game_state, actualize_food)
+    def build_state(self, game_state: GameState, actualize_inventory: bool = False):
+        return DQNState(game_state, actualize_inventory)
 
     def save_experience(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
