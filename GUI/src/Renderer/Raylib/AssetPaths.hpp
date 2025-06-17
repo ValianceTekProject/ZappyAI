@@ -9,14 +9,15 @@
 
 #include <string>
 
-#define str(x) std::string(x)
-
 namespace zappy {
     namespace gui {
         namespace raylib {
             namespace assets {
 
-                constexpr const char *ASSETS_PATH = "assets/";
+                constexpr const char *ASSETS_PATH = "src/Renderer/Raylib/Assets/";
+
+                // Floor assets
+                inline std::string FLOOR_PATH = std::string(ASSETS_PATH) + "grass.jpg";
 
                 // Pokemon assets
             }
