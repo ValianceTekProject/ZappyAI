@@ -364,7 +364,7 @@ void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params)
     iss >> playerId >> message;
 
     // Log the broadcast message
-    std::cout << "Player " << playerId << " broadcast: " << message << std::endl;
+    printDebug("Player " + std::to_string(playerId) + " broadcast: " + message);
 }
 
 /**
