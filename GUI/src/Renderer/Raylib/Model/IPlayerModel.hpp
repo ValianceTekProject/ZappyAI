@@ -15,6 +15,16 @@ namespace zappy {
             class IPlayerModel {
                 public:
                     virtual ~IPlayerModel() = default;
+
+                    virtual void init() = 0;
+
+                    virtual void update() = 0;
+
+                    virtual void walk() = 0;
+                    virtual void ejected() = 0;
+                    virtual void idle() = 0;
+
+                    virtual void render() = 0;
             };
         } // namespace raylib
     } // namespace gui
