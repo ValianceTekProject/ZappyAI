@@ -259,6 +259,15 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
     printDebug("New player " + std::to_string(playerId) + " connected from team " + teamName);
 }
 
+/**
+ * @brief Handle the player's position update event.
+ *
+ * Parses the player position parameters to extract the player ID, position, and orientation.
+ * Updates the renderer with the player's position and orientation.
+ *
+ * @param params A string containing the player ID, position, and orientation
+ *               Example: "#n X Y N"
+ */
 void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
 {
     // remove # from the beginning of the string
@@ -275,6 +284,15 @@ void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
     _renderer->updatePlayerPosition(playerId, x, y, game::convertOrientation(orientation));
 }
 
+/**
+ * @brief Handles a player's level update event
+ *
+ * Parses the level update parameters to extract the player ID and new level.
+ * Updates the renderer with the player's new level and logs the level change.
+ *
+ * @param params A string containing the player ID and their new level
+ *               Example: "#n L"
+ */
 void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
 {
     // remove # from the beginning of the string
@@ -291,6 +309,16 @@ void zappy::network::Protocol::handlePlayerLevel(const std::string &params)
     printDebug("Player " + std::to_string(playerId) + " reached level " + std::to_string(level));
 }
 
+/**
+ * @brief Handles a player's inventory update
+ *
+ * Parses the inventory parameters to extract the player ID and resource quantities.
+ * Removes the leading '#' from the parameters and creates an inventory object.
+ * Updates the renderer with the player's new inventory.
+ *
+ * @param params A string containing the player's inventory information
+ *               Expected format: "#n resource1 resource2 ... resourceN"
+ */
 void zappy::network::Protocol::handlePlayerInventory(const std::string &params)
 {
     // remove # from the beginning of the string
@@ -315,6 +343,15 @@ void zappy::network::Protocol::handlePlayerInventory(const std::string &params)
     _renderer->updatePlayerInventory(playerId, inventory);
 }
 
+/**
+ * @brief Handles the end of the game
+ *
+ * Parses the game end parameters to extract the winning team.
+ * Notifies the renderer about the game's conclusion and prints the winning team.
+ *
+ * @param params A string containing the name of the winning team
+ *               Expected format: "TeamName"
+ */
 void zappy::network::Protocol::handleGameEnd(const std::string &params)
 {
     std::istringstream iss(params);
@@ -326,6 +363,15 @@ void zappy::network::Protocol::handleGameEnd(const std::string &params)
     std::cout << "Game ended! Winning team: " << winningTeam << std::endl;
 }
 
+/**
+ * @brief Handles a player expulsion event
+ *
+ * Parses the expulsion parameters to extract the player ID.
+ * Logs the expulsion details to the console.
+ *
+ * @param params A string containing the expulsion parameters
+ *               Expected format: "#n"
+ */
 void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
 {
     // remove # from the beginning of the string
@@ -337,7 +383,7 @@ void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
 
     iss >> playerId;
 
-    // _renderer->expulsePlayer(playerId); // TODO: add expulsion animation
+    _renderer->PlayerExpulsion(playerId);
     printDebug("Player " + std::to_string(playerId) + " expelled");
 }
 
@@ -349,7 +395,7 @@ void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
  * message to the console.
  *
  * @param params A string containing the broadcast parameters
- *               Expected format: "PlayerID Message"
+ *               Expected format: "#n Message"
  */
 void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params)
 {
@@ -363,7 +409,7 @@ void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params)
 
     iss >> playerId >> message;
 
-    // Log the broadcast message
+    _renderer->PlayerBroadcast(playerId, message);
     printDebug("Player " + std::to_string(playerId) + " broadcast: " + message);
 }
 
@@ -394,7 +440,7 @@ void zappy::network::Protocol::handleIncantationStart(const std::string &params)
     while (iss >> playerId)
         playerIds.push_back(playerId);
 
-    // TODO: handle the incantation
+    _renderer->StartIncantation(x, y, level, playerIds);
     std::string result;
     result += "Incantation started at (" + std::to_string(x) + ", " + std::to_string(y) + ") for level " + std::to_string(level) + " with players:";
     for (const auto &playerId : playerIds)
@@ -420,7 +466,7 @@ void zappy::network::Protocol::handleIncantationEnd(const std::string &params)
 
     iss >> x >> y >> success;
 
-    // handle the incantation
+    _renderer->EndIncantation(x, y, success);
     printDebug("Incantation " + std::string(success ? "succeeded" : "failed") + " at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
 }
 
@@ -431,7 +477,7 @@ void zappy::network::Protocol::handleIncantationEnd(const std::string &params)
  * and logs the egg laying event to the console.
  *
  * @param params A string containing the player ID who laid the egg
- *               Expected format: "PlayerID"
+ *               Expected format: "#n"
  */
 void zappy::network::Protocol::handleEggLaying(const std::string &params)
 {
@@ -454,7 +500,7 @@ void zappy::network::Protocol::handleEggLaying(const std::string &params)
  * and the number of resources dropped, and logs the event to the console.
  *
  * @param params A string containing the player ID and number of resources
- *               Expected format: "PlayerID NbResources"
+ *               Expected format: "#n NbResources"
  */
 void zappy::network::Protocol::handleResourceDrop(const std::string &params)
 {
@@ -478,7 +524,7 @@ void zappy::network::Protocol::handleResourceDrop(const std::string &params)
  * and the number of resources collected, and logs the event to the console.
  *
  * @param params A string containing the player ID and number of resources
- *               Expected format: "PlayerID NbResources"
+ *               Expected format: "#n NbResources"
  */
 void zappy::network::Protocol::handleResourceCollect(const std::string &params)
 {
@@ -501,7 +547,7 @@ void zappy::network::Protocol::handleResourceCollect(const std::string &params)
  * Parses the player death parameters to extract the player ID
  *
  * @param params A string containing the player ID who died
- *               Expected format: "PlayerID"
+ *               Expected format: "#n"
  */
 void zappy::network::Protocol::handlePlayerDeath(const std::string &params)
 {
@@ -524,7 +570,7 @@ void zappy::network::Protocol::handlePlayerDeath(const std::string &params)
  * Parses the player respawn parameters to extract the player ID
  *
  * @param params A string containing the player ID who respawned
- *                Expected format: "EggID PlayerID X Y"
+ *                Expected format: "EggID n X Y"
  */
 void zappy::network::Protocol::handleEggCreated(const std::string &params)
 {

@@ -65,6 +65,36 @@ void zappy::gui::raylib::BasicScene::updatePlayerInventory(const int &id, const 
     AScene::updatePlayerInventory(id, inventory);
 }
 
+void zappy::gui::raylib::BasicScene::PlayerExpulsion(const int &id)
+{
+    (void)id;
+}
+
+void zappy::gui::raylib::BasicScene::PlayerBroadcast(const int &id, const std::string &message)
+{
+    (void)id;
+    (void)message;
+}
+
+void zappy::gui::raylib::BasicScene::StartIncantation(
+    const int &x, const int &y,
+    const int &level,
+    const std::vector<int> &playerIds
+)
+{
+    (void)x;
+    (void)y;
+    (void)level;
+    (void)playerIds;
+}
+
+void zappy::gui::raylib::BasicScene::EndIncantation(const int &x, const int &y, const bool &result)
+{
+    (void)x;
+    (void)y;
+    (void)result;
+}
+
 void zappy::gui::raylib::BasicScene::hatchEgg(const int &id)
 {
     AScene::hatchEgg(id);

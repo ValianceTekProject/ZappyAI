@@ -31,6 +31,17 @@ namespace zappy {
 
                 void endGame(const std::string &teamName) override;
 
+                void PlayerExpulsion(const int &id) override;
+
+                void PlayerBroadcast(const int &id, const std::string &message) override;
+
+                void StartIncantation(
+                    const int &x, const int &y,
+                    const int &level,
+                    const std::vector<int> &playerIds
+                ) override;
+                void EndIncantation(const int &x, const int &y, const bool &result) override;
+
             private:
                 void _initWindow();
                 void _initColors();
