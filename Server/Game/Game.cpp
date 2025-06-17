@@ -26,7 +26,7 @@ void zappy::game::Game::_addPlayerToTeam(
     this->_eggList.pop();
     user.setState(zappy::server::ClientState::CONNECTED);
     auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
-        std::move(user), _idPlayerTot, egg.x, egg.y, orientation, 1);
+        std::move(user), _idPlayerTot, egg.x, egg.y, orientation, team, 1);
     _idPlayerTot += 1;
     team.addPlayer(std::move(newPlayer));
     this->_playerList.push_back(std::move(newPlayer));
