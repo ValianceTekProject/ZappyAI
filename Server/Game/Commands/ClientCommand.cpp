@@ -88,6 +88,37 @@ void zappy::game::CommandHandler::handleLeft(zappy::game::ServerPlayer &player)
         player.getClient().sendMessage("ko\n");
 }
 
+void zappy::game::CommandHandler::handleInventory(zappy::game::ServerPlayer &player)
+{
+    if (!player.getChonoStart()) {
+        zappy::game::Inventory playerInv = player.getInventory();
+        std::string msg = "[";
+        for (auto foodName : names)
+            msg += foodName + " " + std::to_string(playerInv.getResourceQuantity(getResource(foodName))) + ",";
+        msg.pop_back();
+        msg += "]\n";
+        player.getClient().sendMessage(msg);
+        player.startChrono();
+        player.setChronoStart(true);
+        return;
+    }
+
+    double seconds = static_cast<double>(static_cast<int>(timeLimit::INVENTORY)) / this->_freq;
+    auto timeNeed = std::chrono::duration<double>(seconds);
+    if (player.getChrono() >= timeNeed) {
+        zappy::game::Inventory playerInv = player.getInventory();
+        std::string msg = "[";
+        for (auto foodName : names)
+            msg += foodName + " " + std::to_string(playerInv.getResourceQuantity(getResource(foodName))) + ",";
+        msg.pop_back();
+        msg += "]\n";
+        player.getClient().sendMessage(msg);
+        player.lookLeft();
+        player.startChrono();
+    } else
+        player.getClient().sendMessage("ko\n");
+}
+
 void zappy::game::CommandHandler::handleBroadcast(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {

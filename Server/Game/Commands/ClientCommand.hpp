@@ -55,7 +55,7 @@ namespace zappy {
             void handleRight(zappy::game::ServerPlayer &player);
             void handleLeft(zappy::game::ServerPlayer &player);
             void handleLook(zappy::game::ServerPlayer &player) { (void)player; }
-            void handleInventory(zappy::game::ServerPlayer &player) { (void)player; }
+            void handleInventory(zappy::game::ServerPlayer &player);
             void handleBroadcast(zappy::game::ServerPlayer &player);
             void handleConnectNbr(zappy::game::ServerPlayer &player) { (void)player; }
             void handleFork(zappy::game::ServerPlayer &player);
