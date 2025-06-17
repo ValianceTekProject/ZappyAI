@@ -8,14 +8,13 @@
 #pragma once
 
 #include "APlayerModel.hpp"
-#include "AssetPaths.hpp"
 
 namespace zappy {
     namespace gui {
         namespace raylib {
             class BasicPlayerModel : public APlayerModel {
                 public:
-                    BasicPlayerModel();
+                    BasicPlayerModel(const int &id) : APlayerModel::APlayerModel(id) {}
                     ~BasicPlayerModel() override = default;
 
                     void init() override;

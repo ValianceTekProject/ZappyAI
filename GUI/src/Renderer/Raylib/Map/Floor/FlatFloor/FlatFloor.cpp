@@ -46,4 +46,3 @@ void zappy::gui::raylib::FlatFloor::render() const
         }
     }
 }
-
