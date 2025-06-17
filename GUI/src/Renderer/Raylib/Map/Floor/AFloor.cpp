@@ -17,3 +17,13 @@ void zappy::gui::raylib::AFloor::init()
 {
     // Initialiser la grille
 }
+
+void zappy::gui::raylib::AFloor::update() const
+{
+    // Actualiser les textures
+}
+
+void zappy::gui::raylib::AFloor::render() const
+{
+    // Render les textures
+}
