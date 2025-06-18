@@ -47,7 +47,7 @@ class GameState:
         self.needs_look = False
         self.needs_repro = False
 
-        self.critical_food_threshold = 15
+        self.critical_food_threshold = 10
         self.safe_food_threshold = 20
 
     def update(self, command: Command):
