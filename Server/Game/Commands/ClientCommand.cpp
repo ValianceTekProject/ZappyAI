@@ -165,6 +165,7 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 
 void zappy::game::CommandHandler::handleTake(zappy::game::ServerPlayer &player, const std::string &arg)
 {
+    (void)arg;
     if (!player.getChonoStart()) {
         player.startChrono();
         player.setChronoStart(true);
