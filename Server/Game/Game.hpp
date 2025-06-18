@@ -59,7 +59,7 @@ namespace zappy {
             zappy::game::CommandHandler _commandHandler;
             std::vector<zappy::game::Team> _teamList;
             std::queue<zappy::game::Egg> _eggList;
-            std::vector<std::shared_ptr<zappy::game::Player>> _playerList;
+            std::vector<std::weak_ptr<zappy::game::Player>> _playerList;
             int _baseFreqMs;
             int _clientNb;
             std::atomic<RunningState> _isRunning = RunningState::PAUSE;
