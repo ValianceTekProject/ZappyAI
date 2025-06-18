@@ -58,6 +58,11 @@ void zappy::gui::raylib::MapRenderer::addEgg(std::unique_ptr<IEggModel> egg)
     _eggs.push_back(std::move(egg));
 }
 
+void zappy::gui::raylib::MapRenderer::addPlayer(std::unique_ptr<IPlayerModel> player)
+{
+    _players.push_back(std::move(player));
+}
+
 void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)
 {
     for (auto it = _eggs.begin(); it != _eggs.end(); it++) {
@@ -66,11 +71,6 @@ void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)
             break;
         }
     }
-}
-
-void zappy::gui::raylib::MapRenderer::addPlayer(std::unique_ptr<IPlayerModel> player)
-{
-    _players.push_back(std::move(player));
 }
 
 void zappy::gui::raylib::MapRenderer::removePlayer(const int &id)
@@ -97,7 +97,7 @@ void zappy::gui::raylib::MapRenderer::setPlayerPosition(const int &id, const siz
 {
     for (auto &player : _players) {
         if (player->getId() == id) {
-            player->setPosition(Vector3{static_cast<float>(x), 0, static_cast<float>(y)});
+            player->setPosition(_floor->get3DCoords(x, y));
             player->look(orientation);
             break;
         }

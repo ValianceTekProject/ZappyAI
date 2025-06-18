@@ -41,6 +41,7 @@ void zappy::gui::raylib::AScene::addEgg(const int &id)
     // Egg supposed to be added to the map
     game::Egg egg = _gameState->getEggById(id);
 
+    std::cout << egg.x << " " << egg.y << std::endl;
     _mapRenderer->setEggPosition(id, egg.x, egg.y);
 }
 
