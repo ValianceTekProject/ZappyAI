@@ -36,16 +36,20 @@ void zappy::gui::raylib::AScene::handleInput(InputManager &inputManager)
     (void)inputManager;
 }
 
-void zappy::gui::raylib::AScene::addEgg(const int &eggId)
+void zappy::gui::raylib::AScene::addEgg(const int &id)
 {
-    // Ajouter un œuf à la scène
-    (void)eggId;
+    // Egg supposed to be added to the map
+    game::Egg egg = _gameState->getEggById(id);
+
+    _mapRenderer->setEggPosition(id, egg.x, egg.y);
 }
 
 void zappy::gui::raylib::AScene::addPlayer(const int &id)
 {
-    // Ajouter un joueur à la scène
-    (void)id;
+    // Player supposed to be added to the map
+    game::Player player = _gameState->getPlayerById(id);
+
+    _mapRenderer->setPlayerPosition(id, player.x, player.y, player.orientation);
 }
 
 void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)

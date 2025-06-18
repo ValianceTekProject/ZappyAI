@@ -32,7 +32,6 @@ namespace zappy {
                     bool shouldClose() const override;
 
                     void addEgg(const int &id) override;
-
                     void addPlayer(const int &id) override;
 
                     void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) override;
@@ -53,7 +52,6 @@ namespace zappy {
                     void hatchEgg(const int &eggId) override;
 
                     void removeEgg(const int &eggId) override;
-
                     void removePlayer(const int &id) override;
 
                     void endGame(const std::string &teamName) override;

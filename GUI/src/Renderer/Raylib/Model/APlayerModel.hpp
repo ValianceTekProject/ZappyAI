@@ -20,18 +20,29 @@ namespace zappy {
                     virtual void init() override = 0;
 
                     // Setters
+                    void setGamePosition(const Vector2 &position) override { _gamePosition = position; }
                     void setPosition(const Vector3 &position) override { _position = position; }
-                    void setRotation(const Vector3 &rotation) override { _rotation = rotation; }
+
                     void setScale(const float &scale) override { _scale = scale; }
-                    void setOrigin(const Vector3 &origin) override { _origin = origin; }
+                    void setHeadOrigin(const Vector3 &origin) override { _headOrigin = origin; }
 
                     // Getters
                     int getId() const override { return _id; }
-                    Vector3 getPosition() const override { return _position; }
-                    Vector3 getRotation() const override { return _rotation; }
-                    float getScale() const override { return _scale; }
-                    Vector3 getOrigin() const override { return _origin; }
                     State getState() const override { return _state; }
+
+                    Vector2 getGamePosition() const override { return _gamePosition; }
+                    Vector3 getPosition() const override { return _position; }
+
+                    game::Orientation getOrientation() const override { return _orientation; }
+
+                    float getScale() const override { return _scale; }
+                    Vector3 getHeadOrigin() const override;
+
+                    void rotate(const Vector3 &rotation) override;
+
+                    void look(const game::Orientation &orientation) override;
+                    void lookLeft() override;
+                    void lookRight() override;
 
                     virtual void update() override = 0;
 
@@ -48,13 +59,14 @@ namespace zappy {
 
                     State _state;
 
-                    Model _model;
+                    Vector2 _gamePosition;
+                    game::Orientation _orientation;
 
                     Vector3 _position;
-                    Vector3 _rotation;
+                    Vector3 _headOrigin;
                     float _scale;
 
-                    Vector3 _origin;
+                    Model _model;
 
                     int _animsCount;
                     unsigned int _animIndex;

@@ -82,3 +82,24 @@ void zappy::gui::raylib::MapRenderer::removePlayer(const int &id)
         }
     }
 }
+
+void zappy::gui::raylib::MapRenderer::setEggPosition(const int &id, const size_t &x, const size_t &y)
+{
+    for (auto &egg : _eggs) {
+        if (egg->getId() == id) {
+            egg->setPosition(Vector3{static_cast<float>(x), 0, static_cast<float>(y)});
+            break;
+        }
+    }
+}
+
+void zappy::gui::raylib::MapRenderer::setPlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)
+{
+    for (auto &player : _players) {
+        if (player->getId() == id) {
+            player->setPosition(Vector3{static_cast<float>(x), 0, static_cast<float>(y)});
+            player->look(orientation);
+            break;
+        }
+    }
+}
