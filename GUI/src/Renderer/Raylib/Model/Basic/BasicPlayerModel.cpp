@@ -24,7 +24,8 @@ void zappy::gui::raylib::BasicPlayerModel::init()
 void zappy::gui::raylib::BasicPlayerModel::update()
 {
     ModelAnimation anim = _modelAnimations[_animIndex];
-    _animCurrentFrame = (_animCurrentFrame + 1)%anim.frameCount;
+
+    _animCurrentFrame = (_animCurrentFrame + 1) % anim.frameCount;
     UpdateModelAnimation(_model, anim, _animCurrentFrame);
 }
 

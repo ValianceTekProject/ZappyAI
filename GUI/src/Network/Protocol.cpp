@@ -198,9 +198,20 @@ void zappy::network::Protocol::handleMapSize(const std::string &params)
     iss >> width >> height;
 
     _gameState->initMap(width, height);
+    _renderer->init();
     printDebug("Map size: " + std::to_string(width) + "x" + std::to_string(height));
 }
 
+/**
+ * @brief Handles the content of a specific tile on the game map
+ *
+ * Parses the tile's coordinates and resource quantities, creating a Tile object
+ * with the parsed resources. Updates the game state with the new tile information.
+ *
+ * @param params A string containing tile coordinates and resource quantities
+ *               Format: "X Y R1 R2 R3 R4 R5 R6"
+ *               Where X, Y are coordinates and R1-R6 are resource quantities
+ */
 void zappy::network::Protocol::handleTileContent(const std::string &params)
 {
     std::istringstream iss(params);
@@ -222,6 +233,14 @@ void zappy::network::Protocol::handleTileContent(const std::string &params)
     _gameState->updateTile(x, y, tile);
 }
 
+/**
+ * @brief Handle the team names received from the server.
+ *
+ * Parses the team name from the received parameters and adds it to the game state.
+ * Prints a debug message indicating the team has been added.
+ *
+ * @param params A string containing the team name
+ */
 void zappy::network::Protocol::handleTeamNames(const std::string &params)
 {
     std::istringstream iss(params);
@@ -233,6 +252,15 @@ void zappy::network::Protocol::handleTeamNames(const std::string &params)
     printDebug("Team " + teamName + " added");
 }
 
+/**
+ * @brief Handles the event of a new player joining the game
+ *
+ * Parses the new player parameters to extract the player ID, position, orientation,
+ * level, and team name. Creates a new Player object and adds it to the renderer.
+ *
+ * @param params A string containing the new player's details
+ *               Example: "#n X Y N L TeamName"
+ */
 void zappy::network::Protocol::handleNewPlayer(const std::string &params)
 {
     // remove # from the beginning of the string

@@ -60,11 +60,13 @@ void zappy::gui::RaylibRenderer::addEgg(const int &eggId,
     const int &y
 ) {
     ARenderer::addEgg(eggId, fatherId, x, y);
+    _scene->addEgg(eggId);
 }
 
 void zappy::gui::RaylibRenderer::addPlayer(const game::Player &player)
 {
     ARenderer::addPlayer(player);
+    _scene->addPlayer(player.getId());
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerPosition(const int &id,
@@ -73,16 +75,19 @@ void zappy::gui::RaylibRenderer::updatePlayerPosition(const int &id,
     const game::Orientation &orientation
 ) {
     ARenderer::updatePlayerPosition(id, x, y, orientation);
+    _scene->updatePlayerPosition(id, x, y, orientation);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerLevel(const int &id, const size_t &level)
 {
     ARenderer::updatePlayerLevel(id, level);
+    _scene->updatePlayerLevel(id, level);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerInventory(const int &id, const game::Inventory &inventory)
 {
     ARenderer::updatePlayerInventory(id, inventory);
+    _scene->updatePlayerInventory(id, inventory);
 }
 
 void zappy::gui::RaylibRenderer::PlayerExpulsion(const int &id)
@@ -115,19 +120,23 @@ void zappy::gui::RaylibRenderer::EndIncantation(const int &x, const int &y, cons
 void zappy::gui::RaylibRenderer::hatchEgg(const int &eggId)
 {
     ARenderer::hatchEgg(eggId);
+    _scene->hatchEgg(eggId);
 }
 
 void zappy::gui::RaylibRenderer::removeEgg(const int &eggId)
 {
     ARenderer::removeEgg(eggId);
+    _scene->removeEgg(eggId);
 }
 
 void zappy::gui::RaylibRenderer::removePlayer(const int &id)
 {
     ARenderer::removePlayer(id);
+    _scene->removePlayer(id);
 }
 
 void zappy::gui::RaylibRenderer::endGame(const std::string &teamName)
 {
     ARenderer::endGame(teamName);
+    _scene->endGame(teamName);
 }

@@ -12,7 +12,7 @@
 
 zappy::gui::raylib::BasicEggModel::BasicEggModel(const int &id) : AEggModel::AEggModel(id)
 {
-    constexpr float scale = 0.2;
+    constexpr float scale = 0.15;
     setScale(scale);
 }
 
@@ -24,7 +24,8 @@ void zappy::gui::raylib::BasicEggModel::init()
 void zappy::gui::raylib::BasicEggModel::update()
 {
     ModelAnimation anim = _modelAnimations[_animIndex];
-    _animCurrentFrame = (_animCurrentFrame + 1)%anim.frameCount;
+
+    _animCurrentFrame = (_animCurrentFrame + 1) % anim.frameCount;
     UpdateModelAnimation(_model, anim, _animCurrentFrame);
 }
 

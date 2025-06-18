@@ -76,8 +76,6 @@ void zappy::gui::Gui::init()
 
     while(!_isMapCreated())
         _protocol->update();
-
-    _renderer->init();
 }
 
 void zappy::gui::Gui::_initNetwork()
