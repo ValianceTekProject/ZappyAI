@@ -165,8 +165,24 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 
 void zappy::game::CommandHandler::handleTake(zappy::game::ServerPlayer &player, const std::string &arg)
 {
-    (void)arg;
     if (!player.getChonoStart()) {
+        auto objectTake = std::find_if(names.begin(), names.end(), [&arg](const std::string &name) {
+            return name == arg;
+        });
+        if (objectTake != names.end()) {
+            zappy::game::Resource resource = getResource(arg);
+            auto &tile = this->_map.getTile(player.x, player.y);
+            if (tile.getResourceQuantity(resource) > 0) {
+                player.collectRessource(resource);
+                tile.removeResource(resource);
+            } else {
+                player.getClient().sendMessage("ko\n");
+                return;
+            }
+        } else {
+            player.getClient().sendMessage("ko\n");
+            return;
+        }
         player.startChrono();
         player.setChronoStart(true);
         player.getClient().sendMessage("ok\n");
@@ -174,6 +190,73 @@ void zappy::game::CommandHandler::handleTake(zappy::game::ServerPlayer &player, 
     }
 
     if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::TAKE) / this->_freq)) {
+        auto objectTake = std::find_if(names.begin(), names.end(), [&arg](const std::string &name) {
+            return name == arg;
+        });
+        if (objectTake != names.end()) {
+            zappy::game::Resource resource = getResource(arg);
+            auto &tile = this->_map.getTile(player.x, player.y);
+            if (tile.getResourceQuantity(resource) > 0) {
+                player.collectRessource(resource);
+                tile.removeResource(resource);
+            } else {
+                player.getClient().sendMessage("ko\n");
+                return;
+            }
+        } else {
+            player.getClient().sendMessage("ko\n");
+            return;
+        }
+        player.startChrono();
+        player.getClient().sendMessage("ok\n");
+    } else 
+        player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandler::handleDrop(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    if (!player.getChonoStart()) {
+        auto objectDrop = std::find_if(names.begin(), names.end(), [&arg](const std::string &name) {
+            return name == arg;
+        });
+        if (objectDrop != names.end()) {
+            zappy::game::Resource resource = getResource(arg);
+            auto &inventory = player.getInventory();
+            if (inventory.getResourceQuantity(resource) > 0) {
+                this->_map.getTile(player.x, player.y).addSingleResource(resource);
+                player.dropRessource(resource);
+            } else {
+                player.getClient().sendMessage("ko\n");
+                return;
+            }
+        } else {
+            player.getClient().sendMessage("ko\n");
+            return;
+        }
+        player.startChrono();
+        player.setChronoStart(true);
+        player.getClient().sendMessage("ok\n");
+        return;
+    }
+
+    if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::SET) / this->_freq)) {
+        auto objectDrop = std::find_if(names.begin(), names.end(), [&arg](const std::string &name) {
+            return name == arg;
+        });
+        if (objectDrop != names.end()) {
+            zappy::game::Resource resource = getResource(arg);
+            auto &inventory = player.getInventory();
+            if (inventory.getResourceQuantity(resource) > 0) {
+                this->_map.getTile(player.x, player.y).addSingleResource(resource);
+                player.dropRessource(resource);
+            } else {
+                player.getClient().sendMessage("ko\n");
+                return;
+            }
+        } else {
+            player.getClient().sendMessage("ko\n");
+            return;
+        }
         player.startChrono();
         player.getClient().sendMessage("ok\n");
     } else 

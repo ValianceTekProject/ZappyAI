@@ -12,6 +12,7 @@
 #include <map>
 #include <string>
 #include "ServerPlayer.hpp"
+#include "ServerMap.hpp"
 
 
 namespace zappy {
@@ -35,7 +36,7 @@ namespace zappy {
                 INCANTATION = 300
             };
 
-            CommandHandler(int freq, int width, int height, int clientNb) : _freq(freq), _widthMap(width), _heightMap(height), _clientNb(clientNb) {};
+            CommandHandler(int freq, int width, int height, int clientNb, zappy::game::MapServer &map) : _freq(freq), _widthMap(width), _heightMap(height), _clientNb(clientNb), _map(map) {};
             ~CommandHandler() = default;
 
             void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
@@ -47,6 +48,7 @@ namespace zappy {
             int _widthMap;
             int _heightMap;
             int _clientNb;
+            zappy::game::Map &_map;
             std::unordered_map<std::string, std::function<void(ServerPlayer &, const std::string &)>> _commandMap;
 
             std::string _getFirstWord(const std::string &input) const;
@@ -63,7 +65,7 @@ namespace zappy {
             void handleFork(zappy::game::ServerPlayer &player);
             void handleEject(zappy::game::ServerPlayer &player) { (void)player; }
             void handleTake(zappy::game::ServerPlayer &player, const std::string &arg);
-            void handleDrop(zappy::game::ServerPlayer &player, const std::string &arg) { (void)player, (void)arg; }
+            void handleDrop(zappy::game::ServerPlayer &player, const std::string &arg);
             void handleIncantation(zappy::game::ServerPlayer &player) { (void)player; }
         };
 
