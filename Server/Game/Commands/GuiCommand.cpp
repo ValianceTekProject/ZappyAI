@@ -51,18 +51,18 @@ void zappy::game::CommandHandlerGui::initCommandMap()
         {"msz", [this](ServerPlayer &player, const std::string &) { handleMsz(player); }},
         {"bct", [this](ServerPlayer &player, const std::string &arg) { handleBct(player, arg); }},
         {"mct", [this](ServerPlayer &player, const std::string &) { handleMct(player); }},
-        {"tna", [this](ServerPlayer &player, const std::string &) { handleTna(player); }},
-        {"ppo", [this](ServerPlayer &player, const std::string &arg) { handlePpo(player, arg); }},
-        {"plv", [this](ServerPlayer &player, const std::string &arg) { handlePlv(player, arg); }},
-        {"pin", [this](ServerPlayer &player, const std::string &arg) { handlePin(player, arg); }},
-        {"sgt", [this](ServerPlayer &player, const std::string &) { handleSgt(player); }},
-        {"sst", [this](ServerPlayer &player, const std::string &arg) { handleSst(player, arg); }}
+        {"tna", [this](ServerPlayer &player, const std::string &) { handleTna(player); }}
+        // {"ppo", [this](ServerPlayer &player, const std::string &arg) { handlePpo(player, arg); }},
+        // {"plv", [this](ServerPlayer &player, const std::string &arg) { handlePlv(player, arg); }},
+        // {"pin", [this](ServerPlayer &player, const std::string &arg) { handlePin(player, arg); }},
+        // {"sgt", [this](ServerPlayer &player, const std::string &) { handleSgt(player); }},
+        // {"sst", [this](ServerPlayer &player, const std::string &arg) { handleSst(player, arg); }}
     };
 }
 
 void zappy::game::CommandHandlerGui::processClientInput(const std::string &input, zappy::game::ServerPlayer &player)
 {
-    if (this->_commandMap.empty())
+    if (this->_commandMapGui.empty())
         this->initCommandMap();
 
     auto spacePos = input.find(' ');
