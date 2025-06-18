@@ -10,7 +10,7 @@
 #include <algorithm>
 #include "raymath.h"
 
-zappy::gui::raylib::FlatFloor::FlatFloor(size_t width, size_t height, size_t tileSize) :
+zappy::gui::raylib::FlatFloor::FlatFloor(const size_t &width, const size_t &height, const float &tileSize) :
     AFloor::AFloor(width, height, tileSize)
 {}
 
@@ -45,4 +45,14 @@ void zappy::gui::raylib::FlatFloor::render() const
             DrawModelEx(_model, position, {0.0f, 1.0f, 0.0f}, 0.0f, scale, WHITE);
         }
     }
+}
+
+Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const size_t &x, const size_t &y) const
+{
+    size_t tileSize = getTileSize();
+    Vector3 vector;
+
+    vector.x = x * tileSize;
+    vector.z = (-y) * tileSize;
+    return vector;
 }
