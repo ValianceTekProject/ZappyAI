@@ -10,6 +10,7 @@
 #include "Map.hpp"
 #include "FlatFloor.hpp"
 #include "IPlayerModel.hpp"
+#include "IEggModel.hpp"
 
 #include <memory>
 #include <vector>
@@ -28,8 +29,10 @@ namespace zappy {
 
                     void render();
 
-                    void addPlayer(std::unique_ptr<IPlayerModel> player);
+                    void addEgg(std::unique_ptr<IEggModel> egg);
+                    void removeEgg(const int &id);
 
+                    void addPlayer(std::unique_ptr<IPlayerModel> player);
                     void removePlayer(const int &id);
 
                 private:
@@ -38,6 +41,8 @@ namespace zappy {
                     std::unique_ptr<IFloor> _floor;
 
                     std::vector<std::unique_ptr<IPlayerModel>> _players;
+
+                    std::vector<std::unique_ptr<IEggModel>> _eggs;
             };
         }
     }
