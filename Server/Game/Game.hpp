@@ -11,6 +11,7 @@
 #include "ServerMap.hpp"
 #include "my_macros.hpp"
 #include "ClientCommand.hpp"
+#include "GuiCommand.hpp"
 #include <atomic>
 #include <chrono>
 
@@ -25,6 +26,7 @@ namespace zappy {
             Game(int mapWidth, int mapHeight, std::vector<Team> teamList, int freq, int clientNb)
                 : _map(mapWidth, mapHeight),
                 _commandHandler(freq, _map.getWidth(), _map.getHeight(), clientNb, _map),
+                _commandHandlerGui(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
                 _teamList(std::move(teamList)),
                 _baseFreqMs(freq),
                 _clientNb(clientNb)
@@ -57,6 +59,7 @@ namespace zappy {
             int _idEggTot = 0;
             MapServer _map;
             zappy::game::CommandHandler _commandHandler;
+            zappy::game::CommandHandlerGui _commandHandlerGui;
             std::vector<zappy::game::Team> _teamList;
             std::queue<zappy::game::Egg> _eggList;
             std::vector<std::weak_ptr<zappy::game::Player>> _playerList;

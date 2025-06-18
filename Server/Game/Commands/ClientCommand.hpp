@@ -40,17 +40,16 @@ namespace zappy {
                   _clientNb(clientNb), _map(map) {};
             ~CommandHandler() = default;
 
-            void processClientInput(
-                const std::string &input, zappy::game::ServerPlayer &player);
+            virtual void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
 
-            void initCommandMap();
+            virtual void initCommandMap();
 
            protected:
             int _freq;
             int _widthMap;
             int _heightMap;
             int _clientNb;
-            zappy::game::Map &_map;
+            zappy::game::MapServer &_map;
             std::unordered_map<std::string,
                 std::function<void(ServerPlayer &, const std::string &)>>
                 _commandMap;
@@ -59,7 +58,7 @@ namespace zappy {
                 std::function<void(ServerPlayer &, const std::string &)>
                     function,
                 const std::string &args);
-
+           private:
             // TODO dont forget: adding check of chrono start in non complete command function
             void handleForward(zappy::game::ServerPlayer &player);
             void handleRight(zappy::game::ServerPlayer &player);

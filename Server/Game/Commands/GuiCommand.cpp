@@ -1,0 +1,80 @@
+/*
+** EPITECH PROJECT, 2025
+** Zappy
+** File description:
+** GuiCommand
+*/
+
+#include "GuiCommand.hpp"
+
+void zappy::game::CommandHandlerGui::handleMsz(zappy::game::ServerPlayer &player)
+{
+    std::string msg = "msz " + std::to_string(this->_widthMap) + " " + std::to_string(this->_heightMap) + "\n";
+    player.getClient().sendMessage(msg);
+}
+
+void zappy::game::CommandHandlerGui::handleBct(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    std::istringstream iss(arg);
+    int x;
+    int y;
+    std::string leftover;
+    std::string msg = "bct ";
+
+
+    if (iss >> x >> y && !(iss >> leftover) && (x <= this->_widthMap && x >= 0) && (y <= this->_heightMap && y >= 0)) {
+        msg += std::to_string(x) + " " + std::to_string(y);
+        for (auto resource :this->_map.getTile(x, y).getResources())
+            msg += " " + std::to_string(resource);
+        msg += "\n";
+    } else
+        player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandlerGui::handleMct(zappy::game::ServerPlayer &player)
+{
+    for (int x = 0; x < this->_widthMap; x += 1) {
+        for (int y = 0; y < this->_heightMap; y += 1)
+            this->handleBct(player, std::string(std::to_string(x) + " " + std::to_string(y)));
+    } 
+}
+
+void zappy::game::CommandHandlerGui::handleTna(zappy::game::ServerPlayer &player)
+{
+    for (auto &team : this->_teamList)
+        player.getClient().sendMessage(std::string("tna " + team.getName() + "\n"));
+}
+
+void zappy::game::CommandHandlerGui::initCommandMap()
+{
+    this->_commandMap = {
+        {"msz", [this](ServerPlayer &player, const std::string &) { handleMsz(player); }},
+        {"bct", [this](ServerPlayer &player, const std::string &arg) { handleBct(player, arg); }},
+        {"mct", [this](ServerPlayer &player, const std::string &) { handleMct(player); }},
+        {"tna", [this](ServerPlayer &player, const std::string &) { handleTna(player); }},
+        {"ppo", [this](ServerPlayer &player, const std::string &arg) { handlePpo(player, arg); }},
+        {"plv", [this](ServerPlayer &player, const std::string &arg) { handlePlv(player, arg); }},
+        {"pin", [this](ServerPlayer &player, const std::string &arg) { handlePin(player, arg); }},
+        {"sgt", [this](ServerPlayer &player, const std::string &) { handleSgt(player); }},
+        {"sst", [this](ServerPlayer &player, const std::string &arg) { handleSst(player, arg); }}
+    };
+}
+
+void zappy::game::CommandHandlerGui::processClientInput(const std::string &input, zappy::game::ServerPlayer &player)
+{
+    if (this->_commandMap.empty())
+        this->initCommandMap();
+
+    auto spacePos = input.find(' ');
+    std::string cmd = input.substr(0, spacePos);
+    std::string args = (spacePos != std::string::npos) ? input.substr(spacePos + 1) : "";
+
+    if (!args.empty() && args.back() == '\n')
+        args.pop_back();
+
+    auto it = this->_commandMapGui.find(cmd);
+    if (it != this->_commandMapGui.end()) {
+        it->second(player, args);
+    } else
+        player.getClient().sendMessage("ko\n");
+}
