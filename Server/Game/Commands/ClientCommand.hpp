@@ -7,20 +7,18 @@
 
 #pragma once
 
+#include "ServerMap.hpp"
+#include "ServerPlayer.hpp"
 #include <functional>
 #include <iostream>
 #include <map>
 #include <string>
-#include "ServerPlayer.hpp"
-#include "ServerMap.hpp"
-
 
 namespace zappy {
     namespace game {
 
         class CommandHandler {
            public:
-
             enum class timeLimit {
                 FORWARD = 7,
                 RIGHT = 7,
@@ -36,39 +34,66 @@ namespace zappy {
                 INCANTATION = 300
             };
 
-            CommandHandler(int freq, int width, int height, int clientNb, zappy::game::MapServer &map) : _freq(freq), _widthMap(width), _heightMap(height), _clientNb(clientNb), _map(map) {};
+            CommandHandler(int freq, int width, int height, int clientNb,
+                zappy::game::MapServer &map)
+                : _freq(freq), _widthMap(width), _heightMap(height),
+                  _clientNb(clientNb), _map(map) {};
             ~CommandHandler() = default;
 
-            void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
+            void processClientInput(
+                const std::string &input, zappy::game::ServerPlayer &player);
 
             void initCommandMap();
 
-           private:
+           protected:
             int _freq;
             int _widthMap;
             int _heightMap;
             int _clientNb;
             zappy::game::Map &_map;
-            std::unordered_map<std::string, std::function<void(ServerPlayer &, const std::string &)>> _commandMap;
+            std::unordered_map<std::string,
+                std::function<void(ServerPlayer &, const std::string &)>>
+                _commandMap;
 
-            std::string _getFirstWord(const std::string &input) const;
-        
+            void _executeCommand(zappy::game::ServerPlayer &player,
+                std::function<void(ServerPlayer &, const std::string &)>
+                    function,
+                const std::string &args);
 
             // TODO dont forget: adding check of chrono start in non complete command function
             void handleForward(zappy::game::ServerPlayer &player);
             void handleRight(zappy::game::ServerPlayer &player);
             void handleLeft(zappy::game::ServerPlayer &player);
-            void handleLook(zappy::game::ServerPlayer &player) { (void)player; }
+
+            void handleLook(zappy::game::ServerPlayer &player)
+            {
+                (void)player;
+            }
+
             void handleInventory(zappy::game::ServerPlayer &player);
-            void handleBroadcast(zappy::game::ServerPlayer &player, const std::string &arg);
+            void handleBroadcast(
+                zappy::game::ServerPlayer &player, const std::string &arg);
             void handleConnectNbr(zappy::game::ServerPlayer &player);
             void handleFork(zappy::game::ServerPlayer &player);
-            void handleEject(zappy::game::ServerPlayer &player) { (void)player; }
-            void handleTake(zappy::game::ServerPlayer &player, const std::string &arg);
-            void handleDrop(zappy::game::ServerPlayer &player, const std::string &arg);
-            void handleIncantation(zappy::game::ServerPlayer &player) { (void)player; }
-        };
 
-    }  // namespace server
+            void handleEject(zappy::game::ServerPlayer &player)
+            {
+                (void)player;
+            }
+
+            void handleTake(
+                zappy::game::ServerPlayer &player, const std::string &arg);
+            void handleDrop(
+                zappy::game::ServerPlayer &player, const std::string &arg);
+
+            void handleIncantation(zappy::game::ServerPlayer &player)
+            {
+                (void)player;
+            }
+            void _waitCommand(timeLimit limit);
+
+            std::mutex _resourceMutex;
+        };
+    }  // namespace game
 
 }  // namespace zappy

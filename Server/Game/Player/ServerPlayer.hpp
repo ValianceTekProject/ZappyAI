@@ -45,8 +45,8 @@ namespace zappy {
                 return now - _startTime;
             }
 
-            bool getChonoStart() { return _chronoStarted; }
-            void setChronoStart(bool status) { _chronoStarted = status; }
+            bool isInAction() { return _actionStarted; }
+            void setInAction(bool status) { _actionStarted = status; }
             zappy::game::Team &getTeam() { return _team; }
 
 
@@ -55,7 +55,7 @@ namespace zappy {
             zappy::game::player::InventoryServer _inventory;
             std::chrono::steady_clock::time_point _startTime;
 
-            bool _chronoStarted = false;
+            bool _actionStarted = false;
             zappy::game::Team &_team;
         };
     }
