@@ -6,6 +6,7 @@
 */
 
 #include "BasicPlayerModel.hpp"
+
 #include <raylib.h>
 #include <stdio.h>
 
