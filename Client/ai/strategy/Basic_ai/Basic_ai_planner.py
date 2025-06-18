@@ -7,6 +7,7 @@
 
 import time
 import math
+from utils.game_state import GameState
 from typing import Optional, List, Dict, Any
 from config import CommandType, Constants, GameStates
 from ai.strategy.pathfinding import Pathfinder, RelativeTarget
@@ -17,7 +18,7 @@ from teams.message import MessageType
 from utils.logger import logger
 
 class BASIC_AI_Planner:
-    def __init__(self, command_manager: CommandManager, game_state: GameStates, message_bus):
+    def __init__(self, command_manager: CommandManager, game_state: GameState, message_bus):
         self.cmd_manager = command_manager
         self.state = game_state
         self.pathfinder = Pathfinder()

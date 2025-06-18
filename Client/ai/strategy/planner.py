@@ -11,7 +11,7 @@ from ai.strategy.DQN.dqn_planner import DQNPlanner
 from ai.strategy.Basic_ai.Basic_ai_planner import BASIC_AI_Planner
 
 class Planner:
-    def __init__(self, command_manager: CommandManager, game_state: GameStates, message_bus, use_dqn = False):
+    def __init__(self, command_manager: CommandManager, game_state: GameState, message_bus, use_dqn = False):
         self.cmd_manager = command_manager
         self.state = game_state
 
@@ -23,8 +23,12 @@ class Planner:
         self.last_state = None
         self.last_action_index = None
 
+        self.new_agent = False
+
     def decide_next_action(self):
         if self.use_dqn:
             return self.dqn_planner.dqn_decision()
         else:
-            return self.basic_ai.basic_ai_decision()
+            result = self.basic_ai.basic_ai_decision()
+            self.new_agent = self.basic_ai.new_agent
+            return result
