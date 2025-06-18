@@ -7,18 +7,8 @@
 
 import numpy as np
 from utils.game_state import GameState
-from typing import Dict
-from enum import Enum
+from config import Item
 
-class Item(Enum):
-    FOOD = 1
-    LINEMATE = 2
-    DERAUMERE = 3
-    SIBUR = 4
-    MEDIANE = 5
-    PHIRAS = 6
-    THYSTAME = 7
-    PLAYER = 8
 
 class DQNState:
     def __init__(self, game_state: GameState, actualize_inventory: bool = False):
@@ -54,7 +44,7 @@ class DQNState:
 
     def map_to_vision_index(self, rel_pos):
         x, y = rel_pos
-        line = y
+        line = abs(y)
         index = x + line
         return index, line
 

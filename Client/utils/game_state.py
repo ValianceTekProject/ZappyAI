@@ -117,7 +117,7 @@ class GameState:
             self.vision.process_vision(
                 command.response,
                 agent_pos=self.position,
-                agent_orientation=self.direction
+                agent_orientation=None
             )
             self.needs_look = False
 

@@ -45,6 +45,16 @@ class Constants(Enum):
     VISION_RANGE = 3
     MAX_LEVEL = 8
 
+class Item(Enum):
+    FOOD = 1
+    LINEMATE = 2
+    DERAUMERE = 3
+    SIBUR = 4
+    MEDIANE = 5
+    PHIRAS = 6
+    THYSTAME = 7
+    PLAYER = 8
+
 class CommandType(Enum):
     FORWARD = 'Forward'
     RIGHT = 'Right'
