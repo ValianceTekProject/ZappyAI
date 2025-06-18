@@ -79,7 +79,6 @@ class CommandManager:
         self.pending_responses.append(cmd)
         self.state.command_already_send = True
         self.timing.register_action(cmd.type)
-        logger.debug(f"Commande envoyée {cmd.id}: {cmd.type}")
         return cmd
 
     def forward(self):
@@ -118,7 +117,6 @@ class CommandManager:
             return self._send(cmd)
 
     def broadcast(self, msg):
-        logger.debug(f"Broadcast: {msg}")
         cmd = self._build_command(CommandType.BROADCAST, [msg])
         if cmd is not None:
             return self._send(cmd)
@@ -156,6 +154,8 @@ class CommandManager:
                 continue
             if self._handle_current_level(response, completed):
                 continue
+            if self._handle_eject(response, completed):
+                continue
             if self._handle_general_response(response, completed):
                 continue
 
@@ -175,6 +175,9 @@ class CommandManager:
         Marque une incantation comme réussie suite à 'Current level: X'.
         """
         if Parser.is_current_level_response(response):
+            new_level = Parser.parse_current_level(response)
+            logger.info(f"response: {response}, player new level: {new_level}, player last level: {self.state.level}")
+            self.state.level = new_level
             for idx, cmd in enumerate(self.pending_responses):
                 if cmd.type == CommandType.INCANTATION:
                     picked = self.pending_responses.pop(idx)
@@ -182,10 +185,16 @@ class CommandManager:
                     picked.status = CommandStatus.SUCCESS
                     self.command_history.append(picked)
                     completed.append(picked)
-                    logger.debug(f"Incantation terminée: {picked.id} -> {response}")
                     return True
-            logger.warning(f"'Current level' sans incantation en attente: {response}")
             return True
+        return False
+
+    def _handle_eject(self, response: str, completed: List[Command]) -> bool:
+        """
+        Marque une commande d'eject comme réussie suite à 'eject: OK'.
+        """
+        if Parser.is_eject_response(response):
+            self.state.need_look = True
         return False
 
     def _handle_general_response(self, response: str, completed: List[Command]) -> bool:
@@ -213,7 +222,6 @@ class CommandManager:
         cmd.status = CommandStatus.FAILED if Parser.is_error_response(response) else CommandStatus.SUCCESS
         self.command_history.append(cmd)
         completed.append(cmd)
-        logger.debug(f"Commande {cmd.id} terminée: {cmd.status.name} ({response})")
         return True
 
     def _handle_timeouts(self, completed: List[Command]) -> None:

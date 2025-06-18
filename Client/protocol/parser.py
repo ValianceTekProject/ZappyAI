@@ -122,6 +122,13 @@ class Parser:
         Vérifie si la réponse commence par 'Current level:'.
         """
         return response.strip().lower().startswith(ResponseType.CURRENT_LEVEL.value)
+    
+    @staticmethod
+    def is_eject_response(response: str) -> bool:
+        """
+        Vérifie si la réponse est 'eject: X'.
+        """
+        return response.strip().lower().startswith(ResponseType.EJECT.value)
 
     @staticmethod
     def is_broadcast(response: str) -> bool:
@@ -129,3 +136,14 @@ class Parser:
         Vérifie si la réponse est un message broadcast.
         """
         return response.strip().lower().startswith(ResponseType.BROADCAST.value)
+
+    @staticmethod
+    def parse_current_level(response: str) -> int:
+        """
+        Extrait l'entier X de la réponse 'Current level: X'.
+        """
+        try:
+            return int(response.split(':', 1)[1].strip())
+        except:
+            logger.error(f"Impossible de parser le niveau dans '{response}'")
+            return 0

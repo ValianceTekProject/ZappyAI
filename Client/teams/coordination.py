@@ -40,34 +40,36 @@ class CoordinationManager:
         self.state = game_state
         self.helpers = set()
 
+        self.last_requester = None
+        self.incantation_id = 0
+
         # Souscription aux messages qui nous intéressent
         bus.subscribe(MessageType.INCANTATION_REQUEST,  self._on_inc_req)
         bus.subscribe(MessageType.INCANTATION_RESPONSE, self._on_inc_resp)
         bus.subscribe(MessageType.HELP_REQUEST,          self._on_help_req)
 
     def _on_inc_req(self, sender_id, data, direction):
-        """
-        Réception d'une requête d'incantation.
-        Si même niveau et food ok -> coming ou here; sinon busy.
-        """
-        can_help = (self.state.level == data['level'] and
-                    self.state.get_food_count() > 20 and
-                    not self._am_busy())
-        if not can_help:
-            resp_text = 'busy'
-            eta = None
+        self.last_requester = sender_id
+        if self.state.level != data["level"] or self._am_busy():
+            resp, eta = "busy", None
         else:
-            if direction == 0:
-                resp_text = 'here'
-                eta = 0
+            needed = self.state.estimate_food_needed_for_incant()
+            have = self.state.get_food_count()
+            if have < needed:
+                resp, eta = "busy", None
             else:
-                resp_text = 'coming'
-                eta = max(1, direction) * 7
-        logger.info(f"[Coordo] reply to {sender_id}: '{resp_text}' (eta={eta})")
+                if direction == 0:
+                    resp, eta = "here", 0
+                else:
+                    # approximativement, on renvoie « coming »; on peut donner un ETA grosso modo
+                    # ETA approximatif en time units : distance max *7 => en ticks ou en time units ?
+                    # Pour que l’initiateur sache si le helper peut arriver bientôt, on peut renvoyer:
+                    eta = ( (self.state.dimension_map[0]//2 + self.state.dimension_map[1]//2) * 7 )
+                    resp, eta = "coming", eta
         token = Message.create_incantation_response(
             sender_id=self.state.team_id,
             request_sender=sender_id,
-            response=resp_text,
+            response=resp,
             eta=eta
         )
         self.cmd_mgr.broadcast(token)
@@ -76,11 +78,9 @@ class CoordinationManager:
         resp = data.get('response')
         if resp == 'here':
             self.helpers.add(sender_id)
-        logger.debug(f"[Coordo] Received response '{resp}' from {sender_id}")
 
     def _on_help_req(self, sender_id, data, direction):
-        # Par exemple, on stocke ou on réagit directement
-        print(f"Help requested: {data}")
+        logger.info(f"HELP REQUEST from {sender_id}")
 
     def request_incant_help(self):
         self.helpers.clear()
@@ -89,7 +89,6 @@ class CoordinationManager:
             level=self.state.level,
             required_players=self.state.get_required_player_count()
         )
-        logger.debug(f"[Coordo] request help: {msg}")
         self.cmd_mgr.broadcast(msg)
 
     def send_incant_request(self):
@@ -100,7 +99,6 @@ class CoordinationManager:
             level=self.state.level,
             required_players=self.state.get_required_player_count()
         )
-        logger.info(f"[Coordo] broadcast incant_req: {token}")
         self.cmd_mgr.broadcast(token)
 
     def send_incant_response(self, to_id: str, response: str, eta: Any):

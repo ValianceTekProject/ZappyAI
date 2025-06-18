@@ -7,7 +7,7 @@
 
 import math
 from typing import Tuple, List
-from config import Orientation
+from config import Orientation, CommandType
 
 class MathUtils:
     @staticmethod

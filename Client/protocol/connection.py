@@ -105,7 +105,6 @@ class Connection:
         cmd_parts = [cmd_type.value]
         cmd_parts.extend(str(arg) for arg in args)
         command = ' '.join(cmd_parts)
-        print(f"Sending command: {command}")
         return self.send_raw(command)
 
     def recv_line(self) -> str:

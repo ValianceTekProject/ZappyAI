@@ -5,18 +5,20 @@
 ## game_state
 ##
 
+import math
 from typing import Tuple
-from config import CommandType, CommandStatus, Orientation
+from config import CommandType, CommandStatus, Orientation, Constants
 from protocol.commands import Command
 from protocol.parser import Parser
 from utils.logger import logger
 from utils.vision import Vision
 
 class GameState:
-    def __init__(self, team_id: str):
+    def __init__(self, team_id: str, dimension_map: Tuple[int, int]):
         self.inventory = {"food": 10, "linemate": 0, "deraumere": 0, "sibur": 0, "mendiane": 0, "phiras": 0, "thystame": 0}
         self.level = 1
         self.team_id = team_id
+        self.dimension_map = dimension_map
         self.position = (0, 0)
         self.direction = Orientation.SOUTH
 
@@ -27,21 +29,30 @@ class GameState:
         self.needs_look = False
         self.needs_repro = False
 
+        self.critical_food_threshold = 15
+        self.safe_food_threshold = 20
+
     def update(self, command: Command):
         """Met à jour l'état du jeu après l'exécution d'une commande."""
         self.command_already_send = False
 
+        # logger.info(f"[GameState] Updated with command: {command.type}, response: {command.response}")
+
         if command.type == CommandType.INCANTATION and command.status == CommandStatus.FAILED:
-            logger.info("[GameState] Incantation échouée, besoin de look")
+            logger.debug(f"[GameState] Incantation {self.level + 1} failed, because of .")
             self.needs_look = True
             self.needs_repro = False
 
+        if command.type == CommandType.TAKE and command.status == CommandStatus.FAILED:
+            self.needs_look = True
+
         if command.status != CommandStatus.SUCCESS:
-            logger.warning(f"[GameState] Ignored failed command: {command.type}")
+            logger.warning(f"[GameState] Ignored failed command: {command.type}, response: {command.response}")
             return
 
         if command.type == CommandType.INVENTORY:
             self.inventory = self.parser.parse_inventory_response(command.response)
+            logger.debug(f"[GameState] Inventory contains: {self.inventory}")
 
         elif command.type == CommandType.LOOK:
             self.vision.process_vision(
@@ -52,7 +63,6 @@ class GameState:
             self.needs_look = False
 
         elif command.type == CommandType.INCANTATION:
-            self.level += 1
             logger.info(f"[GameState] Leveled up to {self.level}")
             self.needs_look = True
             self.needs_repro = True
@@ -68,6 +78,7 @@ class GameState:
             self.needs_look = True
 
         elif command.type == CommandType.TAKE and command.args:
+            logger.debug(f"[GameState] Took {command.args[0]}")
             self.vision.remove_resource_at((0, 0), command.args[0])
             self.needs_look = False
 
@@ -80,7 +91,36 @@ class GameState:
 
     def get_food_count(self) -> int:
         """Retourne la quantité de nourriture dans l'inventaire."""
-        return self.inventory.get("food", 0)
+        return self.inventory.get(Constants.FOOD.value, 0)
+
+    def _get_critical_food_threshold(self) -> int:
+        if self.level < 4:
+            return self.critical_food_threshold
+        elif self.level >= 4 and self.level <= 6:
+            return self.critical_food_threshold * 2
+        elif self.level > 6:
+            return self.critical_food_threshold * 3
+
+    def _get_safe_food_threshold(self) -> int:
+        if self.level < 4:
+            return self.safe_food_threshold
+        elif self.level >= 4 and self.level <= 6:
+            return self.safe_food_threshold * 1.5
+        elif self.level > 6:
+            return self.safe_food_threshold * 2
+
+    def estimate_food_needed_for_incant(self):
+        W, H = self.dimension_map[0], self.dimension_map[1]
+        if W is None or H is None:
+            return float('inf')
+        max_dist = (W // 2) + (H // 2)
+        commands_forward = max_dist
+        commands_turn = 2
+        time_travel = (commands_forward + commands_turn) * 7
+        time_incant = 300
+        total = time_travel + time_incant
+        needed = math.ceil(total / 126)
+        return needed + 1
 
     def get_player_level(self):
         return self.level
@@ -141,13 +181,13 @@ class GameState:
     def get_incantation_requirements(self) -> dict:
         """Retourne les ressources nécessaires pour incanter selon le niveau actuel."""
         level_reqs = {
-            1: {"linemate": 1},
-            2: {"linemate": 1, "deraumere": 1, "sibur": 1},
-            3: {"linemate": 2, "sibur": 1, "phiras": 2},
-            4: {"linemate": 1, "deraumere": 1, "sibur": 2, "phiras": 1},
-            5: {"linemate": 1, "deraumere": 2, "sibur": 1, "mendiane": 3},
-            6: {"linemate": 1, "deraumere": 2, "sibur": 3, "phiras": 1},
-            7: {"linemate": 2, "deraumere": 2, "sibur": 2, "mendiane": 2, "phiras": 2, "thystame": 1}
+            1: {Constants.LINEMATE.value: 1},
+            2: {Constants.LINEMATE.value: 1, Constants.DERAUMERE.value: 1, Constants.SIBUR.value: 1},
+            3: {Constants.LINEMATE.value: 2, Constants.SIBUR.value: 1, Constants.PHIRAS.value: 2},
+            4: {Constants.LINEMATE.value: 1, Constants.DERAUMERE.value: 1, Constants.SIBUR.value: 2, Constants.PHIRAS.value: 1},
+            5: {Constants.LINEMATE.value: 1, Constants.DERAUMERE.value: 2, Constants.SIBUR.value: 1, Constants.MENDIANE.value: 3},
+            6: {Constants.LINEMATE.value: 1, Constants.DERAUMERE.value: 2, Constants.SIBUR.value: 3, Constants.PHIRAS.value: 1},
+            7: {Constants.LINEMATE.value: 2, Constants.DERAUMERE.value: 2, Constants.SIBUR.value: 2, Constants.MENDIANE.value: 2, Constants.PHIRAS.value: 2, Constants.THYSTAME.value: 1}
         }
         return level_reqs.get(self.level, {})
 
