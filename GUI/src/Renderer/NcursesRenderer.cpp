@@ -93,15 +93,15 @@ void zappy::gui::NcursesRenderer::_drawMap() const
 
 void zappy::gui::NcursesRenderer::_drawTile(
     const zappy::game::Tile &tile,
-    const std::vector<game::Egg &> &eggs,
-    const std::vector<game::Player &> &players,
+    const game::EggList &eggs,
+    const game::PlayerList &players,
     size_t, size_t,
     size_t row, size_t col
 ) const
 {
     std::ostringstream playersLine;
     for (const auto &player : players) {
-        playersLine << "P" << player.getId() << "(L" << player.level << ") ";
+        playersLine << "P" << player.get().getId() << "(L" << player.get().level << ") ";
     }
 
     std::ostringstream resourcesLine;

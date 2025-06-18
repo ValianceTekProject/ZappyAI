@@ -71,6 +71,39 @@ void zappy::gui::raylib::AScene::updatePlayerInventory(const int &id, const game
     (void)inventory;
 }
 
+void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
+{
+    // Expulser un joueur
+    (void)id;
+}
+
+void zappy::gui::raylib::AScene::PlayerBroadcast(const int &id, const std::string &message)
+{
+    // Envoyer un message à un joueur
+    (void)id;
+    (void)message;
+}
+
+void zappy::gui::raylib::AScene::StartIncantation(
+    const int &x, const int &y,
+    const int &level,
+    const std::vector<int> &playerIds
+) {
+    // Démarrer une incantation
+    (void)x;
+    (void)y;
+    (void)level;
+    (void)playerIds;
+}
+
+void zappy::gui::raylib::AScene::EndIncantation(const int &x, const int &y, const bool &result)
+{
+    // Terminer une incantation
+    (void)x;
+    (void)y;
+    (void)result;
+}
+
 void zappy::gui::raylib::AScene::hatchEgg(const int &id)
 {
     // Incuber un œuf

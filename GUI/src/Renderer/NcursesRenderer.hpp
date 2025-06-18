@@ -38,8 +38,8 @@ namespace zappy {
                 void _drawMap() const;
                 void _drawTile(
                     const game::Tile &tile,
-                    const std::vector<game::Egg &> &eggs,
-                    const std::vector<game::Player &> &players,
+                    const game::EggList &eggs,
+                    const game::PlayerList &players,
                     size_t x, size_t y,
                     size_t row, size_t col
                 ) const;

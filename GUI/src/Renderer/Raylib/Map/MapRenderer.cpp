@@ -6,8 +6,6 @@
 */
 
 #include "MapRenderer.hpp"
-#include <memory>
-#include <utility>
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map) {}

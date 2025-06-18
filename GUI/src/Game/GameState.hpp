@@ -14,6 +14,9 @@
 
 namespace zappy {
     namespace game {
+        using EggList = std::vector<std::reference_wrapper<Egg>>;
+        using PlayerList = std::vector<std::reference_wrapper<Player>>;
+
         class GameState
         {
             public:
@@ -76,11 +79,11 @@ namespace zappy {
                 Player &getPlayerById(const int &id);
                 const Player &getPlayerById(const int &id) const;
 
-                std::vector<Egg &> getEggsByCoord(const int &x, const int &y);
-                const std::vector<const Egg> getEggsByCoord(const int &x, const int &y) const;
+                std::vector<std::reference_wrapper<Egg>> getEggsByCoord(const int &x, const int &y);
+                std::vector<std::reference_wrapper<const Egg>> getEggsByCoord(const int &x, const int &y) const;
 
-                std::vector<Player &> getPlayersByCoord(const int &x, const int &y);
-                const std::vector<const Player> getPlayersByCoord(const int &x, const int &y) const;
+                std::vector<std::reference_wrapper<Player>> getPlayersByCoord(const int &x, const int &y);
+                std::vector<std::reference_wrapper<const Player>> getPlayersByCoord(const int &x, const int &y) const;
 
                 void endGame(const std::string &teamName);
 
