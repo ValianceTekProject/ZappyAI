@@ -8,7 +8,6 @@
 #pragma once
 
 #include "ARenderer.hpp"
-
 #include "BasicScene.hpp"
 
 namespace zappy {
