@@ -83,7 +83,8 @@ bool zappy::game::Game::handleTeamJoin(
 
 void zappy::game::Game::removeFromTeam(int clientSocket)
 {
-    for (auto &team : this->_teamList) {
+    for (size_t i = 0; i < this->_teamList.size(); i += 1) {
+        auto &team = this->_teamList[i];
         for (auto &player : team.getPlayerList()) {
             if (player->getClient().getSocket() == clientSocket) {
                 team.removePlayer(clientSocket);
