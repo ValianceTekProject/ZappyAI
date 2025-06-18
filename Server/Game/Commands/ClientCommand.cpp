@@ -156,7 +156,7 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
         return;
     }
 
-    if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::FORWARD) / this->_freq)) {
+    if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::FORK) / this->_freq)) {
         player.startChrono();
         player.getClient().sendMessage("ok\n");
     } else 
