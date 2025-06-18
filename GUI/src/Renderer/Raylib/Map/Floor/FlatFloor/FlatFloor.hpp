@@ -13,12 +13,14 @@ namespace zappy {
         namespace raylib {
             class FlatFloor : public AFloor {
                 public:
-                    FlatFloor(size_t width, size_t height, size_t tileSize = 10);
+                    FlatFloor(const size_t &width, const size_t &height, const float &tileSize = 10);
                     ~FlatFloor() = default;
 
                     void init() override;
                     void update() const override;
                     void render() const override;
+
+                    Vector3 get3DCoords(const size_t &x, const size_t &y) const override;
 
                 private:
                     Texture2D _texture;

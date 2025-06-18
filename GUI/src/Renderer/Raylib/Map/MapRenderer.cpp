@@ -87,7 +87,7 @@ void zappy::gui::raylib::MapRenderer::setEggPosition(const int &id, const size_t
 {
     for (auto &egg : _eggs) {
         if (egg->getId() == id) {
-            egg->setPosition(Vector3{static_cast<float>(x), 0, static_cast<float>(y)});
+            egg->setPosition(_floor->get3DCoords(x, y));
             break;
         }
     }

@@ -23,14 +23,16 @@ namespace zappy {
                     virtual void render() const = 0;
 
                     // Setters
-                    virtual void setWidth(size_t width) = 0;
-                    virtual void setHeight(size_t height) = 0;
-                    virtual void setTileSize(size_t tileSize) = 0;
+                    virtual void setWidth(const size_t &width) = 0;
+                    virtual void setHeight(const size_t &height) = 0;
+                    virtual void setTileSize(const float &tileSize) = 0;
 
                     // Getters
                     virtual size_t getWidth() const = 0;
                     virtual size_t getHeight() const = 0;
-                    virtual size_t getTileSize() const = 0;
+                    virtual float getTileSize() const = 0;
+
+                    virtual Vector3 get3DCoords(const size_t &x, const size_t &y) const = 0;
             };
         }
     } // namespace gui
