@@ -46,6 +46,7 @@ class CoordinationManager:
         self.bus = bus
         self.cmd_mgr = cmd_mgr
         self.state = game_state
+        self.helpers = set()
         self.helpers_info: Dict[str, Dict[str, Any]] = {}
         self.last_requester: Optional[str] = None
         self.incantation_id = 0
