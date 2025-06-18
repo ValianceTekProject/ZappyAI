@@ -201,6 +201,7 @@ void zappy::game::CommandHandler::_executeCommand(
         player.setInAction(true);
         player.startChrono();
 
+        player.getClient().queueMessage.pop();
         function(player, args);
     });
     commandThread.detach();

@@ -121,7 +121,6 @@ void zappy::game::Game::runGame()
                 if (!player->getClient().queueMessage.empty()) {
                     this->_commandHandler.processClientInput(
                         player->getClient().queueMessage.front(), *player);
-                    player->getClient().queueMessage.pop();
                 }
             }
         }
