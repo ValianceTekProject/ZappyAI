@@ -122,7 +122,7 @@ class Parser:
         Vérifie si la réponse commence par 'Current level:'.
         """
         return response.strip().lower().startswith(ResponseType.CURRENT_LEVEL.value)
-    
+
     @staticmethod
     def is_eject_response(response: str) -> bool:
         """

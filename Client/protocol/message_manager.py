@@ -28,5 +28,4 @@ class MessageManager:
                 self.bus.publish_raw(dir_, token)
             else:
                 command_responses.append(response)
-        # On ne renvoie plus les broadcasts au CmdMgr
         return self.cmd_mgr.process_responses(command_responses)
