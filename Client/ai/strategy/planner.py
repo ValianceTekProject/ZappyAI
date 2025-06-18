@@ -6,6 +6,7 @@
 ##
 
 import time
+import math
 from typing import Optional, List, Dict, Any
 from protocol.commands import CommandManager
 from utils.game_state import GameState
@@ -22,8 +23,8 @@ class Planner:
         self.cmd_manager = command_manager
         self.state = game_state
         self.pathfinder = Pathfinder()
-        self.bus   = message_bus
-        self.msgm  = MessageManager(self.cmd_manager, self.bus)
+        self.bus = message_bus
+        self.msgm = MessageManager(self.cmd_manager, self.bus)
         self.coordo = CoordinationManager(self.bus, self.cmd_manager, self.state)
 
         self.command_queue: List[CommandType] = []
@@ -41,20 +42,19 @@ class Planner:
         self._incant_stage = 0
         self._last_broadcast = 0.0
         self._broadcast_interval = 3.0
+        self.incant_helping = False
+        self.remaining_max_dist = None
+        self.help_requester = None
+        self.last_sound_dir = None
+        self.help_start_time = None
 
         self.action_counter = 0
 
-        # self.bus.subscribe(MessageType.INCANTATION_REQUEST,  self._on_incant_request)
+        self.bus.subscribe(MessageType.INCANTATION_REQUEST, self._on_incant_request)
         self.bus.subscribe(MessageType.INCANTATION_RESPONSE, self._on_incant_response)
 
     def decide_next_action(self):
-        """
-        Pipeline de décision principal:
-        1. Vérifier si une commande est en cours
-        2. Gérer la queue de commandes
-        3. Gérer les besoins essentiels (look, inventaire)
-        4. Gérer les urgences et stratégies
-        """
+        """Pipeline de décision principal."""
         self.action_counter += 1
 
         if self.state.command_already_send:
@@ -64,12 +64,8 @@ class Planner:
             next_cmd = self.command_queue.pop(0)
             return self._execute_movement_command(next_cmd)
 
-        if self.helper_cmds:
-            cmd = self.helper_cmds.pop(0)
-            # if last step, send "coming"
-            if not self.helper_cmds:
-                self.coordo.send_incant_response(self.coordo.last_requester, 'coming', eta=0)
-            return self._execute_movement_command(cmd)
+        if self.incant_helping:
+            return self._incant_helping()
 
         if self.state.needs_look:
             self.current_target = None
@@ -85,28 +81,18 @@ class Planner:
         return self._decide_strategy()
 
     def _decide_strategy(self):
-        """
-        Détermine la stratégie à adopter selon l'état actuel.
-        """
+        """Détermine la stratégie à adopter selon l'état actuel."""
         if self._is_food_critically_low():
-            # logger.info("Urgence alimentaire critique")
             return self._handle_food_emergency()
 
         if self.state.get_food_count() < self.state._get_safe_food_threshold():
-            # logger.info("Collecte préventive de nourriture")
             return self._handle_food_collection()
 
         if self.state.can_incant():
-            # logger.info("Préparation incantation")
             return self._handle_incantation_ready()
 
         if self.state.has_missing_resources():
-            # logger.info("Collecte de ressources manquantes")
             return self._handle_resource_collection()
-
-        # eject_cmd = self._handle_eject_if_necessary()
-        # if eject_cmd:
-        #     return eject_cmd
 
         return self._handle_exploration()
 
@@ -125,8 +111,7 @@ class Planner:
         if self._is_resource_at_current_position(Constants.FOOD.value):
             return self.cmd_manager.take(Constants.FOOD.value)
 
-        if (self.current_target and 
-            self.current_target.resource_type == Constants.FOOD.value):
+        if self.current_target and self.current_target.resource_type == Constants.FOOD.value:
             return self._move_toward_current_target()
 
         if not self._search_and_target_resource(Constants.FOOD.value):
@@ -140,8 +125,7 @@ class Planner:
         if self._is_resource_at_current_position(Constants.FOOD.value):
             return self.cmd_manager.take(Constants.FOOD.value)
 
-        if (self.current_target and 
-            self.current_target.resource_type == Constants.FOOD.value):
+        if self.current_target and self.current_target.resource_type == Constants.FOOD.value:
             return self._move_toward_current_target()
 
         if not self._search_and_target_resource(Constants.FOOD.value):
@@ -149,108 +133,129 @@ class Planner:
         return None
 
     def _handle_incantation_ready(self) -> Optional[Any]:
-        """
-        Gère l'incantation en quatre phases :
-        0) broadcast incant_req
-        1) collecte des réponses 'here'
-        2) dépôt des ressources une fois tous les helpers présents
-        3) incantation
-        """
-        reqs   = self.state.get_incantation_requirements()
+        """Gère l'incantation en plusieurs phases."""
+        reqs = self.state.get_incantation_requirements()
         needed = self.state.get_required_player_count()
-        local  = self._get_resources_at_current_position()
-        now    = time.time()
-        
-        # if self.state.level == 1:
-        #     self._incant_stage = 1
+        local = self.state._get_resources_at_current_position()
+        now = time.time()
 
-        # Phase 0 : initial broadcast
         if self._incant_stage == 0:
-            # logger.info("Initiateur: broadcast incant_req")
             self.coordo.send_incant_request()
             self._last_broadcast_time = now
             self._incant_stage = 1
             return None
 
-        # Phase 1 : attente des 'here'
         helpers_here = len([h for h in self.coordo.get_helpers() if h[1] == 'here'])
-        # logger.debug(f"Helpers here: {helpers_here}/{needed-1}")
         if helpers_here < needed - 1:
-            # rebroadcast si besoin
             if now - self._last_broadcast_time >= self._broadcast_interval:
-                # logger.info("Rebroadcast incant_req")
                 self.coordo.send_incant_request()
                 self._last_broadcast_time = now
             return None
 
-        # Phase 2 : dépôt des ressources
         if self._incant_stage == 1:
             for res, qty in reqs.items():
                 if local.get(res, 0) < qty and self.state.inventory.get(res, 0) > 0:
-                    # logger.info(f"Dépôt ressource {res} pour incantation")
                     return self.cmd_manager.set(res)
-            # ressources déposées
             self._incant_stage = 2
             return None
 
-        # Phase 3 : exécution de l'incantation
         if self._incant_stage == 2:
+            self._incant_stage = 3
+            return self.cmd_manager.look()
+        if self._incant_stage == 3:
+            players_here = self.state._players_on_current_tile()
+            ground = self.state._get_resources_at_current_position()
+            reqs = self.state.get_incantation_requirements()
+            needed = self.state.get_required_player_count()
+
+            logger.debug(f"[Initiateur] Avant INCANTATION (niveau {self.state.level}): "
+                         f"players_here={players_here}/{needed}, ground={ground}, reqs={reqs}")
+            if players_here < needed or any(ground.get(r, 0) < q for r, q in reqs.items()):
+                logger.warning(f"[Initiateur] Abandon incant: conditions non remplies au LOOK final "
+                               f"(players_here={players_here}/{needed}, ground={ground})")
+                self._incant_stage = 0
+                self.coordo.clear_helpers()
+                self.state.needs_look = True
+                return None
             self._incant_stage = 0
-            logger.info("Tous helpers présents, lancement de l'incantation")
+            self.coordo.clear_helpers()
+            logger.info("[Initiateur] Lancement INCANTATION après LOOK final, conditions OK")
             return self.cmd_manager.incantation()
 
         return None
 
-    def _handle_incantation_help(self):
-        """
-        Se déplace vers la tuile d’incantation puis envoie sa réponse.
-        """
-        # position cible de la première requête
-        target_pos = self.incant_requests[0]
-        cur_pos    = self.state.get_position()
-
-        # si on ne voit pas encore la cible, on explore pour la découvrir
-        vision_data = self.state.get_vision().last_vision_data
-        seen_tiles = {tile.rel_pos for tile in vision_data} if vision_data else set()
-
-        # si la cible est dans la vision
-        rel_x = target_pos[0] - cur_pos[0]
-        rel_y = target_pos[1] - cur_pos[1]
-        rel_target = (rel_x, rel_y)
-
-        if vision_data and rel_target in seen_tiles:
-            # on construit un RelativeTarget pour BFS local
-            rt = RelativeTarget(rel_position=rel_target, resource_type="", distance=0)
-            commands = self.pathfinder.get_commands_to_target(rt,
-                                self.state.get_orientation(),
-                                vision_data)
-            if commands:
-                # on exécute la prochaine commande de navigation
-                self.command_queue = commands[1:]
-                return self._execute_movement_command(commands[0])
-            # sinon, inatteignable → abandon
-            self.incant_requests.pop(0)
-            return None
-
-        # une fois qu’on arrive EXACTEMENT sur la tuile
-        # (ce cas sera géré implicitement, car rel_target == (0,0)):
-        # on envoie la réponse « coming » via CoordinationManager
-        if cur_pos == target_pos:
-            self.coordo.request_incant_help()
-            self.incant_requests.pop(0)
-            # puis on attend l’incantation, on ne fait rien de plus
-            return None
-
-        # si on n’est pas en vue de la cible, on continue d’explorer vers elle
-        # (tu peux remplacer par ta logique d’exploration préférée)
-        return self._handle_exploration()
-
     def _on_incant_response(self, sender_id, data, direction):
-        self.coordo.helpers.add( (sender_id, data['response']) )
+        self.coordo.helpers.add((sender_id, data['response']))
 
+    def _on_incant_request(self, sender_id, data, direction):
+        """Réponse helper à une requête d'incantation."""
+        logger.debug(f"[Helper] _on_incant_request called: sender={sender_id}, level={data.get('level')}, direction={direction}")
+        if not self.incant_helping and self.state.level == data["level"]:
+            needed_food = self.state.estimate_food_needed_for_incant()
+            logger.debug(f"[Helper] Received incant_req from {sender_id}, direction={direction}, food={self.state.get_food_count()}, needed={needed_food}")
+            if self.state.get_food_count() >= needed_food:
+                self.incant_helping = True
+                self.help_requester = sender_id
+                self.last_sound_dir = direction
+                self.help_start_time = time.time()
+        elif self.incant_helping:
+            logger.debug(f"[Helper] ping reçu; sender_id={sender_id}, expected={self.help_requester}, direction={direction}")
+            if sender_id == self.help_requester:
+                self.last_sound_dir = direction
+
+    def _incant_helping(self):
+        """Phase helper : déplacement vers l'initiateur et envoi 'here'."""
+        if self.help_start_time and time.time() - self.help_start_time > 30.0:
+            self.incant_helping = False
+            self.remaining_max_dist = None
+            self.last_sound_dir = None
+            self.help_requester = None
+            return None
+
+        rem = self.remaining_max_dist
+        if rem is None:
+            W, H = self.state.dimension_map
+            rem = (W // 2) + (H // 2)
+            self.remaining_max_dist = rem
+
+        time_travel = (rem + 2) * 7
+        time_incant = 300
+        reste_food_needed = math.ceil((time_travel + time_incant) / 126) + 1
+        have = self.state.get_food_count()
+        if have < reste_food_needed:
+            logger.warning(f"[Helper] Abandon incant help: food insuffisante (have={have} < needed={reste_food_needed})")
+            self.incant_helping = False
+            self.remaining_max_dist = None
+            self.last_sound_dir = None
+            self.help_requester = None
+            return None
+
+        if self.last_sound_dir is not None:
+            logger.debug(f"[Helper] incant_helping step: have={have}, reste_food_needed={reste_food_needed}, remaining_max_dist={self.remaining_max_dist}, last_sound_dir={self.last_sound_dir}")
+            K = self.last_sound_dir
+            self.last_sound_dir = None
+
+            if K == 0:
+                logger.info(f"[Helper] Arrived on case initiateur ({self.help_requester}), envoi 'here'")
+                self.coordo.send_incant_response(self.help_requester, 'here', eta=0)
+                self.incant_helping = False
+                self.remaining_max_dist = 0
+                return None
+
+            cmds = self._commands_from_sound_dir(K)
+            if cmds:
+                cmd0 = cmds[0]
+                if cmd0 == CommandType.FORWARD:
+                    self.remaining_max_dist = max(0, self.remaining_max_dist - 1)
+                if len(cmds) > 1:
+                    self.helper_cmds = cmds[1:]
+                return self._execute_movement_command(cmd0)
+            return None
+
+        return None
 
     def _commands_from_sound_dir(self, k: int) -> List[CommandType]:
-        # 1=front,2=front-right,3=right,4=back-right,5=back,6=back-left,7=left,8=front-left
+        """Convertit une direction sonore en liste de commandes de déplacement."""
         if k == 1:
             return [CommandType.FORWARD]
         if k in (2, 3):
@@ -264,7 +269,7 @@ class Planner:
         return []
 
     def _handle_fork(self):
-        """Fork en deux étapes : connect_nbr puis fork si slots dispo."""
+        """Gère la séquence de fork pour créer un nouvel agent."""
         if self.fork_stage == 0:
             self.fork_stage = 1
             return self.cmd_manager.connect_nbr()
@@ -284,14 +289,12 @@ class Planner:
                 return None
 
     def _has_enough_for_fork(self) -> bool:
-        """Détermine si on a les ressources min. pour un fork stratégique."""
+        """Détermine si on a les ressources minimales pour un fork stratégique."""
         inv = self.state.inventory
         return inv.get("food", 0) >= self.state.critical_food_threshold
 
     def _handle_eject_if_necessary(self) -> Optional[CommandType]:
-        """
-        Éjecte les ennemis si nécessaire.
-        """
+        """Éjecte les ennemis présents sur la même tuile si nécessaire."""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return None
@@ -303,22 +306,17 @@ class Planner:
         return None
 
     def _handle_resource_collection(self):
-        """
-        Gère la collecte de ressources nécessaires.
-        """
+        """Gère la collecte des ressources nécessaires à l'incantation."""
         self.current_strategy = GameStates.COLLECT_RESOURCES
         requirements = self.state.get_incantation_requirements()
         pickup_cmd = self._pickup_needed_resources(requirements)
         if pickup_cmd:
             return pickup_cmd
 
-        if (self.current_target and 
-            self._is_target_still_needed(self.current_target, requirements)):
+        if self.current_target and self._is_target_still_needed(self.current_target, requirements):
             return self._move_toward_current_target()
 
-        resource_priorities = self.pathfinder.get_resource_priority_list(
-            requirements, self.state.inventory
-        )
+        resource_priorities = self.pathfinder.get_resource_priority_list(requirements, self.state.inventory)
         for resource in resource_priorities:
             if self._search_and_target_resource(resource):
                 return self._move_toward_current_target()
@@ -326,25 +324,18 @@ class Planner:
         return self._handle_exploration()
 
     def _handle_exploration(self):
-        """
-        Gère l'exploration du terrain.
-        """
+        """Gère l'exploration du terrain."""
         self.current_strategy = GameStates.EXPLORE
         vision_data = self.state.get_vision().last_vision_data
 
         if not vision_data:
             return self.cmd_manager.look()
 
-        exploration_cmd = self.pathfinder.get_exploration_direction(
-            self.state.get_orientation(), vision_data
-        )
+        exploration_cmd = self.pathfinder.get_exploration_direction(self.state.get_orientation(), vision_data)
         return self._execute_movement_command(exploration_cmd)
 
     def _search_and_target_resource(self, resource_type: str) -> bool:
-        """
-        Cherche et cible une ressource dans la vision.
-        Return True si une cible a été trouvée.
-        """
+        """Cherche et cible une ressource dans la vision."""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return False
@@ -352,13 +343,10 @@ class Planner:
         if target:
             self.current_target = target
             return True
-        # logger.error(f"Aucune resource {resource_type} trouvée dans la vision → fallback exploration")
         return False
 
     def _move_toward_current_target(self):
-        """
-        Se déplace vers la cible actuelle.
-        """
+        """Se déplace vers la cible actuelle."""
         if not self.current_target:
             return None
 
@@ -372,11 +360,7 @@ class Planner:
             if not vision_data:
                 return self.cmd_manager.look()
 
-            commands = self.pathfinder.get_commands_to_target(
-                self.current_target,
-                self.state.get_orientation(),
-                vision_data
-            )
+            commands = self.pathfinder.get_commands_to_target(self.current_target, self.state.get_orientation(), vision_data)
             if not commands:
                 logger.warning("Cible inatteignable, abandon")
                 self.current_target = None
@@ -389,9 +373,7 @@ class Planner:
         return None
 
     def _execute_movement_command(self, command_type: CommandType):
-        """
-        Exécute une commande de mouvement et gère les erreurs.
-        """
+        """Exécute une commande de mouvement."""
         if command_type == CommandType.FORWARD:
             return self.cmd_manager.forward()
         elif command_type == CommandType.LEFT:
@@ -403,32 +385,18 @@ class Planner:
             return None
 
     def _is_resource_at_current_position(self, resource_type: str) -> bool:
-        """Vérifie si resource_type est déposée sur la tuile (0,0)."""
+        """Vérifie si une ressource est présente sur la tuile courante."""
         vision = self.state.get_vision()
         if not vision.last_vision_data:
             return False
         for td in vision.last_vision_data:
             if td.rel_pos == (0, 0):
-                return (resource_type in td.resources and 
-                        td.resources[resource_type] > 0)
+                return resource_type in td.resources and td.resources[resource_type] > 0
         return False
 
-    def _get_resources_at_current_position(self) -> Dict[str, int]:
-        """Retourne les ressources présentes à (0,0)."""
-        vision = self.state.get_vision()
-        if not vision.last_vision_data:
-            return {}
-        for td in vision.last_vision_data:
-            if td.rel_pos == (0, 0):
-                return dict(td.resources)
-        return {}
-
     def _drop_missing_resources(self, requirements: Dict[str, int]):
-        """
-        Si on peut déposer directement une ressource pour l'incantation,
-        on retourne la commande SET correspondante.
-        """
-        local = self._get_resources_at_current_position()
+        """Dépose une ressource nécessaire si présente dans l'inventaire."""
+        local = self.state._get_resources_at_current_position()
         for resource, needed in requirements.items():
             inv = self.state.inventory.get(resource, 0)
             ground = local.get(resource, 0)
@@ -438,30 +406,23 @@ class Planner:
         return None
 
     def _pickup_needed_resources(self, requirements: Dict[str, int]):
-        """
-        Si on a besoin de ramasser une ressource présente à (0,0),
-        on retourne la commande TAKE correspondante.
-        """
-        ground = self._get_resources_at_current_position()
+        """Ramasse une ressource présente sur la case si nécessaire."""
+        ground = self.state._get_resources_at_current_position()
         for resource, needed in requirements.items():
             inv = self.state.inventory.get(resource, 0)
             if inv < needed and ground.get(resource, 0) > 0:
                 return self.cmd_manager.take(resource)
         return None
 
-    def _is_target_still_needed(self, target: RelativeTarget,
-                                requirements: Dict[str, int]) -> bool:
-        """Vérifie si la cible est toujours pertinente (quantités manquantes)."""
+    def _is_target_still_needed(self, target: RelativeTarget, requirements: Dict[str, int]) -> bool:
+        """Vérifie si la cible est toujours pertinente."""
         r = target.resource_type
         needed = requirements.get(r, 0)
         current = self.state.inventory.get(r, 0)
         return current < needed
 
     def on_command_failed(self):
-        """
-        À appeler si une commande FORWARD/LEFT/RIGHT retourne “ko” ou “dead” :
-        on incrémente stuck_counter, et si ≥3 on abandonne la target.
-        """
+        """Gère un échec de commande de déplacement."""
         self.stuck_counter += 1
         logger.warning(f"Échec de commande, stuck_counter={self.stuck_counter}")
         if self.stuck_counter >= 3 and self.current_target:
@@ -469,11 +430,11 @@ class Planner:
             self.command_queue.clear()
 
     def on_successful_move(self):
-        """À appeler après un FORWARD “ok” pour reset stuck_counter."""
+        """Reset du compteur de blocage après un déplacement réussi."""
         self.stuck_counter = 0
 
     def get_current_strategy_info(self) -> Dict:
-        """Retourne l’état interne (utile pour du debug/interface)."""
+        """Retourne l’état interne pour debug/interface."""
         return {
             'strategy': self.current_strategy.value,
             'target': self.current_target.rel_position if self.current_target else None,

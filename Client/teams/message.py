@@ -139,16 +139,13 @@ class Message:
             required = ["type", "sender", "timestamp", "data"]
             if not all(key in msg_data for key in required):
                 return False
-            
-            # Vérifie que le timestamp est récent (moins de 5 minutes)
+
             age = time.time() - msg_data["timestamp"]
             if age > 300:  # 5 minutes
                 return False
-            
-            # Vérifie que le sender n'est pas vide
+
             if not msg_data["sender"] or not isinstance(msg_data["sender"], str):
                 return False
-            
             return True
         except Exception:
             return False
