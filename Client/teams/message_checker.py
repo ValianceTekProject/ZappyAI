@@ -26,21 +26,15 @@ class MessageBus:
         decoded = Message.decode_msg(token)
         if not decoded:
             return
-        msg_type, sender_level, payload = decoded
+        msg_type, sender_id, payload = decoded
 
-        logger.debug(f"[Bus] publish_raw: type={msg_type}, payload={payload}, dir={direction}")
-        # Filtrer par niveau et team
-        if sender_level != self.my_level:
-            return
-        if payload.get("team_id") != self.team_id:
+        if sender_id != self.team_id:
             return
 
-        # Filtrer par timestamp
         ts = payload.get("timestamp", payload.get("time", None))
         if ts and (time.time() - ts) > self.ttl:
             return
 
-        # Dispatch
         for handler in self.subscribers.get(msg_type, []):
             handler(sender_id=payload["sender_id"],
                     data=payload,

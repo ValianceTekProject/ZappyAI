@@ -24,7 +24,6 @@ class MessageManager:
                 self.is_dead = True
                 return
             if Parser.is_broadcast(response):
-                logger.info(f"Received response broadcast: {response}")
                 dir_, token = Parser.parse_broadcast_response(response).values()
                 self.bus.publish_raw(dir_, token)
             else:

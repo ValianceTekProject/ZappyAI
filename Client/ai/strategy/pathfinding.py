@@ -37,6 +37,7 @@ class Pathfinder:
         ]
         self.exploration_history: List[int] = []
         self.max_history_size = 10
+        self._turns_without_forward = 0
 
     def find_target_in_vision(self, vision_data, target_resource: str) -> Optional[RelativeTarget]:
         """
@@ -118,7 +119,6 @@ class Pathfinder:
                     queue.append(next_state)
 
         if found_state is None:
-            logger.warning(f"Aucun chemin trouvé vers {dest}")
             return None
         commands = self._reconstruct_path(parent_map, start_state, found_state)
         return commands
@@ -159,19 +159,26 @@ class Pathfinder:
         return path_commands
 
     def get_exploration_direction(self, current_orientation: int, vision_data) -> CommandType:
-        """
-        Retourne une direction d'exploration sûre.
-        """
-        safe_orientations = self._get_safe_directions(vision_data)
-        if not safe_orientations:
-            logger.warning("Aucune direction d'exploration sûre trouvée")
-            return CommandType.RIGHT
+        if self._turns_without_forward >= 4:
+            self._turns_without_forward = 0
+            return CommandType.FORWARD
 
-        preferred = self._filter_exploration_directions(safe_orientations)
-        target_ori = preferred[0] if preferred else safe_orientations[0]
+        safe = self._get_safe_directions(vision_data)
+        if not safe:
+            cmd = CommandType.RIGHT
+        else:
+            recent = set(self.exploration_history[-3:])
+            choices = [d for d in safe if d not in recent]
+            target_ori = choices[0] if choices else safe[0]
+            cmd = self._get_rotation_command(current_orientation, target_ori)
 
-        self._update_exploration_history(target_ori)
-        return self._get_rotation_command(current_orientation, target_ori)
+        if cmd in (CommandType.RIGHT, CommandType.LEFT):
+            self._turns_without_forward += 1
+            self._update_exploration_history((current_orientation + (1 if cmd == CommandType.RIGHT else -1)) % 4)
+        else:
+            self._turns_without_forward = 0
+
+        return cmd
 
     def _get_safe_directions(self, vision_data) -> List[int]:
         """
@@ -214,21 +221,15 @@ class Pathfinder:
             self.exploration_history.pop(0)
 
     def _get_rotation_command(self, current_orientation: int, target_orientation: int) -> CommandType:
-        """
-        Calcule la commande de rotation optimale.
-        """
         if current_orientation == target_orientation:
             return CommandType.FORWARD
-
         diff = (target_orientation - current_orientation) % 4
-
-        if diff == 1 or diff == 3:
-            logger.warning(f"Différence de direction inattendue : {diff}")
-            return CommandType.FORWARD if diff == 1 else CommandType.LEFT
-        elif diff == 2:
-            logger.warning(f"Différence de direction inattendue : {diff}")
+        if diff == 1:
             return CommandType.RIGHT
-
+        if diff == 3:
+            return CommandType.LEFT
+        if diff == 2:
+            return CommandType.RIGHT
         return CommandType.FORWARD
 
     def clear_exploration_history(self):

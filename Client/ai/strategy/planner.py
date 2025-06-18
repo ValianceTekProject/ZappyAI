@@ -42,11 +42,9 @@ class Planner:
         self._last_broadcast = 0.0
         self._broadcast_interval = 3.0
 
-        self.critical_food_threshold = 10
-        self.safe_food_threshold = 25
         self.action_counter = 0
 
-        self.bus.subscribe(MessageType.INCANTATION_REQUEST,  self._on_incant_request)
+        # self.bus.subscribe(MessageType.INCANTATION_REQUEST,  self._on_incant_request)
         self.bus.subscribe(MessageType.INCANTATION_RESPONSE, self._on_incant_response)
 
     def decide_next_action(self):
@@ -58,33 +56,27 @@ class Planner:
         4. Gérer les urgences et stratégies
         """
         self.action_counter += 1
-        logger.info(f"[Tick {self.action_counter}] Niveau de food = {self.state.get_food_count()}, current_target = {self.current_target}")
 
         if self.state.command_already_send:
-            logger.debug("Commande déjà en cours, attente...")
             return None
 
         if self.command_queue:
             next_cmd = self.command_queue.pop(0)
-            logger.debug(f"Exécution commande de la queue: {next_cmd}")
             return self._execute_movement_command(next_cmd)
 
         if self.helper_cmds:
             cmd = self.helper_cmds.pop(0)
             # if last step, send "coming"
             if not self.helper_cmds:
-                logger.info("Helper: arrived, send 'coming'")
                 self.coordo.send_incant_response(self.coordo.last_requester, 'coming', eta=0)
             return self._execute_movement_command(cmd)
 
         if self.state.needs_look:
-            logger.debug("Look nécessaire")
             self.current_target = None
             self.state.needs_look = False
             return self.cmd_manager.look()
 
         if self.cmd_manager.timing.has_lost_food():
-            logger.debug("Vérification inventaire nécessaire")
             return self.cmd_manager.inventory()
 
         if self.state.needs_repro:
@@ -97,31 +89,30 @@ class Planner:
         Détermine la stratégie à adopter selon l'état actuel.
         """
         if self._is_food_critically_low():
-            logger.info("Urgence alimentaire critique")
+            # logger.info("Urgence alimentaire critique")
             return self._handle_food_emergency()
 
-        if self.state.get_food_count() < self.safe_food_threshold:
-            logger.info("Collecte préventive de nourriture")
+        if self.state.get_food_count() < self.state._get_safe_food_threshold():
+            # logger.info("Collecte préventive de nourriture")
             return self._handle_food_collection()
 
         if self.state.can_incant():
-            logger.info("Préparation incantation")
+            # logger.info("Préparation incantation")
             return self._handle_incantation_ready()
 
         if self.state.has_missing_resources():
-            logger.info("Collecte de ressources manquantes")
+            # logger.info("Collecte de ressources manquantes")
             return self._handle_resource_collection()
 
-        eject_cmd = self._handle_eject_if_necessary()
-        if eject_cmd:
-            return eject_cmd
+        # eject_cmd = self._handle_eject_if_necessary()
+        # if eject_cmd:
+        #     return eject_cmd
 
-        logger.debug("Mode exploration")
         return self._handle_exploration()
 
     def _is_food_critically_low(self) -> bool:
         """Vérifie si le niveau de nourriture est critique."""
-        return self.state.get_food_count() < self.critical_food_threshold
+        return self.state.get_food_count() < self.state._get_critical_food_threshold()
 
     def _is_stuck(self) -> bool:
         """Détecte si l'agent est bloqué."""
@@ -132,7 +123,6 @@ class Planner:
         self.current_strategy = GameStates.COLLECT_RESOURCES
 
         if self._is_resource_at_current_position(Constants.FOOD.value):
-            logger.info("Ramassage nourriture d'urgence au sol")
             return self.cmd_manager.take(Constants.FOOD.value)
 
         if (self.current_target and 
@@ -159,40 +149,56 @@ class Planner:
         return None
 
     def _handle_incantation_ready(self) -> Optional[Any]:
-        reqs = self.state.get_incantation_requirements()
+        """
+        Gère l'incantation en quatre phases :
+        0) broadcast incant_req
+        1) collecte des réponses 'here'
+        2) dépôt des ressources une fois tous les helpers présents
+        3) incantation
+        """
+        reqs   = self.state.get_incantation_requirements()
         needed = self.state.get_required_player_count()
-        local = self._get_resources_at_current_position()
-        now = time.time()
+        local  = self._get_resources_at_current_position()
+        now    = time.time()
+        
+        # if self.state.level == 1:
+        #     self._incant_stage = 1
 
-        # Phase 0: deposit resources
+        # Phase 0 : initial broadcast
         if self._incant_stage == 0:
-            for res, qty in reqs.items():
-                if local.get(res, 0) < qty and self.state.inventory.get(res, 0) > 0:
-                    return self.cmd_manager.set(res)
+            # logger.info("Initiateur: broadcast incant_req")
+            self.coordo.send_incant_request()
+            self._last_broadcast_time = now
             self._incant_stage = 1
             return None
 
-        # Phase 1: initial broadcast
+        # Phase 1 : attente des 'here'
+        helpers_here = len([h for h in self.coordo.get_helpers() if h[1] == 'here'])
+        # logger.debug(f"Helpers here: {helpers_here}/{needed-1}")
+        if helpers_here < needed - 1:
+            # rebroadcast si besoin
+            if now - self._last_broadcast_time >= self._broadcast_interval:
+                # logger.info("Rebroadcast incant_req")
+                self.coordo.send_incant_request()
+                self._last_broadcast_time = now
+            return None
+
+        # Phase 2 : dépôt des ressources
         if self._incant_stage == 1:
-            logger.info("Initiateur: broadcast incant_req")
-            self.coordo.send_incant_request()
-            self._last_broadcast_time = now
+            for res, qty in reqs.items():
+                if local.get(res, 0) < qty and self.state.inventory.get(res, 0) > 0:
+                    # logger.info(f"Dépôt ressource {res} pour incantation")
+                    return self.cmd_manager.set(res)
+            # ressources déposées
             self._incant_stage = 2
             return None
 
-        # Phase 2: collect 'here' responses
-        helpers_here = len([h for h in self.coordo.get_helpers() if h['response'] == 'here'])
-        logger.debug(f"Helpers here: {helpers_here}/{needed-1}")
-        if helpers_here >= needed - 1:
-            logger.info("Sufficient 'here' responses, launching incantation")
+        # Phase 3 : exécution de l'incantation
+        if self._incant_stage == 2:
             self._incant_stage = 0
+            logger.info("Tous helpers présents, lancement de l'incantation")
             return self.cmd_manager.incantation()
 
-        # rebroadcast if no here and interval elapsed
-        if now - self._last_broadcast_time >= self._broadcast_interval:
-            logger.info("Rebroadcast incant_req")
-            self.coordo.send_incant_request()
-            self._last_broadcast_time = now
         return None
 
     def _handle_incantation_help(self):
@@ -239,32 +245,9 @@ class Planner:
         # (tu peux remplacer par ta logique d’exploration préférée)
         return self._handle_exploration()
 
-    def _on_incant_request(self, sender_id: str, data: Dict[str, Any], k: int):
-        # helper logic
-        can_help = (self.state.level == data['level'] and
-                    self.state.get_food_count() > self.critical_food_threshold)
-        # remember requester for response
-        self.coordo.last_requester = sender_id
-        if not can_help:
-            # respond busy
-            logger.info(f"Helper: busy reply to {sender_id}")
-            self.coordo.send_incant_response(sender_id, 'busy', eta=None)
-            return
-        if k == 0:
-            # same tile -> here
-            logger.info(f"Helper: here reply to {sender_id}")
-            self.coordo.send_incant_response(sender_id, 'here', eta=0)
-        else:
-            # plan movement then send 'coming'
-            cmds = self._commands_from_sound_dir(k)
-            if cmds:
-                logger.info(f"Helper: plan movement {cmds} towards {sender_id}")
-                self.helper_cmds = cmds
+    def _on_incant_response(self, sender_id, data, direction):
+        self.coordo.helpers.add( (sender_id, data['response']) )
 
-    def _on_incant_response(self, sender_id: str, data: Dict[str, Any], direction: int):
-        # record all responses
-        logger.info(f"Initiateur reçu incant_resp '{data['response']}' de {sender_id}")
-        self.coordo.helpers_store.append({'id': sender_id, **data})
 
     def _commands_from_sound_dir(self, k: int) -> List[CommandType]:
         # 1=front,2=front-right,3=right,4=back-right,5=back,6=back-left,7=left,8=front-left
@@ -283,7 +266,6 @@ class Planner:
     def _handle_fork(self):
         """Fork en deux étapes : connect_nbr puis fork si slots dispo."""
         if self.fork_stage == 0:
-            logger.info("Vérification place dispo avant FORK")
             self.fork_stage = 1
             return self.cmd_manager.connect_nbr()
 
@@ -294,7 +276,6 @@ class Planner:
 
             slots = int(last.response)
             if slots == 0 and self._has_enough_for_fork():
-                logger.info(f"FORK autorisé ({slots} slots restants)")
                 return self.cmd_manager.fork()
             else:
                 self.new_agent = True
@@ -305,7 +286,7 @@ class Planner:
     def _has_enough_for_fork(self) -> bool:
         """Détermine si on a les ressources min. pour un fork stratégique."""
         inv = self.state.inventory
-        return inv.get("food", 0) >= self.critical_food_threshold
+        return inv.get("food", 0) >= self.state.critical_food_threshold
 
     def _handle_eject_if_necessary(self) -> Optional[CommandType]:
         """
@@ -317,7 +298,6 @@ class Planner:
 
         for tile in vision_data:
             if tile.rel_pos == (0, 0) and tile.players > 1:
-                logger.info("Éjection d'ennemis détectés")
                 return self.cmd_manager.eject()
 
         return None
@@ -371,9 +351,8 @@ class Planner:
         target = self.pathfinder.find_target_in_vision(vision_data, resource_type)
         if target:
             self.current_target = target
-            logger.info(f"Nouvelle cible {resource_type} à {target.rel_position}")
             return True
-        logger.error(f"Aucune resource {resource_type} trouvée dans la vision → fallback exploration")
+        # logger.error(f"Aucune resource {resource_type} trouvée dans la vision → fallback exploration")
         return False
 
     def _move_toward_current_target(self):
@@ -384,7 +363,6 @@ class Planner:
             return None
 
         if self.current_target.rel_position == (0, 0):
-            logger.info("Cible atteinte, ramassage")
             resource_type = self.current_target.resource_type
             self.current_target = None
             return self.cmd_manager.take(resource_type)
@@ -456,7 +434,6 @@ class Planner:
             ground = local.get(resource, 0)
             to_drop = max(0, needed - ground)
             if to_drop > 0 and inv > 0:
-                logger.info(f"Dépôt {resource} pour incantation")
                 return self.cmd_manager.set(resource)
         return None
 
@@ -469,7 +446,6 @@ class Planner:
         for resource, needed in requirements.items():
             inv = self.state.inventory.get(resource, 0)
             if inv < needed and ground.get(resource, 0) > 0:
-                logger.info(f"Pickup {resource} au sol")
                 return self.cmd_manager.take(resource)
         return None
 
@@ -489,7 +465,6 @@ class Planner:
         self.stuck_counter += 1
         logger.warning(f"Échec de commande, stuck_counter={self.stuck_counter}")
         if self.stuck_counter >= 3 and self.current_target:
-            logger.info("Cible abandonnée après échecs répétés")
             self.current_target = None
             self.command_queue.clear()
 

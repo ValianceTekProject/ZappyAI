@@ -39,6 +39,8 @@ class Constants(Enum):
     PHIRAS = 'phiras'
     THYSTAME = 'thystame'
 
+    PLAYER = 'player'
+
     VISION_RANGE = 3
     MAX_LEVEL = 8
 
@@ -56,6 +58,7 @@ class CommandType(Enum):
     SET = 'Set'
     INCANTATION = 'Incantation'
     DEATH = 'Death'
+    NONE = 'None'
 
 class CommandStatus(Enum):
     PENDING = 'pending'

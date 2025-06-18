@@ -32,7 +32,7 @@ class Agent:
         Agent._next_id += 1
 
         self.timing = TimingManager(self.freq)
-        self.state = GameState(team_id)
+        self.state = GameState(team_id, self.dimension_map)
         self.commands = CommandManager(self.conn, self.timing, self.state)
         self.msg_bus = MessageBus(self.state.level, team_id)
         self.msg_manager = MessageManager(self.commands, self.msg_bus)

@@ -36,13 +36,13 @@ class VisionData:
     def parse_content(self) -> None:
         """Remplit `players` et `resources` à partir du contenu brut de la tuile."""
         for item in self.content:
-            if item == "player":
+            if item == Constants.PLAYER.value:
                 self.players += 1
             else:
                 self.resources[item] = self.resources.get(item, 0) + 1
 
 class Vision:
-    """Gère la perception visuelle d’un agent, avec logique de parsing et d’analyse de la vue."""
+    """Gère la perception visuelle d'un agent, avec logique de parsing et d'analyse de la vue."""
     def __init__(self):
         self.vision_range = Constants.VISION_RANGE.value
         self.last_vision_data: List[VisionData] = []
@@ -132,7 +132,7 @@ class Vision:
                 break
 
     def remove_resource_at(self, rel_pos: Tuple[int, int], resource: str):
-        """Supprime artificiellement une ressource d’une tuile donnée."""
+        """Supprime artificiellement une ressource d'une tuile donnée."""
         for data in self.last_vision_data:
             if data.rel_pos == rel_pos:
                 if resource in data.resources:
