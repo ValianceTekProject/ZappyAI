@@ -88,6 +88,7 @@ void zappy::game::Game::removeFromTeam(int clientSocket)
         for (auto &player : team.getPlayerList()) {
             if (player->getClient().getSocket() == clientSocket) {
                 team.removePlayer(clientSocket);
+                return;
             }
         }
     }
