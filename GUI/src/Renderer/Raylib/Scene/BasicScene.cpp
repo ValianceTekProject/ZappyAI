@@ -43,7 +43,7 @@ bool zappy::gui::raylib::BasicScene::shouldClose() const
 
 void zappy::gui::raylib::BasicScene::addEgg(const int &id)
 {
-    std::unique_ptr<IEggModel> egg = std::make_unique<BasicEggModel>(0);
+    std::unique_ptr<IEggModel> egg = std::make_unique<BasicEggModel>(id);
 
     egg->init();
     _mapRenderer->addEgg(std::move(egg));
@@ -53,7 +53,7 @@ void zappy::gui::raylib::BasicScene::addEgg(const int &id)
 
 void zappy::gui::raylib::BasicScene::addPlayer(const int &id)
 {
-    std::unique_ptr<IPlayerModel> player = std::make_unique<BasicPlayerModel>(0);
+    std::unique_ptr<IPlayerModel> player = std::make_unique<BasicPlayerModel>(id);
 
     player->init();
     _mapRenderer->addPlayer(std::move(player));

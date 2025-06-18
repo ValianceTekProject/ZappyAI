@@ -31,12 +31,12 @@ void zappy::gui::raylib::FlatFloor::update() const {}
 
 void zappy::gui::raylib::FlatFloor::render() const
 {
-    float tileSize = static_cast<float>(getTileSize());
-    float startX = -(getWidth() * tileSize) / 2.0f;
-    float startZ = -(getHeight() * tileSize) / 2.0f;
+    float tileSize = this->getTileSize();
+    float startX = -(this->getWidth() * tileSize) / 2.0f;
+    float startZ = -(this->getHeight() * tileSize) / 2.0f;
 
-    for (size_t x = 0; x < getWidth(); ++x) {
-        for (size_t z = 0; z < getHeight(); ++z) {
+    for (size_t x = 0; x < this->getWidth(); ++x) {
+        for (size_t z = 0; z < this->getHeight(); ++z) {
             float posX = startX + x * tileSize + tileSize / 2.0f;
             float posZ = startZ + z * tileSize + tileSize / 2.0f;
 
@@ -49,10 +49,16 @@ void zappy::gui::raylib::FlatFloor::render() const
 
 Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const size_t &x, const size_t &y) const
 {
-    size_t tileSize = getTileSize();
-    Vector3 vector;
+    const float tileSize = this->getTileSize();
+    const float worldWidth  = this->getWidth()  * tileSize;
+    const float worldDepth  = this->getHeight() * tileSize;
 
-    vector.x = x * tileSize;
-    vector.z = (-y) * tileSize;
-    return vector;
+    const float offsetX = -worldWidth  * 0.5f + tileSize * 0.5f;
+    const float offsetZ =  worldDepth  * 0.5f - tileSize * 0.5f;
+
+    Vector3 pos;
+    pos.x = offsetX + x * tileSize;
+    pos.y = 0.0f;
+    pos.z = offsetZ - y * tileSize;
+    return pos;
 }
