@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include "AssetPaths.hpp"
+
+#include <iostream>
 #include "raylib.h"
 
 namespace zappy {

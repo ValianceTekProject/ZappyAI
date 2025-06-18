@@ -6,13 +6,13 @@
 */
 
 #pragma once
+
 #include "IEggModel.hpp"
 
 namespace zappy {
     namespace gui {
         namespace raylib {
-            class AEggModel : IEggModel
-            {
+            class AEggModel : public IEggModel {
                 public:
                     AEggModel(const int &id);
                     virtual ~AEggModel() override = default;

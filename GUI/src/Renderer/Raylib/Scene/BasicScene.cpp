@@ -15,11 +15,6 @@ zappy::gui::raylib::BasicScene::BasicScene(const std::shared_ptr<game::GameState
 void zappy::gui::raylib::BasicScene::init()
 {
     AScene::init();
-    // std::unique_ptr<BasicPlayerModel> player = std::make_unique<BasicPlayerModel>;
-    // _mapRenderer->addPlayer(player);
-    std::unique_ptr<IPlayerModel> player = std::make_unique<BasicPlayerModel>(0);
-    player->init();
-    _mapRenderer->addPlayer(std::move(player));
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)
@@ -49,11 +44,17 @@ bool zappy::gui::raylib::BasicScene::shouldClose() const
 void zappy::gui::raylib::BasicScene::addEgg(const int &id)
 {
     AScene::addEgg(id);
+    std::unique_ptr<IEggModel> egg = std::make_unique<BasicEggModel>(0);
+    egg->init();
+    _mapRenderer->addEgg(std::move(egg));
 }
 
 void zappy::gui::raylib::BasicScene::addPlayer(const int &id)
 {
     AScene::addPlayer(id);
+    std::unique_ptr<IPlayerModel> player = std::make_unique<BasicPlayerModel>(0);
+    player->init();
+    _mapRenderer->addPlayer(std::move(player));
 }
 
 void zappy::gui::raylib::BasicScene::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)

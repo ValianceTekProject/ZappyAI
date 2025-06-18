@@ -9,6 +9,7 @@
 
 #include "AScene.hpp"
 #include "BasicPlayerModel.hpp"
+#include "BasicEggModel.hpp"
 
 #include <raylib.h>
 #include <unordered_map>

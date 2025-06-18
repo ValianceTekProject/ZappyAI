@@ -19,21 +19,52 @@ void zappy::gui::raylib::MapRenderer::init()
 
 void zappy::gui::raylib::MapRenderer::update()
 {
+    // Mettre à jour la carte
     _floor->update();
+
+    // Mettre à jour les players
     if (!_players.empty()) {
         for (const auto &player : _players)
             player->update();
     }
-    // Mettre à jour la carte
+
+    // Mettre à jour les oeufs
+    if (!_eggs.empty()) {
+        for (const auto &egg : _eggs)
+            egg->update();
+    }
 }
 
 void zappy::gui::raylib::MapRenderer::render()
 {
     // Dessiner la carte
     _floor->render();
+
+    // Dessiner les players
     if (!_players.empty()) {
         for (const auto &player : _players)
             player->render();
+    }
+
+    // Dessiner les oeufs
+    if (!_eggs.empty()) {
+        for (const auto &egg : _eggs)
+            egg->render();
+    }
+}
+
+void zappy::gui::raylib::MapRenderer::addEgg(std::unique_ptr<IEggModel> egg)
+{
+    _eggs.push_back(std::move(egg));
+}
+
+void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)
+{
+    for (auto it = _eggs.begin(); it != _eggs.end(); it++) {
+        if ((*it)->getId() == id) {
+            _eggs.erase(it);
+            break;
+        }
     }
 }
 

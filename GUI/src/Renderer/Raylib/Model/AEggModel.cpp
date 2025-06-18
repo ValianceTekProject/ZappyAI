@@ -7,7 +7,7 @@
 
 #include "AEggModel.hpp"
 
-zappy::gui::raylib::AEggModel::APlayerModel(const int &id) :
+zappy::gui::raylib::AEggModel::AEggModel(const int &id) :
     _id(id),
     _state(State::IDLE),
     _model(),
