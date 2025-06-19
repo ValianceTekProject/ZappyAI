@@ -161,3 +161,10 @@ void zappy::gui::raylib::MapRenderer::_translate(const Translation &translation,
     (void)translation;
     (void)frequency;
 }
+
+void zappy::gui::raylib::MapRenderer::_rotate(const Rotation &rotation, const int &frequency)
+{
+    // rotate player
+    (void)rotation;
+    (void)frequency;
+}

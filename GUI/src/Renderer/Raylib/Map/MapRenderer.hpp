@@ -23,8 +23,16 @@ namespace zappy {
                     struct Translation {
                         const int id;
                         Vector2 start;
+                        Vector2 current;
                         Vector2 destination;
                         Vector2 translationVector;
+                    };
+
+                    struct Rotation {
+                        const int id;
+                        float start;
+                        float current;
+                        float destination;
                     };
 
                     MapRenderer(const std::shared_ptr<game::Map> map);
@@ -54,6 +62,7 @@ namespace zappy {
 
                 private:
                     void _translate(const Translation &translation, const int &frequency);
+                    void _rotate(const Rotation &rotation, const int &frequency);
 
                     const std::shared_ptr<game::Map> _map;
 
@@ -63,6 +72,7 @@ namespace zappy {
                     std::vector<std::unique_ptr<IEggModel>> _eggs;
 
                     std::vector<Translation> _translations;
+                    std::vector<Rotation> _rotations;
             };
         }
     }
