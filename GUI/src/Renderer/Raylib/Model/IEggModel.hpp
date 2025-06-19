@@ -8,6 +8,7 @@
 #pragma once
 
 #include "AssetPaths.hpp"
+#include "Player.hpp"
 
 #include <iostream>
 #include "raylib.h"
