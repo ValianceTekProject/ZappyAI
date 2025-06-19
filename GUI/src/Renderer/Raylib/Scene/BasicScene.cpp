@@ -15,6 +15,8 @@ zappy::gui::raylib::BasicScene::BasicScene(const std::shared_ptr<game::GameState
 void zappy::gui::raylib::BasicScene::init()
 {
     AScene::init();
+    _mapRenderer->addPlayer(std::make_unique<BasicPlayerModel>(0));
+    _mapRenderer->setPlayerPosition(0, 0, 0, game::Orientation::NORTH);
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)
@@ -61,7 +63,7 @@ void zappy::gui::raylib::BasicScene::addPlayer(const int &id)
     AScene::addPlayer(id);
 }
 
-void zappy::gui::raylib::BasicScene::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)
+void zappy::gui::raylib::BasicScene::updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation)
 {
     AScene::updatePlayerPosition(id, x, y, orientation);
 }

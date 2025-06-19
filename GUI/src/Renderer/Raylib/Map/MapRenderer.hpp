@@ -20,12 +20,19 @@ namespace zappy {
         namespace raylib {
             class MapRenderer {
                 public:
+                    struct Translation {
+                        const int id;
+                        Vector2 start;
+                        Vector2 destination;
+                        Vector2 translationVector;
+                    };
+
                     MapRenderer(const std::shared_ptr<game::Map> map);
                     ~MapRenderer() = default;
 
                     void init();
 
-                    void update();
+                    void update(const int &frequency);
 
                     void render();
 
@@ -35,20 +42,27 @@ namespace zappy {
                     void setEggPosition(const int &id, const size_t &x, const size_t &y);
                     void setPlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation);
 
+                    void playerLook(const int &id, const game::Orientation &orientation);
+                    void playerLookLeft(const int &id);
+                    void playerLookRight(const int &id);
+
+                    void playerForward(const int &id, const int &x, const int &y);
+                    void playerExpulsion(const int &id, const int &x, const int &y);
+
                     void removePlayer(const int &id);
                     void removeEgg(const int &id);
 
                 private:
-                    std::unique_ptr<IEggModel> getEgg(const int &id);
-                    std::unique_ptr<IPlayerModel> getPlayer(const int &id);
+                    void _translate(const Translation &translation, const int &frequency);
 
                     const std::shared_ptr<game::Map> _map;
 
                     std::unique_ptr<IFloor> _floor;
 
                     std::vector<std::unique_ptr<IPlayerModel>> _players;
-
                     std::vector<std::unique_ptr<IEggModel>> _eggs;
+
+                    std::vector<Translation> _translations;
             };
         }
     }

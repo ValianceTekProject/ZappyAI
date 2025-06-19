@@ -17,7 +17,7 @@ void zappy::gui::raylib::MapRenderer::init()
     _floor->init();
 }
 
-void zappy::gui::raylib::MapRenderer::update()
+void zappy::gui::raylib::MapRenderer::update(const int &frequency)
 {
     // Mettre à jour la carte
     _floor->update();
@@ -32,6 +32,11 @@ void zappy::gui::raylib::MapRenderer::update()
     if (!_eggs.empty()) {
         for (const auto &egg : _eggs)
             egg->update();
+    }
+
+    if (!_translations.empty()) {
+        for (const auto &translation : _translations)
+            _translate(translation, frequency);
     }
 }
 
@@ -102,4 +107,57 @@ void zappy::gui::raylib::MapRenderer::setPlayerPosition(const int &id, const siz
             break;
         }
     }
+}
+
+void zappy::gui::raylib::MapRenderer::playerLook(const int &id, const game::Orientation &orientation)
+{
+    for (auto &player : _players) {
+        if (player->getId() == id) {
+            player->look(orientation);
+            break;
+        }
+    }
+}
+
+void zappy::gui::raylib::MapRenderer::playerLookLeft(const int &id)
+{
+    for (auto &player : _players) {
+        if (player->getId() == id) {
+            player->lookLeft();
+            break;
+        }
+    }
+}
+
+void zappy::gui::raylib::MapRenderer::playerLookRight(const int &id)
+{
+    for (auto &player : _players) {
+        if (player->getId() == id) {
+            player->lookRight();
+            break;
+        }
+    }
+}
+
+void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x, const int &y)
+{
+    // Mettre à jour la position d'un joueur
+    (void)id;
+    (void)x;
+    (void)y;
+}
+
+void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &x, const int &y)
+{
+    // Mettre à jour la position d'un joueur
+    (void)id;
+    (void)x;
+    (void)y;
+}
+
+void zappy::gui::raylib::MapRenderer::_translate(const Translation &translation, const int &frequency)
+{
+    // translate player
+    (void)translation;
+    (void)frequency;
 }

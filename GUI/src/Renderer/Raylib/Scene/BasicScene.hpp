@@ -34,7 +34,7 @@ namespace zappy {
                     void addEgg(const int &id) override;
                     void addPlayer(const int &id) override;
 
-                    void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) override;
+                    void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) override;
                     void updatePlayerLevel(const int &id, const size_t &level) override;
                     void updatePlayerInventory(const int &id, const game::Inventory &inventory) override;
 

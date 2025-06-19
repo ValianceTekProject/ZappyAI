@@ -33,7 +33,7 @@ namespace zappy {
                     virtual void addEgg(const int &id) override;
                     virtual void addPlayer(const int &id) override;
 
-                    virtual void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) override;
+                    virtual void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) override;
                     virtual void updatePlayerLevel(const int &id, const size_t &level) override;
                     virtual void updatePlayerInventory(const int &id, const game::Inventory &inventory) override;
 
@@ -53,7 +53,8 @@ namespace zappy {
                     virtual void removeEgg(const int &id) override;
                     virtual void removePlayer(const int &id) override;
 
-                protected:
+                    protected:
+
                     Camera _camera;
 
                     const std::shared_ptr<game::GameState> _gameState;

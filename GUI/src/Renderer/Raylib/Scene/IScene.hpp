@@ -38,7 +38,7 @@ namespace zappy {
                     virtual void addEgg(const int &eggId) = 0;
                     virtual void addPlayer(const int &id) = 0;
 
-                    virtual void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) = 0;
+                    virtual void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) = 0;
                     virtual void updatePlayerLevel(const int &id, const size_t &level) = 0;
                     virtual void updatePlayerInventory(const int &id, const game::Inventory &inventory) = 0;
 
