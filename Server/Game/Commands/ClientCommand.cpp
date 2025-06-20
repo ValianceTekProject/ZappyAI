@@ -335,7 +335,7 @@ void zappy::game::CommandHandler::_executeCommand(
 {
     std::thread commandThread([&player, function, args]() {
         if (player.isInAction())
-            return player.getClient().sendMessage("ko\n");
+            return;
 
         player.setInAction(true);
         player.startChrono();
@@ -363,5 +363,6 @@ void zappy::game::CommandHandler::processClientInput(
     auto it = this->_commandMap.find(cmd);
     if (it != this->_commandMap.end())
         return this->_executeCommand(player, it->second, args);
-    player.getClient().sendMessage("ko\n");
+    if (player.isInAction() == false)
+        player.getClient().sendMessage("ko\n");
 }
