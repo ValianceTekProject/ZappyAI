@@ -13,7 +13,7 @@
 
 namespace zappy {
     namespace game {
-        enum class Resource {
+        enum class Resource: size_t {
             FOOD = 0,
             LINEMATE = 1,
             DERAUMERE = 2,
