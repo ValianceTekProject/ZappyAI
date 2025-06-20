@@ -80,11 +80,11 @@ Vector3 zappy::gui::raylib::FlatFloor::getNorthVector(const game::Orientation &o
 Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const int &x, const int &y) const
 {
     const float tileSize = this->getTileSize();
-    const float worldWidth  = this->getWidth()  * tileSize;
-    const float worldDepth  = this->getHeight() * tileSize;
+    const float worldWidth = this->getWidth() * tileSize;
+    const float worldDepth = this->getHeight() * tileSize;
 
-    const float offsetX = -worldWidth  * 0.5f + tileSize * 0.5f;
-    const float offsetZ =  worldDepth  * 0.5f - tileSize * 0.5f;
+    const float offsetX = -worldWidth * 0.5f + tileSize * 0.5f;
+    const float offsetZ =  worldDepth * 0.5f - tileSize * 0.5f;
 
     Vector3 pos;
     pos.x = offsetX + x * tileSize;

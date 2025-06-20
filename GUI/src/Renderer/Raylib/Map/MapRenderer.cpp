@@ -130,34 +130,11 @@ void zappy::gui::raylib::MapRenderer::playerLookLeft(const int &id)
         return;
 
     auto &player = _getPlayer(id);
-    Vector3 current = player.getRotation();
+    player.lookLeft();
 
     constexpr float rotationAngle = 90.0f;
-    Vector3 destination   = {current.x, current.y + rotationAngle, current.z};
 
-    Vector3 totalDelta = Vector3Subtract(destination, current);
-    Vector3 perStep    = Vector3Scale(totalDelta, 1.0f / static_cast<float>(ROTATION_TIME));
-
-    player.lookRight();
-
-    // check if there is no rotation so put ROTATION_TIME to 0
-    for (auto &rotation : _rotations) {
-        if (rotation.id == id) {
-            rotation.destination = destination;
-            rotation.deltaPerStep = perStep;
-            rotation.timeUnits = ROTATION_TIME;
-            rotation.elapsedTime = 0;
-            return;
-        }
-    }
-
-    _rotations.push_back(Rotation{
-        id,
-        destination,
-        perStep,
-        ROTATION_TIME,
-        0
-    });
+    _addRotation(player, rotationAngle);
 }
 
 void zappy::gui::raylib::MapRenderer::playerLookRight(const int &id)
@@ -166,34 +143,11 @@ void zappy::gui::raylib::MapRenderer::playerLookRight(const int &id)
         return;
 
     auto &player = _getPlayer(id);
-    Vector3 current = player.getRotation();
-
-    constexpr float rotationAngle = -90.0f;
-    Vector3 destination   = {current.x, current.y + rotationAngle, current.z};
-
-    Vector3 totalDelta = Vector3Subtract(destination, current);
-    Vector3 perStep    = Vector3Scale(totalDelta, 1.0f / static_cast<float>(ROTATION_TIME));
-
     player.lookRight();
 
-    // check if there is no rotation so put ROTATION_TIME to 0
-    for (auto &rotation : _rotations) {
-        if (rotation.id == id) {
-            rotation.destination = destination;
-            rotation.deltaPerStep = perStep;
-            rotation.timeUnits = ROTATION_TIME;
-            rotation.elapsedTime = 0;
-            return;
-        }
-    }
+    constexpr float rotationAngle = -90.0f;
 
-    _rotations.push_back(Rotation{
-        id,
-        destination,
-        perStep,
-        ROTATION_TIME,
-        0
-    });
+    _addRotation(player, rotationAngle);
 }
 
 void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x, const int &y)
@@ -285,6 +239,34 @@ const zappy::gui::raylib::AEggModel &zappy::gui::raylib::MapRenderer::_getEgg(co
     throw RendererError("Egg " + std::to_string(id) + " not found", "MapRenderer");
 }
 
+void zappy::gui::raylib::MapRenderer::_addRotation(const APlayerModel &player, const float &angle)
+{
+    Vector3 current = player.getRotation();
+    Vector3 destination = {current.x, current.y + angle, current.z};
+
+    Vector3 totalDelta = Vector3Subtract(destination, current);
+    Vector3 perStep = Vector3Scale(totalDelta, 1.0f / static_cast<float>(ROTATION_TIME));
+
+    // check if there is no rotation so put ROTATION_TIME to 0
+    for (auto &rotation : _rotations) {
+        if (rotation.id == player.getId()) {
+            rotation.destination = destination;
+            rotation.deltaPerStep = perStep;
+            rotation.timeUnits = ROTATION_TIME;
+            rotation.elapsedTime = 0;
+            return;
+        }
+    }
+
+    _rotations.push_back(Rotation{
+        player.getId(),
+        destination,
+        perStep,
+        ROTATION_TIME,
+        0
+    });
+}
+
 void zappy::gui::raylib::MapRenderer::_updateTranslations(const int &frequency)
 {
     auto it = _translations.begin();
@@ -319,11 +301,11 @@ void zappy::gui::raylib::MapRenderer::_updateRotations(const float &deltaUnits)
 
     auto it = _rotations.begin();
     while (it != _rotations.end()) {
-        auto &R      = *it;
+        auto &R = *it;
         auto &player = _getPlayer(R.id);
 
         if (R.elapsedTime + deltaUnits >= R.timeUnits) {
-            Vector3 cur       = player.getRotation();
+            Vector3 cur = player.getRotation();
             Vector3 remaining = Vector3Subtract(R.destination, cur);
             player.rotate(remaining);
             it = _rotations.erase(it);
