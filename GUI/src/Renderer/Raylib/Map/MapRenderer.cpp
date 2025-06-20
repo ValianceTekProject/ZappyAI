@@ -8,7 +8,14 @@
 #include "MapRenderer.hpp"
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
-    _map(map) {}
+    _map(map),
+    _lastTime(std::chrono::steady_clock::now()),
+    _floor(nullptr),
+    _eggs(),
+    _players(),
+    _translations(),
+    _rotations()
+{}
 
 void zappy::gui::raylib::MapRenderer::init()
 {
@@ -34,8 +41,15 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
             egg->update();
     }
 
+    auto now = std::chrono::steady_clock::now();
+    float deltaSec = std::chrono::duration<float>(now - _lastTime).count();
+    _lastTime = now;
+
+    // Convertit en “unités d’action” : (secondes écoulées) * fréquence
+    float deltaUnits = deltaSec * frequency;
+
     _updateTranslations(frequency);
-    _updateRotations(frequency);
+    _updateRotations(deltaUnits);
 }
 
 void zappy::gui::raylib::MapRenderer::render()
@@ -115,20 +129,34 @@ void zappy::gui::raylib::MapRenderer::playerLookLeft(const int &id)
     if (_players.empty())
         return;
 
-    auto &player = this->_getPlayer(id);
-    constexpr Vector3 rotationVector = {0.0f, -90.0f, 0.0f};
+    auto &player = _getPlayer(id);
+    Vector3 current = player.getRotation();
 
-    Vector3 playerRotation = player.getRotation();
-    Vector3 destination = Vector3Add(playerRotation, rotationVector);
-    Vector3 Vector = Vector3Subtract(destination, playerRotation);
+    constexpr float rotationAngle = 90.0f;
+    Vector3 destination   = {current.x, current.y + rotationAngle, current.z};
 
-    player.lookLeft();
+    Vector3 totalDelta = Vector3Subtract(destination, current);
+    Vector3 perStep    = Vector3Scale(totalDelta, 1.0f / static_cast<float>(ROTATION_TIME));
+
+    player.lookRight();
+
+    // check if there is no rotation so put ROTATION_TIME to 0
+    for (auto &rotation : _rotations) {
+        if (rotation.id == id) {
+            rotation.destination = destination;
+            rotation.deltaPerStep = perStep;
+            rotation.timeUnits = ROTATION_TIME;
+            rotation.elapsedTime = 0;
+            return;
+        }
+    }
 
     _rotations.push_back(Rotation{
         id,
         destination,
-        Vector,
-        ROTATION_TIME
+        perStep,
+        ROTATION_TIME,
+        0
     });
 }
 
@@ -138,19 +166,33 @@ void zappy::gui::raylib::MapRenderer::playerLookRight(const int &id)
         return;
 
     auto &player = _getPlayer(id);
-    constexpr Vector3 rotationVector = {0.0f, -90.0f, 0.0f};
+    Vector3 current = player.getRotation();
 
-    Vector3 playerRotation = player.getRotation();
-    Vector3 destination = Vector3Add(playerRotation, rotationVector);
-    Vector3 Vector = Vector3Subtract(destination, playerRotation);
+    constexpr float rotationAngle = -90.0f;
+    Vector3 destination   = {current.x, current.y + rotationAngle, current.z};
+
+    Vector3 totalDelta = Vector3Subtract(destination, current);
+    Vector3 perStep    = Vector3Scale(totalDelta, 1.0f / static_cast<float>(ROTATION_TIME));
 
     player.lookRight();
+
+    // check if there is no rotation so put ROTATION_TIME to 0
+    for (auto &rotation : _rotations) {
+        if (rotation.id == id) {
+            rotation.destination = destination;
+            rotation.deltaPerStep = perStep;
+            rotation.timeUnits = ROTATION_TIME;
+            rotation.elapsedTime = 0;
+            return;
+        }
+    }
 
     _rotations.push_back(Rotation{
         id,
         destination,
-        Vector,
-        ROTATION_TIME
+        perStep,
+        ROTATION_TIME,
+        0
     });
 }
 
@@ -271,35 +313,24 @@ void zappy::gui::raylib::MapRenderer::_updateTranslations(const int &frequency)
     }
 }
 
-void zappy::gui::raylib::MapRenderer::_updateRotations(const int &frequency)
+void zappy::gui::raylib::MapRenderer::_updateRotations(const float &deltaUnits)
 {
-    auto it = _rotations.begin();
+    if (_rotations.empty()) return;
 
+    auto it = _rotations.begin();
     while (it != _rotations.end()) {
-        const auto &R = *it;
+        auto &R      = *it;
         auto &player = _getPlayer(R.id);
 
-        // calculate delta time
-        Vector3 delta = Vector3Scale(R.rotationVector, frequency);
-
-        Vector3 cur       = player.getRotation();
-        Vector3 dest      = R.destination;
-        Vector3 remaining = {
-            dest.x - cur.x,
-            dest.y - cur.y,
-            dest.z - cur.z
-        };
-
-        // check over rotation and stop rotation
-        bool readyX = std::fabs(remaining.x) <= std::fabs(delta.x);
-        bool readyY = std::fabs(remaining.y) <= std::fabs(delta.y);
-        bool readyZ = std::fabs(remaining.z) <= std::fabs(delta.z);
-
-        if (readyX && readyY && readyZ) {
+        if (R.elapsedTime + deltaUnits >= R.timeUnits) {
+            Vector3 cur       = player.getRotation();
+            Vector3 remaining = Vector3Subtract(R.destination, cur);
             player.rotate(remaining);
             it = _rotations.erase(it);
         } else {
-            player.rotate(delta);
+            Vector3 step = Vector3Scale(R.deltaPerStep, deltaUnits);
+            player.rotate(step);
+            R.elapsedTime += deltaUnits;
             ++it;
         }
     }

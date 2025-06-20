@@ -18,16 +18,17 @@
 
 #include <memory>
 #include <vector>
+#include <chrono>
 
 namespace zappy {
     namespace gui {
         namespace raylib {
             class MapRenderer {
                 public:
-                    constexpr static const int FORWARD_TIME = 7;
-                    constexpr static const int ROTATION_TIME = 7;
-                    constexpr static const int EXPULSION_TIME = 1;
-                    constexpr static const int NO_ANIMATION = 0;
+                    constexpr static int FORWARD_TIME = 7;
+                    constexpr static int ROTATION_TIME = 7;
+                    constexpr static int EXPULSION_TIME = 1;
+                    constexpr static int NO_ANIMATION = 0;
 
                     struct Translation {
                         int id;
@@ -39,8 +40,9 @@ namespace zappy {
                     struct Rotation {
                         int id;
                         Vector3 destination;
-                        Vector3 rotationVector;
-                        int timeUnit;
+                        Vector3 deltaPerStep;
+                        int timeUnits;
+                        float elapsedTime;
                     };
 
                     MapRenderer(const std::shared_ptr<game::Map> map);
@@ -75,9 +77,11 @@ namespace zappy {
                     const AEggModel &_getEgg(const int &id) const;
 
                     void _updateTranslations(const int &frequency);
-                    void _updateRotations(const int &frequency);
+                    void _updateRotations(const float &deltaUnits);
 
                     const std::shared_ptr<game::Map> _map;
+
+                    std::chrono::steady_clock::time_point _lastTime;
 
                     std::unique_ptr<IFloor> _floor;
 
