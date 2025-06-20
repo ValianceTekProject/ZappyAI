@@ -83,7 +83,6 @@ set(SOURCES
     ${RAYLIB_DIR}/RaylibRenderer.cpp
     ${RAYLIB_SCENE_DIR}/InputManager.cpp
     ${RAYLIB_SCENE_DIR}/AScene.cpp
-    ${RAYLIB_SCENE_DIR}/BasicScene.cpp
 
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
     ${RAYLIB_FLOOR_DIR}/AFloor.cpp
@@ -91,10 +90,12 @@ set(SOURCES
     ${RAYLIB_FLATFLOOR_DIR}/FlatFloor.cpp
     ${RAYLIB_GLOBEFLOOR_DIR}/GlobeFloor.cpp
 
+    ${RAYLIB_MODEL_DIR}/AModel.cpp
     ${RAYLIB_MODEL_DIR}/APlayerModel.cpp
-    ${RAYLIB_MODEL_BASIC_DIR}/BasicPlayerModel.cpp
-
     ${RAYLIB_MODEL_DIR}/AEggModel.cpp
+
+    ${RAYLIB_SCENE_DIR}/BasicScene.cpp
+    ${RAYLIB_MODEL_BASIC_DIR}/BasicPlayerModel.cpp
     ${RAYLIB_MODEL_BASIC_DIR}/BasicEggModel.cpp
 )
 

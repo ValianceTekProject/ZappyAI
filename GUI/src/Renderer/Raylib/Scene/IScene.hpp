@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "IPlayerModel.hpp"
 #include "IFloor.hpp"
 #include "InputManager.hpp"
 

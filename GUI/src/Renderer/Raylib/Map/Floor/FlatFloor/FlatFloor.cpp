@@ -47,7 +47,37 @@ void zappy::gui::raylib::FlatFloor::render() const
     }
 }
 
-Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const size_t &x, const size_t &y) const
+Vector3 zappy::gui::raylib::FlatFloor::getGapFromOrientation(const game::Orientation &orientation)
+{
+    switch (orientation) {
+        case game::Orientation::NORTH:
+            return {0.0f, 0.0f, 0.0f};
+        case game::Orientation::EAST:
+            return {0.0f, 90.0f, 0.0f};
+        case game::Orientation::SOUTH:
+            return {0.0f, 180.0f, 0.0f};
+        case game::Orientation::WEST:
+            return {0.0f, 270.0f, 0.0f};
+    }
+    return {0.0f, 0.0f, 0.0f};
+}
+
+Vector3 zappy::gui::raylib::FlatFloor::getNorthVector(const game::Orientation &orientation)
+{
+    switch (orientation) {
+        case game::Orientation::NORTH:
+            return {0.0f, 0.0f, 1.0f};
+        case game::Orientation::EAST:
+            return {1.0f, 0.0f, 0.0f};
+        case game::Orientation::SOUTH:
+            return {0.0f, 0.0f, -1.0f};
+        case game::Orientation::WEST:
+            return {-1.0f, 0.0f, 0.0f};
+    }
+    return {0.0f, 0.0f, 0.0f};
+}
+
+Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const int &x, const int &y) const
 {
     const float tileSize = this->getTileSize();
     const float worldWidth  = this->getWidth()  * tileSize;

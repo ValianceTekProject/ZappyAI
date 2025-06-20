@@ -31,6 +31,11 @@ namespace zappy {
                     size_t getHeight() const override { return _height; }
                     float getTileSize() const override { return _tileSize; }
 
+                    Vector3 getGapFromOrientation(const game::Orientation &orientation) override = 0;
+                    Vector3 getNorthVector(const game::Orientation &orientation) override = 0;
+
+                    Vector3 get3DCoords(const int &x, const int &y) const override = 0;
+
                 private:
                     size_t _width;
                     size_t _height;

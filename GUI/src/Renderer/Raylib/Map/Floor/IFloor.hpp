@@ -7,9 +7,11 @@
 
 #pragma once
 
+#include "Orientation.hpp"
 #include "Map.hpp"
-#include "raylib.h"
 #include "AssetPaths.hpp"
+
+#include <raylib.h>
 
 namespace zappy {
     namespace gui {
@@ -32,7 +34,10 @@ namespace zappy {
                     virtual size_t getHeight() const = 0;
                     virtual float getTileSize() const = 0;
 
-                    virtual Vector3 get3DCoords(const size_t &x, const size_t &y) const = 0;
+                    virtual Vector3 getGapFromOrientation(const game::Orientation &orientation) = 0;
+                    virtual Vector3 getNorthVector(const game::Orientation &orientation) = 0;
+
+                    virtual Vector3 get3DCoords(const int &x, const int &y) const = 0;
             };
         }
     } // namespace gui

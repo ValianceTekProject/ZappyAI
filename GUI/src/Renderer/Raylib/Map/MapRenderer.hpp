@@ -7,10 +7,14 @@
 
 #pragma once
 
+#include "RendererError.hpp"
+
 #include "Map.hpp"
 #include "FlatFloor.hpp"
-#include "IPlayerModel.hpp"
-#include "IEggModel.hpp"
+
+// #include "AResourceModel.hpp"
+#include "AEggModel.hpp"
+#include "APlayerModel.hpp"
 
 #include <memory>
 #include <vector>
@@ -20,19 +24,23 @@ namespace zappy {
         namespace raylib {
             class MapRenderer {
                 public:
+                    constexpr static const int FORWARD_TIME = 7;
+                    constexpr static const int ROTATION_TIME = 7;
+                    constexpr static const int EXPULSION_TIME = 1;
+                    constexpr static const int NO_ANIMATION = 0;
+
                     struct Translation {
-                        const int id;
-                        Vector2 start;
-                        Vector2 current;
-                        Vector2 destination;
-                        Vector2 translationVector;
+                        int id;
+                        Vector3 destination;
+                        Vector3 translationVector;
+                        int timeUnit;     //! (comment is to remove) action time duration
                     };
 
                     struct Rotation {
-                        const int id;
-                        float start;
-                        float current;
-                        float destination;
+                        int id;
+                        Vector3 destination;
+                        Vector3 rotationVector;
+                        int timeUnit;
                     };
 
                     MapRenderer(const std::shared_ptr<game::Map> map);
@@ -44,11 +52,11 @@ namespace zappy {
 
                     void render();
 
-                    void addEgg(std::unique_ptr<IEggModel> egg);
-                    void addPlayer(std::unique_ptr<IPlayerModel> player);
+                    void addEgg(std::unique_ptr<AEggModel> egg);
+                    void addPlayer(std::unique_ptr<APlayerModel> player);
 
-                    void setEggPosition(const int &id, const size_t &x, const size_t &y);
-                    void setPlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation);
+                    void setEggPosition(const int &id, const int &x, const int &y);
+                    void setPlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation);
 
                     void playerLook(const int &id, const game::Orientation &orientation);
                     void playerLookLeft(const int &id);
@@ -61,15 +69,20 @@ namespace zappy {
                     void removeEgg(const int &id);
 
                 private:
-                    void _translate(const Translation &translation, const int &frequency);
-                    void _rotate(const Rotation &rotation, const int &frequency);
+                    APlayerModel &_getPlayer(const int &id);
+                    const APlayerModel &_getPlayer(const int &id) const;
+                    AEggModel &_getEgg(const int &id);
+                    const AEggModel &_getEgg(const int &id) const;
+
+                    void _updateTranslations(const int &frequency);
+                    void _updateRotations(const int &frequency);
 
                     const std::shared_ptr<game::Map> _map;
 
                     std::unique_ptr<IFloor> _floor;
 
-                    std::vector<std::unique_ptr<IPlayerModel>> _players;
-                    std::vector<std::unique_ptr<IEggModel>> _eggs;
+                    std::vector<std::unique_ptr<AEggModel>> _eggs;
+                    std::vector<std::unique_ptr<APlayerModel>> _players;
 
                     std::vector<Translation> _translations;
                     std::vector<Rotation> _rotations;

@@ -20,7 +20,10 @@ namespace zappy {
                     void update() const override;
                     void render() const override;
 
-                    Vector3 get3DCoords(const size_t &x, const size_t &y) const override;
+                    Vector3 getGapFromOrientation(const game::Orientation &orientation) override;
+                    Vector3 getNorthVector(const game::Orientation &orientation) override;
+
+                    Vector3 get3DCoords(const int &x, const int &y) const override;
 
                 private:
                     Texture2D _texture;
