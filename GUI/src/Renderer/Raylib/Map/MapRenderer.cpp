@@ -159,10 +159,21 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
     if (_players.empty())
         return;
 
-    // Mettre à jour la position d'un joueur
-    (void)id;
-    (void)x;
-    (void)y;
+    auto &player = _getPlayer(id);
+    Vector3 dest = _floor->get3DCoords(x, y);
+    Vector3 cur = player.getPosition();
+    Vector3 direction = Vector3Subtract(dest, cur);
+
+    Vector3 step = Vector3Scale(direction, 1.0f / static_cast<float>(FORWARD_TIME));
+
+    Translation t;
+    t.id = id;
+    t.destination = dest;
+    t.translationVector = step;
+    t.timeUnit = FORWARD_TIME;
+    _translations.push_back(t);
+
+    player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
 
 void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &x, const int &y)
@@ -234,11 +245,30 @@ const zappy::gui::raylib::AEggModel &zappy::gui::raylib::MapRenderer::_getEgg(co
 
 void zappy::gui::raylib::MapRenderer::_updateTranslations(const int &frequency)
 {
-    if (_translations.empty())
-        return;
+    auto it = _translations.begin();
 
-    // Mettre à jour la position d'un joueur
-    (void)frequency;
+    while (it != _translations.end()) {
+        auto &T = *it;
+        auto &player = _getPlayer(T.id);
+
+        Vector3 delta = Vector3Scale(T.translationVector, frequency);
+
+        Vector3 cur = player.getPosition();
+        Vector3 dest = T.destination;
+        Vector3 remaining = Vector3Subtract(dest, cur);
+
+        bool readyX = std::fabs(remaining.x) <= std::fabs(delta.x);
+        bool readyY = std::fabs(remaining.y) <= std::fabs(delta.y);
+        bool readyZ = std::fabs(remaining.z) <= std::fabs(delta.z);
+
+        if (readyX && readyY && readyZ) {
+            player.setPosition(dest);
+            it = _translations.erase(it);
+        } else {
+            player.translate(delta);
+            ++it;
+        }
+    }
 }
 
 void zappy::gui::raylib::MapRenderer::_updateRotations(const int &frequency)
