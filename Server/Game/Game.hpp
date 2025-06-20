@@ -25,7 +25,7 @@ namespace zappy {
            public:
             Game(int mapWidth, int mapHeight, std::vector<Team> teamList, int freq, int clientNb)
                 : _map(mapWidth, mapHeight),
-                _commandHandler(freq, _map.getWidth(), _map.getHeight(), clientNb, _map),
+                _commandHandler(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
                 _commandHandlerGui(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
                 _teamList(std::move(teamList)),
                 _baseFreqMs(freq),

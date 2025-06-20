@@ -9,6 +9,7 @@
 
 #include "ServerMap.hpp"
 #include "ServerPlayer.hpp"
+#include "Teams.hpp"
 #include <functional>
 #include <iostream>
 #include <map>
@@ -35,9 +36,9 @@ namespace zappy {
             };
 
             CommandHandler(int freq, int width, int height, int clientNb,
-                zappy::game::MapServer &map)
+                zappy::game::MapServer &map, std::vector<Team> &teamList)
                 : _freq(freq), _widthMap(width), _heightMap(height),
-                  _clientNb(clientNb), _map(map) {};
+                  _clientNb(clientNb), _map(map), _teamList(teamList) {};
             ~CommandHandler() = default;
 
             virtual void processClientInput(
@@ -50,7 +51,7 @@ namespace zappy {
             int _widthMap;
             int _heightMap;
             int _clientNb;
-            zappy::game::MapServer &_map;
+            MapServer &_map;
             std::unordered_map<std::string,
                 std::function<void(ServerPlayer &, const std::string &)>>
                 _commandMap;
@@ -59,9 +60,9 @@ namespace zappy {
                 std::function<void(ServerPlayer &, const std::string &)>
                     function,
                 const std::string &args);
+            std::vector<Team> &_teamList;
 
            private:
-            // TODO dont forget: adding check of chrono start in non complete command function
             void handleForward(zappy::game::ServerPlayer &player);
             void handleRight(zappy::game::ServerPlayer &player);
             void handleLeft(zappy::game::ServerPlayer &player);
