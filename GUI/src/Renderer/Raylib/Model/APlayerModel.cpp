@@ -8,56 +8,60 @@
 #include "APlayerModel.hpp"
 
 zappy::gui::raylib::APlayerModel::APlayerModel(const int &id) :
+    AModel::AModel(),
     _id(id),
     _state(State::IDLE),
     _gamePosition(Vector2{0, 0}),
     _orientation(game::Orientation::NORTH),
-    _position(Vector3{0, 0, 0}),
     _headOrigin(Vector3{0, 1, 0}),
-    _scale(1),
-    _model(),
     _animsCount(0),
     _animIndex(0),
     _animCurrentFrame(0),
-    _modelAnimations()
+    _modelAnimations(nullptr)
 {
     look(game::Orientation::NORTH);
 }
 
 void zappy::gui::raylib::APlayerModel::init()
 {
-
+    AModel::init();
 }
 
 Vector3 zappy::gui::raylib::APlayerModel::getHeadOrigin() const
 {
     return Vector3{
-        _position.x + _headOrigin.x * _scale,
-        _position.y + _headOrigin.y * _scale,
-        _position.z + _headOrigin.z * _scale
+        this->_position.x + this->_headOrigin.x * this->_scale,
+        this->_position.y + this->_headOrigin.y * this->_scale,
+        this->_position.z + this->_headOrigin.z * this->_scale
     };
-}
-
-void zappy::gui::raylib::APlayerModel::rotate(const Vector3 &rotation)
-{
-    // rotate Model with rotation vector
-    (void)rotation;
 }
 
 void zappy::gui::raylib::APlayerModel::look(const game::Orientation &orientation)
 {
-    _orientation = orientation;
-    // reotate model
+    this->_orientation = orientation;
 }
 
 void zappy::gui::raylib::APlayerModel::lookLeft()
 {
-    _orientation--;
-    look(_orientation);
+    this->_orientation--;
 }
 
 void zappy::gui::raylib::APlayerModel::lookRight()
 {
-    _orientation++;
-    look(_orientation);
+    this->_orientation++;
+}
+
+void zappy::gui::raylib::APlayerModel::update()
+{
+    ModelAnimation anim = _modelAnimations[_animIndex];
+
+    _animCurrentFrame = (_animCurrentFrame + 1) % anim.frameCount;
+    UpdateModelAnimation(_model, anim, _animCurrentFrame);
+}
+
+void zappy::gui::raylib::APlayerModel::_initModel(const std::string &modelPath)
+{
+    AModel::_initModel(modelPath);
+    _modelAnimations = LoadModelAnimations(modelPath.c_str(), &_animsCount);
+
 }

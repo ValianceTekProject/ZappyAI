@@ -20,11 +20,6 @@ namespace zappy {
                     void init() override;
 
                     void update() override;
-
-                    void render() override;
-
-                private:
-                    void _initModel() override;
             };
         } // namespace raylib
     } // namespace gui

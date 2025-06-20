@@ -7,53 +7,51 @@
 
 #pragma once
 
-#include "IPlayerModel.hpp"
+#include "AModel.hpp"
+#include "Player.hpp"
 
 namespace zappy {
     namespace gui {
         namespace raylib {
-            class APlayerModel : public IPlayerModel {
+            class APlayerModel : public AModel {
                 public:
+                    enum class State {
+                        IDLE,
+                        WALK,
+                        EJECT
+                    };
+
                     APlayerModel(const int &id);
                     virtual ~APlayerModel() override = default;
 
-                    virtual void init() override = 0;
+                    virtual void init() override;
 
                     // Setters
-                    void setGamePosition(const Vector2 &position) override { _gamePosition = position; }
-                    void setPosition(const Vector3 &position) override { _position = position; }
+                    void setGamePosition(const Vector2 &position) { _gamePosition = position; }
 
-                    void setScale(const float &scale) override { _scale = scale; }
-                    void setHeadOrigin(const Vector3 &origin) override { _headOrigin = origin; }
+                    void setHeadOrigin(const Vector3 &origin) { _headOrigin = origin; }
 
                     // Getters
-                    int getId() const override { return _id; }
-                    State getState() const override { return _state; }
+                    int getId() const { return _id; }
+                    State getState() const { return _state; }
 
-                    Vector2 getGamePosition() const override { return _gamePosition; }
-                    Vector3 getPosition() const override { return _position; }
+                    Vector2 getGamePosition() const { return _gamePosition; }
 
-                    game::Orientation getOrientation() const override { return _orientation; }
+                    game::Orientation getOrientation() const { return _orientation; }
+                    Vector3 getHeadOrigin() const;
 
-                    float getScale() const override { return _scale; }
-                    Vector3 getHeadOrigin() const override;
+                    virtual void look(const game::Orientation &orientation);
+                    void lookLeft();
+                    void lookRight();
 
-                    void rotate(const Vector3 &rotation) override;
+                    virtual void update() override;
 
-                    void look(const game::Orientation &orientation) override;
-                    void lookLeft() override;
-                    void lookRight() override;
-
-                    virtual void update() override = 0;
-
-                    virtual void idle() override { _state = State::IDLE; }
-                    virtual void walk() override { _state = State::WALK; }
-                    virtual void ejected() override { _state = State::EJECTED; }
-
-                    virtual void render() override = 0;
+                    virtual void idle() { _state = State::IDLE; }
+                    virtual void walk() { _state = State::WALK; }
+                    virtual void eject() { _state = State::EJECT; }
 
                 protected:
-                    virtual void _initModel() = 0;
+                    virtual void _initModel(const std::string &modelPath) override;
 
                     int _id;
 
@@ -62,11 +60,7 @@ namespace zappy {
                     Vector2 _gamePosition;
                     game::Orientation _orientation;
 
-                    Vector3 _position;
                     Vector3 _headOrigin;
-                    float _scale;
-
-                    Model _model;
 
                     int _animsCount;
                     unsigned int _animIndex;

@@ -8,36 +8,32 @@
 #include "AEggModel.hpp"
 
 zappy::gui::raylib::AEggModel::AEggModel(const int &id) :
+    AModel::AModel(),
     _id(id),
     _state(State::IDLE),
     _gamePosition(Vector2{0, 0}),
-    _orientation(game::Orientation::NORTH),
-    _position(Vector3{0, 0, 0}),
-    _headOrigin(Vector3{0, 1, 0}),
-    _scale(1),
-    _model(),
     _animsCount(0),
     _animIndex(0),
     _animCurrentFrame(0),
-    _modelAnimations()
+    _modelAnimations(nullptr)
 {}
 
 void zappy::gui::raylib::AEggModel::init()
 {
-
+    AModel::init();
 }
 
-Vector3 zappy::gui::raylib::AEggModel::getHeadOrigin() const
+void zappy::gui::raylib::AEggModel::update()
 {
-    return Vector3{
-        _position.x + _headOrigin.x * _scale,
-        _position.y + _headOrigin.y * _scale,
-        _position.z + _headOrigin.z * _scale
-    };
+    ModelAnimation anim = _modelAnimations[_animIndex];
+
+    _animCurrentFrame = (_animCurrentFrame + 1) % anim.frameCount;
+    UpdateModelAnimation(_model, anim, _animCurrentFrame);
 }
 
-void zappy::gui::raylib::AEggModel::rotate(const Vector3 &rotation)
+void zappy::gui::raylib::AEggModel::_initModel(const std::string &modelPath)
 {
-    // rotate Model with rotation vector
-    (void)rotation;
+    AModel::_initModel(modelPath);
+    _modelAnimations = LoadModelAnimations(modelPath.c_str(), &_animsCount);
+
 }

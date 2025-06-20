@@ -16,15 +16,10 @@ namespace zappy {
                 public:
                     BasicEggModel(const int &id);
                     ~BasicEggModel() override = default;
-    
+
                     void init() override;
-    
+
                     void update() override;
-    
-                    void render() override;
-    
-                private:
-                    void _initModel() override;
             };
         }
     }
