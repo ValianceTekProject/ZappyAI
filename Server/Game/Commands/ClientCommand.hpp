@@ -40,7 +40,8 @@ namespace zappy {
                   _clientNb(clientNb), _map(map) {};
             ~CommandHandler() = default;
 
-            virtual void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
+            virtual void processClientInput(
+                const std::string &input, zappy::game::ServerPlayer &player);
 
             virtual void initCommandMap();
 
@@ -58,16 +59,20 @@ namespace zappy {
                 std::function<void(ServerPlayer &, const std::string &)>
                     function,
                 const std::string &args);
+
            private:
             // TODO dont forget: adding check of chrono start in non complete command function
             void handleForward(zappy::game::ServerPlayer &player);
             void handleRight(zappy::game::ServerPlayer &player);
             void handleLeft(zappy::game::ServerPlayer &player);
 
-            void handleLook(zappy::game::ServerPlayer &player)
-            {
-                (void)player;
-            }
+            void handleLook(zappy::game::ServerPlayer &player);
+            std::string _buildLookMessage(ServerPlayer &player);
+            std::string _lookLine(ServerPlayer &player, size_t line);
+            std::pair<int, int> _computeLookTarget(
+                ServerPlayer &player, size_t line, int offset);
+            std::string _getTileContent(size_t x, size_t y, bool isPlayerTile);
+            bool _checkLastTileInLook(size_t playerLevel, size_t line, int offset);
 
             void handleInventory(zappy::game::ServerPlayer &player);
             void handleBroadcast(
@@ -89,8 +94,11 @@ namespace zappy {
             {
                 (void)player;
             }
+
             void _waitCommand(timeLimit limit);
 
+            std::pair<size_t, size_t> _normalizeCoords(size_t x, size_t y);
+            void _getDirectionVector(const Player &player, int &dx, int &dy);
             std::mutex _resourceMutex;
         };
     }  // namespace game
