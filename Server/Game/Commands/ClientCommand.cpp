@@ -363,6 +363,8 @@ void zappy::game::CommandHandler::processClientInput(
     auto it = this->_commandMap.find(cmd);
     if (it != this->_commandMap.end())
         return this->_executeCommand(player, it->second, args);
-    if (player.isInAction() == false)
+    if (player.isInAction() == false) {
+        player.getClient().queueMessage.pop();
         player.getClient().sendMessage("ko\n");
+    }
 }
