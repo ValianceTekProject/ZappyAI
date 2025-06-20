@@ -6,6 +6,7 @@
 //
 
 #include "ServerMap.hpp"
+#include "Teams.hpp"
 #include <chrono>
 
 zappy::game::MapServer::MapServer(int width, int height)
@@ -16,6 +17,25 @@ zappy::game::MapServer::MapServer(int width, int height)
     this->_height = height;
     this->_init(width, height);
     this->_placeResources();
+}
+
+void zappy::game::MapServer::setEggsonMap(std::vector<Team> &teamList, int clientNb)
+{
+    for (int i = 0; i < static_cast<int>(clientNb * teamList.size());
+        i += 1) {
+        size_t x = std::rand() % this->getWidth();
+        size_t y = std::rand() % this->getHeight();
+        zappy::game::Egg newEgg(_idEggTot, SERVER_FATHER_ID, x, y);
+        this->_idEggTot += 1;
+        this->_eggList.push(newEgg);
+    }
+}
+
+zappy::game::Egg zappy::game::MapServer::popEgg()
+{
+    auto egg = this->_eggList.front();
+    this->_eggList.pop();
+    return egg;
 }
 
 void zappy::game::MapServer::_placeResources()

@@ -18,7 +18,6 @@
 namespace zappy {
     namespace game {
 
-        #define SERVER_FATHER_ID -1
 
         class Game {
 
@@ -34,10 +33,9 @@ namespace zappy {
                 for (auto &team : _teamList)
                     team.setClientNb(_clientNb);
                 std::srand(std::time(nullptr));
-                setEggsonMap();
+                this->_map.setEggsonMap(teamList, clientNb);
             
             }
-
 
             ~Game() = default;
 
@@ -52,16 +50,12 @@ namespace zappy {
             MapServer &getMap() { return this->_map; }
             std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };
 
-            void setEggsonMap();
-
            private:
             int _idPlayerTot = 0;
-            int _idEggTot = 0;
             MapServer _map;
             zappy::game::CommandHandler _commandHandler;
             zappy::game::CommandHandlerGui _commandHandlerGui;
             std::vector<zappy::game::Team> _teamList;
-            std::queue<zappy::game::Egg> _eggList;
             std::vector<std::weak_ptr<zappy::game::Player>> _playerList;
             int _baseFreqMs;
             int _clientNb;
