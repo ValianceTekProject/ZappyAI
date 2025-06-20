@@ -22,8 +22,7 @@ void zappy::game::Game::_addPlayerToTeam(
     zappy::game::Orientation orientation =
         static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
-    zappy::game::Egg egg = this->_eggList.front();
-    this->_eggList.pop();
+    zappy::game::Egg egg = this->_map.popEgg();
     user.setState(zappy::server::ClientState::CONNECTED);
     auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
         std::move(user), _idPlayerTot, egg.x, egg.y, orientation, team, 1);
@@ -91,18 +90,6 @@ void zappy::game::Game::removeFromTeam(int clientSocket)
                 return;
             }
         }
-    }
-}
-
-void zappy::game::Game::setEggsonMap()
-{
-    for (int i = 0; i < static_cast<int>((_clientNb * _teamList.size()));
-        i += 1) {
-        size_t x = std::rand() % _map.getWidth();
-        size_t y = std::rand() % _map.getHeight();
-        zappy::game::Egg newEgg(_idEggTot, SERVER_FATHER_ID, x, y);
-        _idEggTot += 1;
-        this->_eggList.push(newEgg);
     }
 }
 
