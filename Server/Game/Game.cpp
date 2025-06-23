@@ -67,7 +67,7 @@ bool zappy::game::Game::handleTeamJoin(
         });
 
     if (it == this->_teamList.end() ||
-        static_cast<int>(it->getPlayerList().size()) >= this->_clientNb) {
+        static_cast<int>(it->getPlayerList().size()) >= it->getClientNb()) {
         return false;
     }
 
