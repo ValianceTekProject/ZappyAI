@@ -34,7 +34,8 @@ namespace zappy {
                         int id;
                         Vector3 destination;
                         Vector3 translationVector;
-                        int timeUnit;     //! (comment is to remove) action time duration
+                        int timeUnits;     //! (comment is to remove) action time duration
+                        float elapsedUnits;
                     };
 
                     struct Rotation {
@@ -78,7 +79,7 @@ namespace zappy {
 
                     void _addRotation(const APlayerModel &player, const float &angle);
 
-                    void _updateTranslations(const int &frequency);
+                    void _updateTranslations(const float &deltaUnits);
                     void _updateRotations(const float &deltaUnits);
 
                     const std::shared_ptr<game::Map> _map;

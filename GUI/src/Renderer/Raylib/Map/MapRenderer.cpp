@@ -48,7 +48,7 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
     // Convertit en “unités d’action” : (secondes écoulées) * fréquence
     float deltaUnits = deltaSec * frequency;
 
-    _updateTranslations(frequency);
+    _updateTranslations(deltaUnits);
     _updateRotations(deltaUnits);
 }
 
@@ -160,13 +160,12 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
     Vector3 cur = player.getPosition();
     Vector3 direction = Vector3Subtract(dest, cur);
 
-    Vector3 step = Vector3Scale(direction, 1.0f / static_cast<float>(FORWARD_TIME));
-
     Translation t;
     t.id = id;
     t.destination = dest;
-    t.translationVector = step;
-    t.timeUnit = FORWARD_TIME;
+    t.translationVector = Vector3Scale(direction, 1.0f / static_cast<float>(FORWARD_TIME));
+    t.timeUnits = FORWARD_TIME;
+    t.elapsedUnits = 0.0f;
     _translations.push_back(t);
 
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
@@ -267,7 +266,7 @@ void zappy::gui::raylib::MapRenderer::_addRotation(const APlayerModel &player, c
     });
 }
 
-void zappy::gui::raylib::MapRenderer::_updateTranslations(const int &frequency)
+void zappy::gui::raylib::MapRenderer::_updateTranslations(const float &deltaUnits)
 {
     auto it = _translations.begin();
 
@@ -275,21 +274,18 @@ void zappy::gui::raylib::MapRenderer::_updateTranslations(const int &frequency)
         auto &T = *it;
         auto &player = _getPlayer(T.id);
 
-        Vector3 delta = Vector3Scale(T.translationVector, frequency);
+        float timeLeft = T.timeUnits - T.elapsedUnits;
+        float timeStep = std::min(deltaUnits, timeLeft);
 
-        Vector3 cur = player.getPosition();
-        Vector3 dest = T.destination;
-        Vector3 remaining = Vector3Subtract(dest, cur);
+        Vector3 delta = Vector3Scale(T.translationVector, timeStep);
+        player.translate(delta);
 
-        bool readyX = std::fabs(remaining.x) <= std::fabs(delta.x);
-        bool readyY = std::fabs(remaining.y) <= std::fabs(delta.y);
-        bool readyZ = std::fabs(remaining.z) <= std::fabs(delta.z);
+        T.elapsedUnits += timeStep;
 
-        if (readyX && readyY && readyZ) {
-            player.setPosition(dest);
+        if (T.elapsedUnits + 0.001f >= T.timeUnits) {
+            player.setPosition(T.destination);
             it = _translations.erase(it);
         } else {
-            player.translate(delta);
             ++it;
         }
     }
