@@ -25,9 +25,9 @@ class Planner:
 
         self.new_agent = False
 
-    def decide_next_action(self):
+    def decide_next_action(self, responses):
         if self.use_dqn:
-            return self.dqn_planner.dqn_decision()
+            return self.dqn_planner.dqn_decision(responses)
         else:
             result = self.basic_ai.basic_ai_decision()
             self.new_agent = self.basic_ai.new_agent

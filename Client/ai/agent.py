@@ -53,6 +53,7 @@ class Agent:
             completed = self.msg_manager.process_responses(responses)
 
             if self.msg_manager.is_dead:
+                self.planner.decide_next_action(responses)
                 self.agent_thread.agent_dead(self)
                 logger.info(f"Agent is dead at level {self.state.level}")
                 return
@@ -74,7 +75,7 @@ class Agent:
                 continue
 
             if self.initialized and not self.state.command_already_send and self.commands.get_pending_count() < 10:
-                self.planner.decide_next_action()
+                self.planner.decide_next_action(responses)
 
     def initialize_agent(self):
         """

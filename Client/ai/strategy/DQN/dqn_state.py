@@ -13,7 +13,7 @@ from config import Item
 class DQNState:
     def __init__(self, game_state: GameState, actualize_inventory: bool = False):
         self.game_state = game_state
-        self.food_inventory = game_state.inventory.get('food', 0) / 100.0
+        self.food_inventory = game_state.inventory.get('food', 0) / 20.0
         self.level = game_state.level / 8.0
         self.linemate_inventory = game_state.inventory.get('linemate', 0) / 20.0
         self.deraumere_inventory = game_state.inventory.get('deraumere', 0) / 20.0

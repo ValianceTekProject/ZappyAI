@@ -16,8 +16,8 @@ from ai.strategy.DQN.dqn_state import DQNState
 from utils.game_state import GameState
 
 class DeepQNetwork(nn.Module):
-    def __init__(self, hidden_layer_size = 32, learning_rate = 0.001, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.99,
-                 epsilon_min = 0.01, batch_size = 64, state_size = 656):
+    def __init__(self, hidden_layer_size = 32, learning_rate = 0.0005, gamma = 0.99, epsilon = 1.0, epsilon_decay = 0.995,
+                 epsilon_min = 0.3, batch_size = 64, state_size = 657):
         super().__init__()
         self.hidden_layer_size = hidden_layer_size
         self.learning_rate = learning_rate
@@ -27,7 +27,8 @@ class DeepQNetwork(nn.Module):
             CommandType.RIGHT,
             CommandType.LEFT,
             CommandType.TAKE,
-            CommandType.LOOK
+            CommandType.LOOK,
+            CommandType.INVENTORY
         ]
         self.output_size = len(self.main_actions)
 
@@ -69,7 +70,7 @@ class DeepQNetwork(nn.Module):
     def choose_action(self, state):
         state = torch.from_numpy(state).float()
         if random.random() < self.epsilon:
-            return random.randint(0, 4)
+            return random.randint(0, 5)
         else:
             state_batch = torch.unsqueeze(state, 0)
             q_values = self.forward(state_batch)
@@ -79,10 +80,20 @@ class DeepQNetwork(nn.Module):
     def calculate_reward(self, action, result, old_state, new_state):
         if result == "dead":
             return -100
+        if result == "ko":
+            return -100
+        if new_state[9] > 0 and action == 3:
+            return 10000
+        if new_state[9] > 0:
+            return 100
+        if new_state[0] > old_state[0]:
+            return 100
+        if action == 4:
+            return 50
         if new_state[1] == 8 and old_state[1] < 8:
             return 1000
-        if new_state[0] < 0.1 and old_state[0] >= 0.1:
-            return -10
+        if new_state[0] < 0.3 and old_state[0] >= 0.3:
+            return -1000
         return 0
 
     def build_state(self, game_state: GameState, actualize_inventory: bool = False):
@@ -139,9 +150,8 @@ class DeepQNetwork(nn.Module):
             'model_state_dict': self.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'epsilon': self.epsilon,
-            'memory': list(self.memory)  # Inclure la mémoire ici
+            'memory': list(self.memory)
         }, filename)
-        print(f"Modèle sauvegardé avec {len(self.memory)} expériences")
 
     def load_model(self, filename):
         try:
@@ -149,7 +159,7 @@ class DeepQNetwork(nn.Module):
             self.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.epsilon = checkpoint['epsilon']
-            self.memory = deque(checkpoint['memory'], maxlen=10000)
+            self.memory = deque(checkpoint['memory'], maxlen=100000)
             print(f"Modèle chargé avec {len(self.memory)} expériences, epsilon={self.epsilon}")
         except FileNotFoundError:
             print("Pas de modèle trouvé, démarrage avec un nouveau modèle")
