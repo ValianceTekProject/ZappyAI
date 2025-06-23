@@ -36,17 +36,17 @@ void zappy::game::Player::stepForward(int width, int height)
             this->x--;
             break;
     }
+
     if (x > width || x < 0)
-        x = (x + width) % width;
+        x = x % width;
     if (y > height || y < 0)
-        y = (y + height) % height;
+        y = y % height;
 }
 
-void zappy::game::Player::ejectFrom(Orientation playerOrientation)
+void zappy::game::Player::ejectFrom(Orientation playerOrientation, int width, int height)
 {
     stopPraying();
-    Orientation ejectFromOrientation = -playerOrientation;
-    switch (ejectFromOrientation) {
+    switch (playerOrientation) {
         case Orientation::NORTH:
             this->y++;
             break;
@@ -60,6 +60,11 @@ void zappy::game::Player::ejectFrom(Orientation playerOrientation)
             this->x++;
             break;
     }
+
+    if (x > width || x < 0)
+        x = x % width;
+    if (y > height || y < 0)
+        y = y % height;
 }
 
 void zappy::game::Player::collectRessource(Resource resource, std::size_t quantity)

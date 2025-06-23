@@ -38,7 +38,7 @@ namespace zappy {
 
                 void stepForward(int width, int height);
 
-                void ejectFrom(Orientation playerOrientation);
+                void ejectFrom(Orientation playerOrientation, int width, int height);
 
                 void setInventory(const Inventory &inventory) { this->_inventory = inventory; }
                 const Inventory &getInventory() const { return this->_inventory; }
