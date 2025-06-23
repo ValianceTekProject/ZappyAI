@@ -11,7 +11,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "Player/ServerPlayer.hpp"
+#include "ServerPlayer.hpp"
 
 
 namespace zappy {
@@ -34,7 +34,7 @@ namespace zappy {
                 INCANTATION = 300
             };
 
-            CommandHandler(int freq): _freq(freq) {};
+            CommandHandler(int freq, int width, int height): _freq(freq), _widthMap(width), _heightMap(height) {};
             ~CommandHandler() = default;
 
             void processClientInput(const std::string &input, zappy::game::ServerPlayer &player);
@@ -43,6 +43,8 @@ namespace zappy {
 
            private:
             int _freq;
+            int _widthMap;
+            int _heightMap;
             std::map<std::string, std::function<void()>> _commandMap;
 
             std::string _getFirstWord(const std::string &input) const;

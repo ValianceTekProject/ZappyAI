@@ -8,9 +8,9 @@
 #pragma once
 
 #include "Client.hpp"
-#include "Data/Game/Player.hpp"
+#include "Player.hpp"
 #include "Inventory.hpp"
-#include "Player/ServerPlayer.hpp"
+#include "ServerPlayer.hpp"
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -29,13 +29,13 @@ namespace zappy {
             std::string getName() const { return this->_name; }
             void removePlayer(int playerSocket);
 
-            const std::vector<std::unique_ptr<ServerPlayer>> &getPlayerList() const;
+            const std::vector<std::shared_ptr<ServerPlayer>> &getPlayerList() const;
 
-            void addPlayer(std::unique_ptr<ServerPlayer> player);
+            void addPlayer(std::shared_ptr<ServerPlayer> player);
 
            private:
             const std::string _name;
-            std::vector<std::unique_ptr<ServerPlayer>> _playerList;
+            std::vector<std::shared_ptr<ServerPlayer>> _playerList;
         };
     }  // namespace game
 }  // namespace zappy

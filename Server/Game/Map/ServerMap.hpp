@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Data/Game/Map.hpp"
+#include "Map.hpp"
 
 namespace zappy {
     namespace game {

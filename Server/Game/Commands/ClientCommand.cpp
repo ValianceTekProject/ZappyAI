@@ -30,6 +30,7 @@ void zappy::game::CommandHandler::initCommandMap(zappy::game::ServerPlayer &play
 void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {
+        player.stepForward(this->_widthMap, this->_heightMap);
         player.startChrono();
         player.setChronoStart(true);
         player.getClient().sendMessage("ok\n");
@@ -39,6 +40,7 @@ void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &playe
     double seconds = static_cast<double>(static_cast<int>(timeLimit::FORWARD)) / this->_freq;
     auto timeNeed = std::chrono::duration<double>(seconds);
     if (player.getChrono() >= timeNeed) {
+        player.stepForward(this->_widthMap, this->_heightMap);
         player.startChrono();
         player.getClient().sendMessage("ok\n");
     } else
@@ -49,6 +51,7 @@ void zappy::game::CommandHandler::handleForward(zappy::game::ServerPlayer &playe
 void zappy::game::CommandHandler::handleRight(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {
+        player.lookRight();
         player.startChrono();
         player.setChronoStart(true);
         player.getClient().sendMessage("ok\n");
@@ -58,6 +61,7 @@ void zappy::game::CommandHandler::handleRight(zappy::game::ServerPlayer &player)
     double seconds = static_cast<double>(static_cast<int>(timeLimit::RIGHT)) / this->_freq;
     auto timeNeed = std::chrono::duration<double>(seconds);
     if (player.getChrono() >= timeNeed) {
+        player.lookRight();
         player.startChrono();
         player.getClient().sendMessage("ok\n");
     } else
@@ -67,6 +71,7 @@ void zappy::game::CommandHandler::handleRight(zappy::game::ServerPlayer &player)
 void zappy::game::CommandHandler::handleLeft(zappy::game::ServerPlayer &player)
 {
     if (!player.getChonoStart()) {
+        player.lookLeft();
         player.startChrono();
         player.setChronoStart(true);
         player.getClient().sendMessage("ok\n");
@@ -76,6 +81,7 @@ void zappy::game::CommandHandler::handleLeft(zappy::game::ServerPlayer &player)
     double seconds = static_cast<double>(static_cast<int>(timeLimit::LEFT)) / this->_freq;
     auto timeNeed = std::chrono::duration<double>(seconds);
     if (player.getChrono() >= timeNeed) {
+        player.lookLeft();
         player.startChrono();
         player.getClient().sendMessage("ok\n");
     } else
@@ -112,7 +118,7 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
     if (player.getChrono() >= static_cast<std::chrono::seconds>(static_cast<int>(timeLimit::FORWARD) / this->_freq)) {
         player.startChrono();
         player.getClient().sendMessage("ok\n");
-    } else
+    } else 
         player.getClient().sendMessage("ko\n");
 }
 

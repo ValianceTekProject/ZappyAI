@@ -5,13 +5,13 @@
 // Base
 //
 
-#include "Teams/Teams.hpp"
-const std::vector<std::unique_ptr<zappy::game::ServerPlayer>> &zappy::game::Team::getPlayerList() const
+#include "Teams.hpp"
+const std::vector<std::shared_ptr<zappy::game::ServerPlayer>> &zappy::game::Team::getPlayerList() const
 {
     return this->_playerList;
 }
 
-void zappy::game::Team::addPlayer(std::unique_ptr<ServerPlayer> player)
+void zappy::game::Team::addPlayer(std::shared_ptr<ServerPlayer> player)
 {
     this->_playerList.push_back(std::move(player));
 }

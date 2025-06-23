@@ -10,8 +10,9 @@
 #include <chrono>
 
 #include "Client.hpp"
-#include "Data/Game/Player.hpp"
-#include "Teams/Teams.hpp"
+#include "Player.hpp"
+#include "Teams.hpp"
+#include "ServerInventory.hpp"
 
 namespace zappy {
     namespace game {
@@ -24,7 +25,7 @@ namespace zappy {
                  size_t y,
                  Orientation orientation,
                  size_t level = 1)
-                : Player(id, x, y, orientation, level),
+                : Player::Player(id, x, y, orientation, level),
                 _user(std::move(user)),
                 _startTime(std::chrono::steady_clock::now()) {}
 

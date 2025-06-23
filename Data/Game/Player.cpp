@@ -7,34 +7,6 @@
 
 #include "Player.hpp"
 
-void zappy::game::operator++(zappy::game::Orientation &orientation, int)
-{
-    orientation = static_cast<zappy::game::Orientation>((static_cast<int>(orientation) + 1) % 4);
-}
-
-void zappy::game::operator--(zappy::game::Orientation &orientation, int)
-{
-    orientation = static_cast<zappy::game::Orientation>((static_cast<int>(orientation) - 1 + 4) % 4);
-}
-
-zappy::game::Orientation zappy::game::operator-(const zappy::game::Orientation &orientation)
-{
-    return static_cast<zappy::game::Orientation>((static_cast<int>(orientation) + 2) % 4);
-}
-
-zappy::game::Orientation zappy::game::convertOrientation(const std::string &orientation)
-{
-    if (orientation == "NORTH" || orientation == "N")
-        return zappy::game::Orientation::NORTH;
-    if (orientation == "EAST" || orientation == "E")
-        return zappy::game::Orientation::EAST;
-    if (orientation == "SOUTH" || orientation == "S")
-        return zappy::game::Orientation::SOUTH;
-    if (orientation == "WEST" || orientation == "W")
-        return zappy::game::Orientation::WEST;
-    return zappy::game::Orientation::NORTH;
-}
-
 zappy::game::Player::Player(
     int id,
     int x,

@@ -8,22 +8,11 @@
 #pragma once
 
 #include "Egg.hpp"
+#include "Orientation.hpp"
 #include "Inventory.hpp"
-#include <string>
 
 namespace zappy {
     namespace game {
-        enum class Orientation {
-            NORTH,
-            EAST,
-            SOUTH,
-            WEST
-        };
-        void operator++(Orientation &orientation, int);
-        void operator--(Orientation &orientation, int);
-        Orientation operator-(const Orientation &orientation);
-        Orientation convertOrientation(const std::string &orientation);
-
         class Player : public Egg
         {
             public:
