@@ -35,7 +35,7 @@ namespace zappy {
                         Vector3 destination;
                         Vector3 translationVector;
                         int timeUnits;     //! (comment is to remove) action time duration
-                        float elapsedUnits;
+                        float elapsedTime;
                     };
 
                     struct Rotation {

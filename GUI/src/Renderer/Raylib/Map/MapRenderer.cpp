@@ -165,7 +165,7 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
     t.destination = dest;
     t.translationVector = Vector3Scale(direction, 1.0f / static_cast<float>(FORWARD_TIME));
     t.timeUnits = FORWARD_TIME;
-    t.elapsedUnits = 0.0f;
+    t.elapsedTime = 0.0f;
     _translations.push_back(t);
 
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
@@ -269,23 +269,17 @@ void zappy::gui::raylib::MapRenderer::_addRotation(const APlayerModel &player, c
 void zappy::gui::raylib::MapRenderer::_updateTranslations(const float &deltaUnits)
 {
     auto it = _translations.begin();
-
     while (it != _translations.end()) {
         auto &T = *it;
         auto &player = _getPlayer(T.id);
 
-        float timeLeft = T.timeUnits - T.elapsedUnits;
-        float timeStep = std::min(deltaUnits, timeLeft);
-
-        Vector3 delta = Vector3Scale(T.translationVector, timeStep);
-        player.translate(delta);
-
-        T.elapsedUnits += timeStep;
-
-        if (T.elapsedUnits + 0.001f >= T.timeUnits) {
+        if (T.elapsedTime + deltaUnits >= T.timeUnits) {
             player.setPosition(T.destination);
             it = _translations.erase(it);
         } else {
+            Vector3 step = Vector3Scale(T.translationVector, deltaUnits);
+            player.translate(step);
+            T.elapsedTime += deltaUnits;
             ++it;
         }
     }
