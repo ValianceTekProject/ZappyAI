@@ -22,7 +22,7 @@ namespace zappy {
         class Game {
 
            public:
-            Game(int mapWidth, int mapHeight, std::vector<Team> teamList, int freq, int clientNb)
+            Game(int mapWidth, int mapHeight, std::vector<Team> teamList, int &freq, int clientNb)
                 : _map(mapWidth, mapHeight),
                 _commandHandler(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
                 _commandHandlerGui(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
@@ -45,7 +45,7 @@ namespace zappy {
             bool handleTeamJoin(int clientSocket, const std::string &teamName);
             void removeFromTeam(int clientSocket);
 
-            int getFreq() { return this->_baseFreqMs; }
+            int &getFreq() { return this->_baseFreqMs; }
             int getClientNb() const { return this->_clientNb; }
             MapServer &getMap() { return this->_map; }
             std::vector<zappy::game::Team> &getTeamList() { return this->_teamList; };
@@ -57,7 +57,7 @@ namespace zappy {
             zappy::game::CommandHandlerGui _commandHandlerGui;
             std::vector<zappy::game::Team> _teamList;
             std::vector<std::weak_ptr<zappy::game::Player>> _playerList;
-            int _baseFreqMs;
+            int &_baseFreqMs;
             int _clientNb;
             std::atomic<RunningState> _isRunning = RunningState::PAUSE;
 

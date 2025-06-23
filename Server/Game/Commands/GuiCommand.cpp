@@ -57,13 +57,85 @@ void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player
     for (auto &team : this->_teamList) {
         for (auto &player : team.getPlayerList()) {
             if (player->getId() == playerId) {
-                msg += std::to_string(playerId) + " " + std::to_string(player->x) + " " + std::to_string(player->y) +  + "\n"
+                std::ostringstream orientationStream;
+                orientationStream << player->orientation;
+                std::string msg = std::to_string(playerId) + " " + 
+                                  std::to_string(player->x) + " " + 
+                                  std::to_string(player->y) + " " + 
+                                  orientationStream.str() + "\n";
+
                 player->getClient().sendMessage(msg);
                 return;
             }
         }
     }
     player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandlerGui::handlePlv(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    std::stringstream stream;
+    int playerId;
+    std::string msg = "plv ";
+
+    stream << arg;
+    stream >> playerId;
+
+    for (auto &team : this->_teamList) {
+        for (auto &player : team.getPlayerList()) {
+            if (player->getId() == playerId) {
+                msg += std::to_string(playerId) + " " + std::to_string(player->level) + "\n";
+                player->getClient().sendMessage(msg);
+                return;
+            }
+        }
+    }
+    player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandlerGui::handlePin(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    std::stringstream stream;
+    int playerId;
+    std::string msg = "pin ";
+
+    stream << arg;
+    stream >> playerId;
+
+    for (auto &team : this->_teamList) {
+        for (auto &player : team.getPlayerList()) {
+            if (player->getId() == playerId) {
+                msg += std::to_string(playerId) + " " + std::to_string(player->x) + " " + std::to_string(player->y) + " ";
+                zappy::game::Inventory playerInv = player->getInventory();
+                for (auto foodName : names)
+                    msg += std::to_string(playerInv.getResourceQuantity(getResource(foodName))) + " ";
+                msg.pop_back();
+                msg += "\n";
+                player->getClient().sendMessage(msg);
+                return;
+            }
+        }
+    }
+    player.getClient().sendMessage("ko\n");
+}
+
+void zappy::game::CommandHandlerGui::handleSgt(zappy::game::ServerPlayer &player)
+{
+    player.getClient().sendMessage(std::string("sgt ") + std::to_string(this->_freq) + "\n");
+}
+
+void zappy::game::CommandHandlerGui::handleSst(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    std::stringstream stream;
+    int freq;
+    std::string msg = "sst ";
+
+    stream << arg;
+    stream >> freq;
+
+    this->_freq = freq;
+
+    player.getClient().sendMessage(std::string("sgt ") + std::to_string(this->_freq) + "\n");
 }
 
 void zappy::game::CommandHandlerGui::initCommandMap()

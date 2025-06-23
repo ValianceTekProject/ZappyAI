@@ -35,7 +35,7 @@ namespace zappy {
                 INCANTATION = 300
             };
 
-            CommandHandler(int freq, int width, int height, int clientNb,
+            CommandHandler(int &freq, int width, int height, int clientNb,
                 zappy::game::MapServer &map, std::vector<Team> &teamList)
                 : _freq(freq), _widthMap(width), _heightMap(height),
                   _clientNb(clientNb), _map(map), _teamList(teamList) {};
@@ -47,7 +47,7 @@ namespace zappy {
             virtual void initCommandMap();
 
            protected:
-            int _freq;
+            int &_freq;
             int _widthMap;
             int _heightMap;
             int _clientNb;

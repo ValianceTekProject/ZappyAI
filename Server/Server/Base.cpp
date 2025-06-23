@@ -22,8 +22,9 @@ zappy::server::Server::Server(int argc, char const *argv[])
         {"-f", [this](int value) {this->_freq = value;}}
     };
     this->_parseFlags(argc, argv);
+    int &freq = this->_freq;
     this->_game = std::make_unique<zappy::game::Game>(
-        this->_width, this->_height, std::move(this->_teamList), this->getFreq(), this->_clientNb);
+        this->_width, this->_height, std::move(this->_teamList), freq, this->_clientNb);
 
     this->_socket =
         std::make_unique<server::SocketServer>(this->_port, this->_clientNb);
