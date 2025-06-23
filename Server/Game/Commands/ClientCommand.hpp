@@ -35,6 +35,18 @@ namespace zappy {
                 INCANTATION = 300
             };
 
+            enum class SoundDirection : int {
+                SAME_POSITION = 0,
+                NORTH = 1,
+                NORTHWEST = 2,
+                WEST = 3,
+                SOUTHWEST = 4,
+                SOUTH = 5,
+                SOUTHEAST = 6,
+                EAST = 7,
+                NORTHEAST = 8
+            };
+
             CommandHandler(int freq, int width, int height, int clientNb,
                 zappy::game::MapServer &map, std::vector<Team> &teamList)
                 : _freq(freq), _widthMap(width), _heightMap(height),
@@ -73,11 +85,19 @@ namespace zappy {
             std::pair<int, int> _computeLookTarget(
                 ServerPlayer &player, size_t line, int offset);
             std::string _getTileContent(size_t x, size_t y, bool isPlayerTile);
-            bool _checkLastTileInLook(size_t playerLevel, size_t line, int offset);
+            bool _checkLastTileInLook(
+                size_t playerLevel, size_t line, int offset);
 
             void handleInventory(zappy::game::ServerPlayer &player);
+
             void handleBroadcast(
                 zappy::game::ServerPlayer &player, const std::string &arg);
+            std::pair<int, int> _computeBroadcastDistance(
+                int x1, int y1, int x2, int y2);
+            int _computeSoundDirection(
+                const ServerPlayer &player, const ServerPlayer &receiver);
+            int _getSoundCardinalPoint(int relativeX, int relativeY);
+
             void handleConnectNbr(zappy::game::ServerPlayer &player);
             void handleFork(zappy::game::ServerPlayer &player);
 

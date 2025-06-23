@@ -30,11 +30,9 @@ namespace zappy {
                 _baseFreqMs(freq),
                 _clientNb(clientNb)
             {
-                for (auto &team : _teamList)
+                for (auto &team : this->_teamList)
                     team.setClientNb(_clientNb);
-                std::srand(std::time(nullptr));
-                this->_map.setEggsonMap(teamList, clientNb);
-            
+                this->_map.setEggsonMap(this->_teamList, clientNb);
             }
 
             ~Game() = default;

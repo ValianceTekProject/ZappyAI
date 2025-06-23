@@ -22,6 +22,7 @@ zappy::game::MapServer::MapServer(int width, int height)
 void zappy::game::MapServer::setEggsonMap(
     std::vector<Team> &teamList, int clientNb)
 {
+    std::srand(std::time(nullptr));
     for (int i = 0; i < static_cast<int>(clientNb * teamList.size()); i += 1) {
         size_t x = std::rand() % this->getWidth();
         size_t y = std::rand() % this->getHeight();
