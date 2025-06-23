@@ -277,9 +277,10 @@ void zappy::game::CommandHandler::handleConnectNbr(
 void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 {
     this->_waitCommand(timeLimit::FORK);
+
+    this->_map.addNewEgg(player.getTeam().getTeamId(), player.x, player.y);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    // implement fork;
 }
 
 void zappy::game::CommandHandler::handleTake(

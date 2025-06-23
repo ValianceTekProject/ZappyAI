@@ -21,7 +21,7 @@ namespace zappy {
         class ServerPlayer;
         class Team {
            public:
-            Team(const std::string &name) : _name(name) {}
+            Team(const std::string &name, int id) : _name(name), _teamId(id) {}
 
             ~Team() = default;
 
@@ -34,9 +34,11 @@ namespace zappy {
             const std::vector<std::shared_ptr<ServerPlayer>> &getPlayerList() const;
 
             void addPlayer(std::shared_ptr<ServerPlayer> player);
+            int getTeamId() const {return this->_teamId;}
 
            private:
             const std::string _name;
+            int _teamId;
             int _clientNb;
             std::vector<std::shared_ptr<ServerPlayer>> _playerList;
         };
