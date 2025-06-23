@@ -25,10 +25,11 @@ namespace zappy {
 
             ~Team() = default;
 
-            Team(Team&&) noexcept = default;
+            Team(const Team&& other);
             std::string getName() const { return this->_name; }
             void setClientNb( const int clientNb) { _clientNb = clientNb; }
-            int &getClientNb() { return this->_clientNb; }
+            int getClientNb() const { return this->_clientNb; }
+            void allowNewPlayer();
             void removePlayer(int playerSocket);
 
             const std::vector<std::shared_ptr<ServerPlayer>> &getPlayerList() const;
@@ -41,6 +42,8 @@ namespace zappy {
             int _teamId;
             int _clientNb;
             std::vector<std::shared_ptr<ServerPlayer>> _playerList;
+            std::mutex _clientNbLock;
+            std::mutex _playerListLock;
         };
     }  // namespace game
 }  // namespace zappy
