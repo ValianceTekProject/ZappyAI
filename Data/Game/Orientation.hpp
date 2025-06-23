@@ -31,7 +31,7 @@ namespace zappy {
         Orientation  operator--(Orientation &o, int) noexcept;
 
         constexpr std::array<const char*, 4> orientationStrings = {
-            "NORTH", "EAST", "SOUTH", "WEST"
+            "N", "E", "S", "W"
         };
 
         Orientation convertOrientation(const std::string &orientation);
