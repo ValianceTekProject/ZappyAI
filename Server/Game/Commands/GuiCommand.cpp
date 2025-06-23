@@ -45,18 +45,39 @@ void zappy::game::CommandHandlerGui::handleTna(zappy::game::ServerPlayer &player
         player.getClient().sendMessage(std::string("tna " + team.getName() + "\n"));
 }
 
+void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player, const std::string &arg)
+{
+    std::stringstream stream;
+    int playerId;
+    std::string msg = "ppo ";
+
+    stream << arg;
+    stream >> playerId;
+
+    for (auto &team : this->_teamList) {
+        for (auto &player : team.getPlayerList()) {
+            if (player->getId() == playerId) {
+                msg += std::to_string(playerId) + " " + std::to_string(player->x) + " " + std::to_string(player->y) +  + "\n"
+                player->getClient().sendMessage(msg);
+                return;
+            }
+        }
+    }
+    player.getClient().sendMessage("ko\n");
+}
+
 void zappy::game::CommandHandlerGui::initCommandMap()
 {
     this->_commandMap = {
         {"msz", [this](ServerPlayer &player, const std::string &) { handleMsz(player); }},
         {"bct", [this](ServerPlayer &player, const std::string &arg) { handleBct(player, arg); }},
         {"mct", [this](ServerPlayer &player, const std::string &) { handleMct(player); }},
-        {"tna", [this](ServerPlayer &player, const std::string &) { handleTna(player); }}
-        // {"ppo", [this](ServerPlayer &player, const std::string &arg) { handlePpo(player, arg); }},
-        // {"plv", [this](ServerPlayer &player, const std::string &arg) { handlePlv(player, arg); }},
-        // {"pin", [this](ServerPlayer &player, const std::string &arg) { handlePin(player, arg); }},
-        // {"sgt", [this](ServerPlayer &player, const std::string &) { handleSgt(player); }},
-        // {"sst", [this](ServerPlayer &player, const std::string &arg) { handleSst(player, arg); }}
+        {"tna", [this](ServerPlayer &player, const std::string &) { handleTna(player); }},
+        {"ppo", [this](ServerPlayer &player, const std::string &arg) { handlePpo(player, arg); }},
+        {"plv", [this](ServerPlayer &player, const std::string &arg) { handlePlv(player, arg); }},
+        {"pin", [this](ServerPlayer &player, const std::string &arg) { handlePin(player, arg); }},
+        {"sgt", [this](ServerPlayer &player, const std::string &) { handleSgt(player); }},
+        {"sst", [this](ServerPlayer &player, const std::string &arg) { handleSst(player, arg); }}
     };
 }
 

@@ -30,11 +30,11 @@ namespace zappy {
                 void handleBct(zappy::game::ServerPlayer &player, const std::string &arg);
                 void handleMct(zappy::game::ServerPlayer &player);
                 void handleTna(zappy::game::ServerPlayer &player);
-                // void handlePpo(zappy::game::ServerPlayer &player, const std::string &arg);
-                // void handlePlv(zappy::game::ServerPlayer &player, const std::string &arg);
-                // void handlePin(zappy::game::ServerPlayer &player, const std::string &arg);
-                // void handleSgt(zappy::game::ServerPlayer &player);
-                // void handleSst(zappy::game::ServerPlayer &player, const std::string &arg);
+                void handlePpo(zappy::game::ServerPlayer &player, const std::string &arg);
+                void handlePlv(zappy::game::ServerPlayer &player, const std::string &arg);
+                void handlePin(zappy::game::ServerPlayer &player, const std::string &arg);
+                void handleSgt(zappy::game::ServerPlayer &player);
+                void handleSst(zappy::game::ServerPlayer &player, const std::string &arg);
         };
     }
 }
