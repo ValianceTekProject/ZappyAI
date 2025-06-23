@@ -19,16 +19,24 @@ zappy::game::MapServer::MapServer(int width, int height)
     this->_placeResources();
 }
 
-void zappy::game::MapServer::setEggsonMap(std::vector<Team> &teamList, int clientNb)
+void zappy::game::MapServer::setEggsonMap(
+    std::vector<Team> &teamList, int clientNb)
 {
-    for (int i = 0; i < static_cast<int>(clientNb * teamList.size());
-        i += 1) {
+    for (int i = 0; i < static_cast<int>(clientNb * teamList.size()); i += 1) {
         size_t x = std::rand() % this->getWidth();
         size_t y = std::rand() % this->getHeight();
-        zappy::game::Egg newEgg(_idEggTot, SERVER_FATHER_ID, x, y);
+        zappy::game::Egg newEgg(this->_idEggTot, SERVER_FATHER_ID, x, y);
         this->_idEggTot += 1;
         this->_eggList.push(newEgg);
+        this->addNewEgg(SERVER_FATHER_ID, x, y);
     }
+}
+
+void zappy::game::MapServer::addNewEgg(int teamId, int x, int y)
+{
+    zappy::game::Egg newEgg(this->_idEggTot, teamId, x, y);
+    this->_idEggTot += 1;
+    this->_eggList.push(newEgg);
 }
 
 zappy::game::Egg zappy::game::MapServer::popEgg()

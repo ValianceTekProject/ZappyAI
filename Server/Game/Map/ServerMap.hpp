@@ -23,6 +23,7 @@ namespace zappy {
             ~MapServer() = default;
 
             void setEggsonMap(std::vector<Team> &teamList, int clientNb);
+            void addNewEgg(int teamId, int x, int y);
             zappy::game::Egg popEgg();
 
            private:
