@@ -6,7 +6,7 @@
 */
 
 #pragma once
-#include "../AFloor.hpp"
+#include "AFloor.hpp"
 
 namespace zappy {
     namespace gui {
@@ -25,9 +25,12 @@ namespace zappy {
 
                     Vector3 get3DCoords(const int &x, const int &y) const override;
 
+                    void translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player) override;
+
                 private:
                     Texture2D _texture;
                     Model _model;
+                    void _checkOverlap(APlayerModel &player, Vector3 &destination);
             };
         }
     } // namespace gui

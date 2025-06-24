@@ -10,6 +10,7 @@
 #include "Orientation.hpp"
 #include "Map.hpp"
 #include "AssetPaths.hpp"
+#include "APlayerModel.hpp"
 
 #include <raylib.h>
 
@@ -38,6 +39,8 @@ namespace zappy {
                     virtual Vector3 getNorthVector(const game::Orientation &orientation) = 0;
 
                     virtual Vector3 get3DCoords(const int &x, const int &y) const = 0;
+
+                    virtual void translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player) = 0;
             };
         }
     } // namespace gui

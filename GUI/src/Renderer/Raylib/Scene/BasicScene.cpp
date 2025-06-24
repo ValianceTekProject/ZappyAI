@@ -20,7 +20,7 @@ void zappy::gui::raylib::BasicScene::init()
     constexpr int id = 0;
     _gameState->addPlayer(game::Player(id, 0, 0, game::Orientation::NORTH));
     addPlayer(id);
-    _mapRenderer->playerForward(id, 3, 3);
+    _mapRenderer->playerForward(id, -1, -1);
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)

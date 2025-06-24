@@ -92,3 +92,39 @@ Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const int &x, const int &y) c
     pos.z = offsetZ - y * tileSize;
     return pos;
 }
+
+void zappy::gui::raylib::FlatFloor::translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player)
+{
+    Vector3 step = Vector3Scale(translationVector, deltaUnits);
+    player.translate(step);
+    _checkOverlap(player, destination);
+}
+
+void zappy::gui::raylib::FlatFloor::_checkOverlap(APlayerModel &player, Vector3 &destination)
+{
+    const float tileSize = this->getTileSize();
+    const size_t width = this->getWidth();
+    const size_t height = this->getHeight();
+
+    const float widthOverlap = width * tileSize / 2;
+    const float heightOverlap = height * tileSize / 2;
+
+    const float mapWidth = width * tileSize;
+    const float mapHeight = height * tileSize;
+
+    Vector3 playerPos = player.getPosition();
+
+    if (playerPos.x >= widthOverlap) {
+        player.setPosition(Vector3{playerPos.x - mapWidth, playerPos.y, playerPos.z});
+        destination.x -= mapWidth;
+    } else if (playerPos.x <= (widthOverlap - mapWidth)) {
+        player.setPosition(Vector3{playerPos.x + mapWidth, playerPos.y, playerPos.z});
+        destination.x += mapWidth;
+    } else if (playerPos.z >= heightOverlap) {
+        player.setPosition(Vector3{playerPos.x, playerPos.y, playerPos.z - mapHeight});
+        destination.z -= mapHeight;
+    } else if (playerPos.z <= (widthOverlap - mapHeight)) {
+        player.setPosition(Vector3{playerPos.x, playerPos.y, playerPos.z + mapHeight});
+        destination.z += mapHeight;
+    }
+}

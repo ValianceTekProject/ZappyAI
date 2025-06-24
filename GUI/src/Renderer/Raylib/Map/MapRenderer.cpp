@@ -277,8 +277,7 @@ void zappy::gui::raylib::MapRenderer::_updateTranslations(const float &deltaUnit
             player.setPosition(T.destination);
             it = _translations.erase(it);
         } else {
-            Vector3 step = Vector3Scale(T.translationVector, deltaUnits);
-            player.translate(step);
+            _floor->translate(deltaUnits, T.translationVector, T.destination, player);
             T.elapsedTime += deltaUnits;
             ++it;
         }
