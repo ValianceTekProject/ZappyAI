@@ -37,6 +37,8 @@ namespace zappy {
                     int _id;
                     Vector2 _gamePosition;
                     zappy::game::Resource _resourceType;
+
+                    float _scale;
             };
         } // namespace raylib
     } // namespace gui

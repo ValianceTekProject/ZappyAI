@@ -24,6 +24,7 @@ void zappy::gui::raylib::MapRenderer::init()
     _floor = std::make_unique<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
     _floor->init();
 
+    // Init les resources
     for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
         auto type = static_cast<zappy::game::Resource>(i);
         auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type);

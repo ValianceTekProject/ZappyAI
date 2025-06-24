@@ -93,10 +93,12 @@ set(SOURCES
     ${RAYLIB_MODEL_DIR}/AModel.cpp
     ${RAYLIB_MODEL_DIR}/APlayerModel.cpp
     ${RAYLIB_MODEL_DIR}/AEggModel.cpp
+    ${RAYLIB_MODEL_DIR}/AResourceModel.cpp
 
     ${RAYLIB_SCENE_DIR}/BasicScene.cpp
     ${RAYLIB_MODEL_BASIC_DIR}/BasicPlayerModel.cpp
     ${RAYLIB_MODEL_BASIC_DIR}/BasicEggModel.cpp
+    ${RAYLIB_MODEL_BASIC_DIR}/BasicResourceModel.cpp
 )
 
 # === Exécutable principal ===
