@@ -15,7 +15,7 @@ namespace zappy {
     namespace game {
         class CommandHandlerGui : public CommandHandler {
             public:
-                CommandHandlerGui(int freq, int width, int height, int clientNb, zappy::game::MapServer &map, std::vector<zappy::game::Team> &teamList) : CommandHandler(freq, width, height, clientNb, map, teamList), _teamList(teamList) {};
+                CommandHandlerGui(int &freq, int width, int height, int clientNb, zappy::game::MapServer &map, std::vector<zappy::game::Team> &teamList) : CommandHandler(freq, width, height, clientNb, map, teamList), _teamList(teamList) {};
                 ~CommandHandlerGui() = default;
                 
                 void processClientInput(const std::string &input, zappy::game::ServerPlayer &player) override;

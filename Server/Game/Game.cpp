@@ -105,8 +105,13 @@ void zappy::game::Game::runGame()
         for (auto &team : this->getTeamList()) {
             for (auto &player : team.getPlayerList()) {
                 if (!player->getClient().queueMessage.empty()) {
-                    this->_commandHandler.processClientInput(
-                        player->getClient().queueMessage.front(), *player);
+                    if (player->teamName.compare("GRAPHIC")) {
+                        this->_commandHandlerGui.processClientInput(
+                            player->getClient().queueMessage.front(), *player);
+                        player->getClient().queueMessage.pop();
+                    } else
+                        this->_commandHandler.processClientInput(
+                            player->getClient().queueMessage.front(), *player);
                 }
             }
         }

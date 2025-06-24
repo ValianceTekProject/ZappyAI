@@ -46,6 +46,8 @@ namespace zappy {
 
             virtual void initCommandMap();
 
+            int &getFreq() { return _freq; }
+
            protected:
             int &_freq;
             int _widthMap;

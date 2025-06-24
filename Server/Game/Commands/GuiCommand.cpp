@@ -27,6 +27,7 @@ void zappy::game::CommandHandlerGui::handleBct(zappy::game::ServerPlayer &player
         for (auto resource :this->_map.getTile(x, y).getResources())
             msg += " " + std::to_string(resource);
         msg += "\n";
+        player.getClient().sendMessage(msg);
     } else
         player.getClient().sendMessage("ko\n");
 }
@@ -55,16 +56,16 @@ void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player
     stream >> playerId;
 
     for (auto &team : this->_teamList) {
-        for (auto &player : team.getPlayerList()) {
-            if (player->getId() == playerId) {
+        for (auto &p : team.getPlayerList()) {
+            if (p->getId() == playerId) {
                 std::ostringstream orientationStream;
-                orientationStream << player->orientation;
+                orientationStream << p->orientation;
                 std::string msg = std::to_string(playerId) + " " + 
-                                  std::to_string(player->x) + " " + 
-                                  std::to_string(player->y) + " " + 
+                                  std::to_string(p->x) + " " + 
+                                  std::to_string(p->y) + " " + 
                                   orientationStream.str() + "\n";
 
-                player->getClient().sendMessage(msg);
+                player.getClient().sendMessage(msg);
                 return;
             }
         }
@@ -82,10 +83,10 @@ void zappy::game::CommandHandlerGui::handlePlv(zappy::game::ServerPlayer &player
     stream >> playerId;
 
     for (auto &team : this->_teamList) {
-        for (auto &player : team.getPlayerList()) {
-            if (player->getId() == playerId) {
-                msg += std::to_string(playerId) + " " + std::to_string(player->level) + "\n";
-                player->getClient().sendMessage(msg);
+        for (auto &p : team.getPlayerList()) {
+            if (p->getId() == playerId) {
+                msg += std::to_string(playerId) + " " + std::to_string(p->level) + "\n";
+                player.getClient().sendMessage(msg);
                 return;
             }
         }
@@ -103,15 +104,15 @@ void zappy::game::CommandHandlerGui::handlePin(zappy::game::ServerPlayer &player
     stream >> playerId;
 
     for (auto &team : this->_teamList) {
-        for (auto &player : team.getPlayerList()) {
-            if (player->getId() == playerId) {
-                msg += std::to_string(playerId) + " " + std::to_string(player->x) + " " + std::to_string(player->y) + " ";
-                zappy::game::Inventory playerInv = player->getInventory();
+        for (auto &p : team.getPlayerList()) {
+            if (p->getId() == playerId) {
+                msg += std::to_string(playerId) + " " + std::to_string(p->x) + " " + std::to_string(p->y) + " ";
+                zappy::game::Inventory playerInv = p->getInventory();
                 for (auto foodName : names)
                     msg += std::to_string(playerInv.getResourceQuantity(getResource(foodName))) + " ";
                 msg.pop_back();
                 msg += "\n";
-                player->getClient().sendMessage(msg);
+                player.getClient().sendMessage(msg);
                 return;
             }
         }
@@ -140,7 +141,7 @@ void zappy::game::CommandHandlerGui::handleSst(zappy::game::ServerPlayer &player
 
 void zappy::game::CommandHandlerGui::initCommandMap()
 {
-    this->_commandMap = {
+    this->_commandMapGui = {
         {"msz", [this](ServerPlayer &player, const std::string &) { handleMsz(player); }},
         {"bct", [this](ServerPlayer &player, const std::string &arg) { handleBct(player, arg); }},
         {"mct", [this](ServerPlayer &player, const std::string &) { handleMct(player); }},
@@ -164,6 +165,7 @@ void zappy::game::CommandHandlerGui::processClientInput(const std::string &input
 
     if (!args.empty() && args.back() == '\n')
         args.pop_back();
+
 
     auto it = this->_commandMapGui.find(cmd);
     if (it != this->_commandMapGui.end()) {
