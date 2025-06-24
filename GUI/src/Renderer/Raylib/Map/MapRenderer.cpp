@@ -6,6 +6,7 @@
 */
 
 #include "MapRenderer.hpp"
+#include "Resource.hpp"
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
@@ -22,6 +23,13 @@ void zappy::gui::raylib::MapRenderer::init()
     // Init la carte
     _floor = std::make_unique<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
     _floor->init();
+
+    for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
+        auto type = static_cast<zappy::game::Resource>(i);
+        auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type);
+        model->init();
+        _resourceModels[i] = std::move(model);
+    }
 }
 
 void zappy::gui::raylib::MapRenderer::update(const int &frequency)
@@ -68,6 +76,36 @@ void zappy::gui::raylib::MapRenderer::render()
     if (!_eggs.empty()) {
         for (auto &egg : _eggs)
             egg->render();
+    }
+
+    // Dessiner les resources
+    for (size_t y = 0; y < _map->getHeight(); ++y) {
+        for (size_t x = 0; x < _map->getWidth(); ++x) {
+            const auto &tile = _map->getTile(x, y);
+            const auto &resources = tile.getResources();
+            Vector3 basePos = _floor->get3DCoords(x, y);
+            float spacing = 0.2f;
+            int typeIndex = 0;
+
+            for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
+                size_t quantity = resources[i];
+                if (quantity == 0 || !_resourceModels[i])
+                    continue;
+
+                for (size_t q = 0; q < quantity; ++q) {
+                    Vector3 pos = {
+                        basePos.x + (q % 2) * spacing + (typeIndex % 3) * spacing,
+                        basePos.y,
+                        basePos.z + (q / 2) * spacing + (typeIndex / 3) * spacing
+                    };
+
+                    _resourceModels[i]->setPosition(pos);
+                    _resourceModels[i]->render();
+                }
+
+                typeIndex++;
+            }
+        }
     }
 }
 

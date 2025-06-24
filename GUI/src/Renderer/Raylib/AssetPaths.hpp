@@ -25,6 +25,23 @@ namespace zappy {
 
                 inline std::string BASIC_EGG_PATH = BASIC_SCENE_PATH + "egg.glb";
 
+                // Basic Scene resources assets
+                inline std::string BASIC_SCENE_RESOURCES_PATH = std::string(BASIC_SCENE_PATH) + "Resources/";
+
+                inline std::string BASIC_FOOD_PATH = BASIC_SCENE_RESOURCES_PATH + "food.glb";
+
+                inline std::string BASIC_LINEMATE_PATH = BASIC_SCENE_RESOURCES_PATH + "linemate.glb";
+
+                inline std::string BASIC_DERAUMERE_PATH = BASIC_SCENE_RESOURCES_PATH + "deraumere.glb";
+
+                inline std::string BASIC_SIBUR_PATH = BASIC_SCENE_RESOURCES_PATH + "sibur.glb";
+
+                inline std::string BASIC_MENDIANE_PATH = BASIC_SCENE_RESOURCES_PATH + "mendiane.glb";
+
+                inline std::string BASIC_PHIRAS_PATH = BASIC_SCENE_RESOURCES_PATH + "phiras.glb";
+
+                inline std::string BASIC_THYSTAME_PATH = BASIC_SCENE_RESOURCES_PATH + "thystame.glb";
+
                 // Pokemon Scene assets
             }
         }

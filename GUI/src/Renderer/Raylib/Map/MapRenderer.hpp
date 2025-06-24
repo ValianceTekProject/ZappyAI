@@ -7,7 +7,10 @@
 
 #pragma once
 
+#include "AResourceModel.hpp"
+#include "Orientation.hpp"
 #include "RendererError.hpp"
+#include "BasicResourceModel.hpp"
 
 #include "Map.hpp"
 #include "FlatFloor.hpp"
@@ -15,6 +18,7 @@
 // #include "AResourceModel.hpp"
 #include "AEggModel.hpp"
 #include "APlayerModel.hpp"
+#include "Resource.hpp"
 
 #include <memory>
 #include <vector>
@@ -66,6 +70,7 @@ namespace zappy {
                 private:
                     APlayerModel &_getPlayer(const int &id);
                     const APlayerModel &_getPlayer(const int &id) const;
+
                     AEggModel &_getEgg(const int &id);
                     const AEggModel &_getEgg(const int &id) const;
 
@@ -82,6 +87,7 @@ namespace zappy {
 
                     std::vector<std::unique_ptr<AEggModel>> _eggs;
                     std::vector<std::unique_ptr<APlayerModel>> _players;
+                    std::array<std::unique_ptr<BasicResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
 
                     std::vector<Translation> _translations;
                     std::vector<Rotation> _rotations;
