@@ -7,6 +7,7 @@
 
 #include "MapRenderer.hpp"
 #include "Resource.hpp"
+#include <rlgl.h>
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
@@ -59,6 +60,7 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
 
     _updateTranslations(deltaUnits);
     _updateRotations(deltaUnits);
+    _updateIncantationAnimation(deltaSec);
 }
 
 void zappy::gui::raylib::MapRenderer::render()
@@ -107,6 +109,26 @@ void zappy::gui::raylib::MapRenderer::render()
                 typeIndex++;
             }
         }
+    }
+
+    // Dessiner les incantations
+    if (_incantationTile.has_value()) {
+        Vector2 pos = _incantationTile.value();
+        Vector3 tilePos = _floor->get3DCoords(static_cast<int>(pos.x), static_cast<int>(pos.y));
+        tilePos.y += 0.15f;
+
+        float pulse = (sin(_incantationAnimationTime * 6.f) + 1.f) / 2.f;
+        float alpha = 0.5f + 0.5f * pulse;
+        float sizeScale = 0.8f + 0.3f * pulse;
+
+        Color colorCube = { 255, 255, 0, static_cast<unsigned char>(alpha * 200) };
+        DrawCube(tilePos, 1.f * sizeScale, 0.2f, 1.f * sizeScale, colorCube);
+
+        Color glowColor = ColorAlpha(YELLOW, alpha);
+        DrawCubeWires(tilePos, 1.4f * sizeScale, 0.25f, 1.4f * sizeScale, glowColor);
+
+        Color colorHalo = { 255, 255, 0, static_cast<unsigned char>(alpha * 80) };
+        DrawCircle3D(tilePos, 1.6f * sizeScale, Vector3{0.f, 1.f, 0.f}, 90.f, colorHalo);
     }
 }
 
@@ -352,5 +374,26 @@ void zappy::gui::raylib::MapRenderer::_updateRotations(const float &deltaUnits)
             R.elapsedTime += deltaUnits;
             ++it;
         }
+    }
+}
+
+void zappy::gui::raylib::MapRenderer::setIncantationTile(const int &x, const int &y)
+{
+    _incantationTile = Vector2{ static_cast<float>(x), static_cast<float>(y) };
+}
+
+void zappy::gui::raylib::MapRenderer::clearIncantationTile()
+{
+    _incantationTile.reset();
+}
+
+void zappy::gui::raylib::MapRenderer::_updateIncantationAnimation(float deltaTime)
+{
+    if (_incantationTile.has_value()) {
+        _incantationAnimationTime += deltaTime;
+        if (_incantationAnimationTime > 1000.f) // reset toutes les 1000 secondes (par sécurité)
+            _incantationAnimationTime = 0.f;
+    } else {
+        _incantationAnimationTime = 0.f;
     }
 }

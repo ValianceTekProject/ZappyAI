@@ -21,6 +21,7 @@
 #include "Resource.hpp"
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include <chrono>
 
@@ -67,17 +68,21 @@ namespace zappy {
                     void removePlayer(const int &id);
                     void removeEgg(const int &id);
 
-                private:
+                    void setIncantationTile(const int &x, const int &y);
+                    void clearIncantationTile();
+                    
+                    private:
                     APlayerModel &_getPlayer(const int &id);
                     const APlayerModel &_getPlayer(const int &id) const;
-
+                    
                     AEggModel &_getEgg(const int &id);
                     const AEggModel &_getEgg(const int &id) const;
-
+                    
                     void _addRotation(const APlayerModel &player, const float &angle);
-
+                    
                     void _updateTranslations(const float &deltaUnits);
                     void _updateRotations(const float &deltaUnits);
+                    void _updateIncantationAnimation(float deltaTime);
 
                     const std::shared_ptr<game::Map> _map;
 
@@ -88,6 +93,9 @@ namespace zappy {
                     std::vector<std::unique_ptr<AEggModel>> _eggs;
                     std::vector<std::unique_ptr<APlayerModel>> _players;
                     std::array<std::unique_ptr<BasicResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
+
+                    std::optional<Vector2> _incantationTile;
+                    float _incantationAnimationTime = 0.f;
 
                     std::vector<Translation> _translations;
                     std::vector<Rotation> _rotations;
