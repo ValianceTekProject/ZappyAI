@@ -30,14 +30,6 @@ namespace zappy {
                     constexpr static int EXPULSION_TIME = 1;
                     constexpr static int NO_ANIMATION = 0;
 
-                    struct Translation {
-                        int id;
-                        Vector3 destination;
-                        Vector3 translationVector;
-                        int timeUnits;     //! (comment is to remove) action time duration
-                        float elapsedTime;
-                    };
-
                     struct Rotation {
                         int id;
                         Vector3 destination;

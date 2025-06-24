@@ -6,6 +6,8 @@
 */
 
 #include "FlatFloor.hpp"
+#include "IFloor.hpp"
+#include "Orientation.hpp"
 #include "raylib.h"
 #include <algorithm>
 #include "raymath.h"
@@ -91,6 +93,40 @@ Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const int &x, const int &y) c
     pos.y = 0.0f;
     pos.z = offsetZ - y * tileSize;
     return pos;
+}
+
+zappy::gui::raylib::Translation zappy::gui::raylib::FlatFloor::createTranslation(const APlayerModel &player, const int &x, const int &y, const int &timeUnit)
+{
+    const int width = static_cast<int>(this->getWidth());
+    const int height = static_cast<int>(this->getHeight());
+
+    int finalDestX = x;
+    int finalDestY = y;
+    Vector2 playerGamePos = player.getGamePosition();
+
+    if (playerGamePos.x == 0 && finalDestX == width - 1) {
+        finalDestX -= width;
+    } else if (playerGamePos.x == width - 1 && finalDestX == 0) {
+        finalDestX += width;
+    } else if (playerGamePos.y == 0 && finalDestY == height - 1) {
+        finalDestY -= height;
+    } else if (playerGamePos.y == height - 1 && finalDestY == 0) {
+        finalDestY += height;
+    }
+
+    Vector3 cur = player.getPosition();
+    Vector3 dest = get3DCoords(finalDestX, finalDestY);
+    Vector3 direction = Vector3Subtract(dest, cur);
+    Vector3 unitStep = Vector3Scale(direction, 1.0f / static_cast<float>(timeUnit));
+
+    Translation t;
+    t.id = player.getId();
+    t.destination = dest;
+    t.translationVector = unitStep;
+    t.timeUnits = timeUnit;
+    t.elapsedTime = 0.0f;
+
+    return t;
 }
 
 void zappy::gui::raylib::FlatFloor::translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player)

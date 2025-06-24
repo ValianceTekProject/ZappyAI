@@ -16,11 +16,10 @@ void zappy::gui::raylib::BasicScene::init()
 {
     AScene::init();
 
-    //! to remove
     constexpr int id = 0;
-    _gameState->addPlayer(game::Player(id, 0, 0, game::Orientation::NORTH));
+    _gameState->addPlayer(game::Player(id, 9, 0, game::Orientation::NORTH));
     addPlayer(id);
-    _mapRenderer->playerForward(id, -1, -1);
+    _mapRenderer->playerForward(id, 0, 0);
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)

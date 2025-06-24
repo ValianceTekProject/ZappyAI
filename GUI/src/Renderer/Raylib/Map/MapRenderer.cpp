@@ -156,18 +156,17 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
         return;
 
     auto &player = _getPlayer(id);
-    Vector3 dest = _floor->get3DCoords(x, y);
-    Vector3 cur = player.getPosition();
-    Vector3 direction = Vector3Subtract(dest, cur);
+    Translation translation = _floor->createTranslation(player, x, y, FORWARD_TIME);
 
-    Translation t;
-    t.id = id;
-    t.destination = dest;
-    t.translationVector = Vector3Scale(direction, 1.0f / static_cast<float>(FORWARD_TIME));
-    t.timeUnits = FORWARD_TIME;
-    t.elapsedTime = 0.0f;
-    _translations.push_back(t);
+    for (auto &t : _translations) {
+        if (t.id == player.getId()) {
+            t = translation;
+            player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
+            return;
+        }
+    }
 
+    _translations.push_back(translation);
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
 

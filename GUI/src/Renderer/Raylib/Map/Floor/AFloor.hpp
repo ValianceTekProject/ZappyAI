@@ -36,6 +36,8 @@ namespace zappy {
 
                     Vector3 get3DCoords(const int &x, const int &y) const override = 0;
 
+                    virtual Translation createTranslation(const APlayerModel &player, const int &x, const int &y, const int &timeUnit) override = 0;
+
                     virtual void translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player) override = 0;
 
                 private:

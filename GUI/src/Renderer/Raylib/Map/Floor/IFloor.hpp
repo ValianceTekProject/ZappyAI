@@ -17,6 +17,15 @@
 namespace zappy {
     namespace gui {
         namespace raylib {
+
+            struct Translation {
+                int id;
+                Vector3 destination;
+                Vector3 translationVector;
+                int timeUnits;
+                float elapsedTime;
+            };
+
             class IFloor {
                 public:
                     virtual ~IFloor() = default;
@@ -39,6 +48,8 @@ namespace zappy {
                     virtual Vector3 getNorthVector(const game::Orientation &orientation) = 0;
 
                     virtual Vector3 get3DCoords(const int &x, const int &y) const = 0;
+
+                    virtual Translation createTranslation(const APlayerModel &player, const int &x, const int &y, const int &timeUnit) = 0;
 
                     virtual void translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player) = 0;
             };
