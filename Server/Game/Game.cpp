@@ -14,6 +14,18 @@
 
 const constexpr int nbOrientation = 4;
 
+void zappy::game::Game::messageToGUI(const std::string &msg)
+{
+    for (auto &team : this->getTeamList()) {
+        if (team.getName() == "GRAPHIC") {
+            for (auto &player : team.getPlayerList()) {
+                if (player)
+                    player->getClient().sendMessage(msg);
+            }
+        }
+    }
+}
+
 void zappy::game::Game::_addPlayerToTeam(
     zappy::game::Team &team, int clientSocket)
 {
@@ -26,9 +38,21 @@ void zappy::game::Game::_addPlayerToTeam(
     user.setState(zappy::server::ClientState::CONNECTED);
     auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
         std::move(user), _idPlayerTot, egg.x, egg.y, orientation, team, 1);
-    _idPlayerTot += 1;
-    team.addPlayer(std::move(newPlayer));
-    this->_playerList.push_back(std::move(newPlayer));
+    newPlayer->teamName = team.getName();
+    this->_idPlayerTot += 1;
+    team.addPlayer(newPlayer);
+    this->_playerList.push_back(newPlayer);
+    if (auto lastPlayer = this->_playerList.back().lock(); lastPlayer) {
+        std::cout << "Team name = '" << lastPlayer->teamName << "'" << std::endl;
+        if (lastPlayer->teamName != "GRAPHIC") {
+            std::ostringstream orientationStream;
+            orientationStream << lastPlayer->orientation;
+            this->messageToGUI(std::string("pnw " + std::to_string(this->_idPlayerTot) + " "
+                + std::to_string(lastPlayer->x) + " " + std::to_string(lastPlayer->y) + " "
+                + orientationStream.str() + " " + std::to_string(lastPlayer->level) + " "
+                + lastPlayer->teamName + "\n"));
+        }
+    }
 }
 
 bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)

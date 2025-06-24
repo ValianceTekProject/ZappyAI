@@ -39,6 +39,8 @@ namespace zappy {
 
             ~Game() = default;
 
+            void messageToGUI(const std::string &msg);
+
             void runGame();
             void setRunningState(RunningState run) { this->_isRunning = run; };
 
