@@ -17,7 +17,6 @@
 namespace zappy {
     namespace gui {
         namespace raylib {
-
             struct Translation {
                 int id;
                 Vector3 destination;

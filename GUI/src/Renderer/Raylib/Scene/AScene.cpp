@@ -106,7 +106,11 @@ void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
     );
 
     for (auto &player : expelledPlayers) {
-        (void)player;
+        game::Player &p = player.get();
+        if (player.get().getId() == id)
+            continue;
+        p.ejectFrom(playerThatExpelled.orientation);
+        _mapRenderer->playerExpulsion(p.getId(), p.x, p.y);
     }
 }
 

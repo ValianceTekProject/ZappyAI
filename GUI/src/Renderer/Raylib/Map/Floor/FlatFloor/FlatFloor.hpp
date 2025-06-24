@@ -30,9 +30,10 @@ namespace zappy {
                     void translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player) override;
 
                 private:
+                    void _checkOverlap(APlayerModel &player, Vector3 &destination);
+
                     Texture2D _texture;
                     Model _model;
-                    void _checkOverlap(APlayerModel &player, Vector3 &destination);
             };
         }
     } // namespace gui

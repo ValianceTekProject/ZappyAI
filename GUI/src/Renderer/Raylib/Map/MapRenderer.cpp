@@ -175,10 +175,20 @@ void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &
     if (_players.empty())
         return;
 
-    // Mettre à jour la position d'un joueur
-    (void)id;
-    (void)x;
-    (void)y;
+    auto &player = _getPlayer(id);
+
+    Translation translation = _floor->createTranslation(player, x, y, EXPULSION_TIME);
+
+    for (auto &t : _translations) {
+        if (t.id == id) {
+            t = translation;
+            player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
+            return;
+        }
+    }
+
+    _translations.push_back(translation);
+    player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
 
 void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)

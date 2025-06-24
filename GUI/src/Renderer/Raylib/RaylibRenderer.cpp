@@ -74,20 +74,20 @@ void zappy::gui::RaylibRenderer::updatePlayerPosition(const int &id,
     const int &y,
     const game::Orientation &orientation
 ) {
-    ARenderer::updatePlayerPosition(id, x, y, orientation);
     _scene->updatePlayerPosition(id, x, y, orientation);
+    ARenderer::updatePlayerPosition(id, x, y, orientation);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerLevel(const int &id, const size_t &level)
 {
-    ARenderer::updatePlayerLevel(id, level);
     _scene->updatePlayerLevel(id, level);
+    ARenderer::updatePlayerLevel(id, level);
 }
 
 void zappy::gui::RaylibRenderer::updatePlayerInventory(const int &id, const game::Inventory &inventory)
 {
-    ARenderer::updatePlayerInventory(id, inventory);
     _scene->updatePlayerInventory(id, inventory);
+    ARenderer::updatePlayerInventory(id, inventory);
 }
 
 void zappy::gui::RaylibRenderer::PlayerExpulsion(const int &id)
