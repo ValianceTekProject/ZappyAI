@@ -40,10 +40,13 @@ void zappy::game::GameState::PlayerExpulsion(const int &id)
 
     auto players = getPlayersByCoord(playerThatExpelled.x, playerThatExpelled.y);
 
+    int width = _map->getWidth();
+    int height = _map->getHeight();
+
     for (Player &player : players) {
         if (player.getId() == id)
             continue;
-        player.ejectFrom(playerThatExpelled.orientation);
+        player.ejectFrom(playerThatExpelled.orientation, width, height);
     }
 }
 

@@ -100,6 +100,7 @@ void zappy::gui::raylib::AScene::updatePlayerInventory(const int &id, const game
 void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
 {
     game::Player &playerThatExpelled = _gameState->getPlayerById(id);
+    game::Orientation orientation = playerThatExpelled.orientation;
 
     auto expelledPlayers = _gameState->getPlayersByCoord(
         playerThatExpelled.x, playerThatExpelled.y
@@ -109,8 +110,13 @@ void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
         game::Player &p = player.get();
         if (player.get().getId() == id)
             continue;
-        p.ejectFrom(playerThatExpelled.orientation);
-        _mapRenderer->playerExpulsion(p.getId(), p.x, p.y);
+
+        int newX = (playerThatExpelled.x + (1 * (orientation == game::Orientation::WEST ? -1 : 1)))
+            % _gameState->getMap()->getWidth();
+        int newY = (playerThatExpelled.y + (1 * (orientation == game::Orientation::SOUTH ? -1 : 1)))
+            % _gameState->getMap()->getHeight();
+
+        _mapRenderer->playerExpulsion(p.getId(), newX, newY);
     }
 }
 

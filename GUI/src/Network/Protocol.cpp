@@ -270,7 +270,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
     std::istringstream iss(trueParams);
     int playerId;
     int x, y;
-    std::string orientation;
+    size_t orientation;
     size_t level;
     std::string teamName;
 
@@ -278,7 +278,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
 
     game::Player player(
         playerId, x, y,
-        game::convertOrientation(orientation),
+        static_cast<game::Orientation>(orientation - 1),
         level
     );
     player.teamName = teamName;
@@ -294,7 +294,7 @@ void zappy::network::Protocol::handleNewPlayer(const std::string &params)
  * Updates the renderer with the player's position and orientation.
  *
  * @param params A string containing the player ID, position, and orientation
- *               Example: "#n X Y N"
+ *               Example: "#n X Y O"
  */
 void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
 {
@@ -305,11 +305,11 @@ void zappy::network::Protocol::handlePlayerPosition(const std::string &params)
     std::istringstream iss(trueParams);
     int playerId;
     int x, y;
-    std::string orientation;
+    size_t orientation;
 
     iss >> playerId >> x >> y >> orientation;
 
-    _renderer->updatePlayerPosition(playerId, x, y, game::convertOrientation(orientation));
+    _renderer->updatePlayerPosition(playerId, x, y, static_cast<game::Orientation>(orientation - 1));
 }
 
 /**
