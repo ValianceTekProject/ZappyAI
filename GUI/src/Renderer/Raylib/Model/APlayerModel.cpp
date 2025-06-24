@@ -38,6 +38,16 @@ Vector3 zappy::gui::raylib::APlayerModel::getHeadOrigin() const
 
 void zappy::gui::raylib::APlayerModel::look(const game::Orientation &orientation)
 {
+    if (this->_orientation == orientation)
+        return;
+
+    if (orientation - 1 == this->_orientation) {
+        AModel::rotate(Vector3{0, -90, 0});
+    } else if (orientation + 1 == this->_orientation) {
+        AModel::rotate(Vector3{0, 90, 0});
+    } else {
+        AModel::rotate(Vector3{0, 180, 0});
+    }
     this->_orientation = orientation;
 }
 

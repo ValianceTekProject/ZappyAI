@@ -11,19 +11,14 @@
 #include "Map.hpp"
 #include "AssetPaths.hpp"
 #include "APlayerModel.hpp"
+#include "Movement.hpp"
 
 #include <raylib.h>
 
 namespace zappy {
     namespace gui {
         namespace raylib {
-            struct Translation {
-                int id;
-                Vector3 destination;
-                Vector3 translationVector;
-                int timeUnits;
-                float elapsedTime;
-            };
+            using Translation = Movement;
 
             class IFloor {
                 public:

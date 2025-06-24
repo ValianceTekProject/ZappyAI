@@ -23,7 +23,7 @@ void zappy::gui::raylib::BasicPlayerModel::init()
 
     APlayerModel::_initModel(assets::BASIC_PLAYER_PATH);
 
-    rotate({0, 180, 0});
+    AModel::rotate({0, -180, 0});
 }
 
 void zappy::gui::raylib::BasicPlayerModel::update()

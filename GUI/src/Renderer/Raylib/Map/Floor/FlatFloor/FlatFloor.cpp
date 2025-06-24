@@ -119,12 +119,14 @@ zappy::gui::raylib::Translation zappy::gui::raylib::FlatFloor::createTranslation
     Vector3 direction = Vector3Subtract(dest, cur);
     Vector3 unitStep = Vector3Scale(direction, 1.0f / static_cast<float>(timeUnit));
 
-    Translation t;
-    t.id = player.getId();
-    t.destination = dest;
-    t.translationVector = unitStep;
-    t.timeUnits = timeUnit;
-    t.elapsedTime = 0.0f;
+    Translation t = {
+        player.getId(),
+        MovementType::TRANSLATION,
+        dest,
+        unitStep,
+        timeUnit,
+        0.0f
+    };
 
     return t;
 }

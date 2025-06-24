@@ -13,9 +13,7 @@ zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> ma
     _lastTime(std::chrono::steady_clock::now()),
     _floor(nullptr),
     _eggs(),
-    _players(),
-    _translations(),
-    _rotations()
+    _players()
 {}
 
 void zappy::gui::raylib::MapRenderer::init()
@@ -57,8 +55,7 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
     // Convertit en “unités d’action” : (secondes écoulées) * fréquence
     float deltaUnits = deltaSec * frequency;
 
-    _updateTranslations(deltaUnits);
-    _updateRotations(deltaUnits);
+    _updateMovements(deltaUnits);
 }
 
 void zappy::gui::raylib::MapRenderer::render()
@@ -197,15 +194,8 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
     auto &player = _getPlayer(id);
     Translation translation = _floor->createTranslation(player, x, y, FORWARD_TIME);
 
-    for (auto &t : _translations) {
-        if (t.id == player.getId()) {
-            t = translation;
-            player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
-            return;
-        }
-    }
+    _movementQueues[id].push(translation);
 
-    _translations.push_back(translation);
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
 
@@ -218,15 +208,8 @@ void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &
 
     Translation translation = _floor->createTranslation(player, x, y, EXPULSION_TIME);
 
-    for (auto &t : _translations) {
-        if (t.id == id) {
-            t = translation;
-            player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
-            return;
-        }
-    }
+    _movementQueues[id].push(translation);
 
-    _translations.push_back(translation);
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
 
@@ -294,63 +277,43 @@ void zappy::gui::raylib::MapRenderer::_addRotation(const APlayerModel &player, c
     Vector3 totalDelta = Vector3Subtract(destination, current);
     Vector3 perStep = Vector3Scale(totalDelta, 1.0f / static_cast<float>(ROTATION_TIME));
 
-    // check if there is no rotation so put ROTATION_TIME to 0
-    for (auto &rotation : _rotations) {
-        if (rotation.id == player.getId()) {
-            rotation.destination = destination;
-            rotation.deltaPerStep = perStep;
-            rotation.timeUnits = ROTATION_TIME;
-            rotation.elapsedTime = 0;
-            return;
-        }
-    }
-
-    _rotations.push_back(Rotation{
+    Rotation rotation = {
         player.getId(),
+        MovementType::ROTATION,
         destination,
         perStep,
         ROTATION_TIME,
         0
-    });
+    };
+
+    _movementQueues[player.getId()].push(rotation);
 }
 
-void zappy::gui::raylib::MapRenderer::_updateTranslations(const float &deltaUnits)
+void zappy::gui::raylib::MapRenderer::_updateMovements(const float &deltaUnits)
 {
-    auto it = _translations.begin();
-    while (it != _translations.end()) {
-        auto &T = *it;
-        auto &player = _getPlayer(T.id);
-
-        if (T.elapsedTime + deltaUnits >= T.timeUnits) {
-            player.setPosition(T.destination);
-            it = _translations.erase(it);
-        } else {
-            _floor->translate(deltaUnits, T.translationVector, T.destination, player);
-            T.elapsedTime += deltaUnits;
-            ++it;
+    for (auto it = _movementQueues.begin(); it != _movementQueues.end(); ) {
+        auto &queue = it->second;
+        if (queue.empty()) {
+            it = _movementQueues.erase(it);
+            continue;
         }
-    }
-}
 
-void zappy::gui::raylib::MapRenderer::_updateRotations(const float &deltaUnits)
-{
-    if (_rotations.empty()) return;
+        Movement &m = queue.front();
+        APlayerModel &p = _getPlayer(m.id);
 
-    auto it = _rotations.begin();
-    while (it != _rotations.end()) {
-        auto &R = *it;
-        auto &player = _getPlayer(R.id);
-
-        if (R.elapsedTime + deltaUnits >= R.timeUnits) {
-            Vector3 cur = player.getRotation();
-            Vector3 remaining = Vector3Subtract(R.destination, cur);
-            player.rotate(remaining);
-            it = _rotations.erase(it);
+        if (m.elapsedTime + deltaUnits >= m.timeUnits) {
+            if (m.type == MovementType::TRANSLATION)
+                p.setPosition(m.destination);
+            else if (m.type == MovementType::ROTATION)
+                p.rotate(Vector3Subtract(m.destination, p.getRotation()));
+            queue.pop();
         } else {
-            Vector3 step = Vector3Scale(R.deltaPerStep, deltaUnits);
-            player.rotate(step);
-            R.elapsedTime += deltaUnits;
-            ++it;
+            if (m.type == MovementType::TRANSLATION)
+                _floor->translate(deltaUnits, m.movementVector, m.destination, p);
+            else if (m.type == MovementType::ROTATION)
+                p.rotate(Vector3Scale(m.movementVector, deltaUnits));
+            m.elapsedTime += deltaUnits;
         }
+        ++it;
     }
 }

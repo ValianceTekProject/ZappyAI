@@ -14,6 +14,7 @@
 
 #include "Map.hpp"
 #include "FlatFloor.hpp"
+#include "Movement.hpp"
 
 // #include "AResourceModel.hpp"
 #include "AEggModel.hpp"
@@ -22,25 +23,21 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
+#include <queue>
 #include <chrono>
 
 namespace zappy {
     namespace gui {
         namespace raylib {
+                    using Rotation = Movement;
+
             class MapRenderer {
                 public:
                     constexpr static int FORWARD_TIME = 7;
                     constexpr static int ROTATION_TIME = 7;
                     constexpr static int EXPULSION_TIME = 1;
                     constexpr static int NO_ANIMATION = 0;
-
-                    struct Rotation {
-                        int id;
-                        Vector3 destination;
-                        Vector3 deltaPerStep;
-                        int timeUnits;
-                        float elapsedTime;
-                    };
 
                     MapRenderer(const std::shared_ptr<game::Map> map);
                     ~MapRenderer() = default;
@@ -76,6 +73,7 @@ namespace zappy {
 
                     void _addRotation(const APlayerModel &player, const float &angle);
 
+                    void _updateMovements(const float &deltaUnits);
                     void _updateTranslations(const float &deltaUnits);
                     void _updateRotations(const float &deltaUnits);
 
@@ -89,8 +87,7 @@ namespace zappy {
                     std::vector<std::unique_ptr<APlayerModel>> _players;
                     std::array<std::unique_ptr<BasicResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
 
-                    std::vector<Translation> _translations;
-                    std::vector<Rotation> _rotations;
+                    std::unordered_map<int, std::queue<Movement>> _movementQueues;
             };
         }
     }
