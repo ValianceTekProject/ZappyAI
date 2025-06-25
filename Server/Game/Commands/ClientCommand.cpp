@@ -373,16 +373,18 @@ void zappy::game::CommandHandler::handleBroadcast(
     }
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    this->messageToGUI(std::string("pbc " + std::to_string(player.getId()) + " " + arg + "\n"));
+    this->messageToGUI(std::string(
+        "pbc " + std::to_string(player.getId()) + " " + arg + "\n"));
 }
 
 void zappy::game::CommandHandler::handleConnectNbr(
     zappy::game::ServerPlayer &player)
 {
-    auto playerTeam = dynamic_cast<zappy::game::TeamsPlayer*>(&player.getTeam());
+    auto playerTeam =
+        dynamic_cast<zappy::game::TeamsPlayer *>(&player.getTeam());
     if (playerTeam) {
-        int connectNbr = playerTeam->getClientNb() -
-                        playerTeam->getPlayerList().size();
+        int connectNbr =
+            playerTeam->getClientNb() - playerTeam->getPlayerList().size();
         player.setInAction(false);
         player.getClient().sendMessage(std::to_string(connectNbr) + "\n");
     }
@@ -391,8 +393,9 @@ void zappy::game::CommandHandler::handleConnectNbr(
 void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 {
     this->_waitCommand(timeLimit::FORK);
-    
-    auto playerTeam = dynamic_cast<zappy::game::TeamsPlayer*>(&player.getTeam());
+
+    auto playerTeam =
+        dynamic_cast<zappy::game::TeamsPlayer *>(&player.getTeam());
     if (playerTeam) {
         playerTeam->allowNewPlayer();
         this->_map.addNewEgg(playerTeam->getTeamId(), player.x, player.y);
@@ -554,16 +557,28 @@ void zappy::game::CommandHandler::_elevatePlayer(
         });
 }
 
-
 void zappy::game::CommandHandler::handleIncantation(
     zappy::game::ServerPlayer &player)
 {
     if (!this->_checkIncantationConditions(player))
         return player.getClient().sendMessage("ko\n");
     this->_setPrayer(player);
-    // ICI Bebou
-    this->_getPlayersOnTile();
-    this->messageToGUI(std::string("pic " + std::to_string(player.x) + " " + std::to_string(player.y) + " " + std::to_string(player.level) + " "));
+    std::string guiMsg = "pic " + std::to_string(player.x) + " " +
+                         std::to_string(player.y) + " " +
+                         std::to_string(player.level);
+    auto otherPlayers =
+        this->_getPlayersOnTile(player.x, player.y, player.level);
+
+    std::for_each(otherPlayers.begin(), otherPlayers.end(),
+        [&guiMsg](std::weak_ptr<ServerPlayer> player) {
+            auto sharedPlayer = player.lock();
+            if (!sharedPlayer->isPraying())
+                return;
+            guiMsg += " ";
+            guiMsg += sharedPlayer->getId();
+        });
+    guiMsg += "\n";
+    this->messageToGUI(guiMsg);
     this->_waitCommand(timeLimit::INCANTATION);
 
     if (!this->_checkIncantationConditions(player))
