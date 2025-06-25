@@ -22,6 +22,7 @@ void zappy::game::Game::_addPlayerToTeam(
         static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
     zappy::game::Egg egg = this->_map.popEgg();
+    this->_commandHandler.messageToGUI("ebo " + std::to_string(egg.getId()) + "\n");
     user.setState(zappy::server::ClientState::CONNECTED);
     auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
         std::move(user), _idPlayerTot, egg.x, egg.y, orientation, *team, 1);

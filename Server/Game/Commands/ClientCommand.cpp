@@ -401,6 +401,11 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
         this->_map.addNewEgg(playerTeam->getTeamId(), player.x, player.y);
         player.setInAction(false);
         player.getClient().sendMessage("ok\n");
+        this->messageToGUI("enw " + std::to_string(player.getTeam().getTeamId()) + " " +
+            std::to_string(player.getId()) + " " +
+            std::to_string(player.x) + " " +
+            std::to_string(player.y) + "\n");
+        this->messageToGUI("pfk " + std::to_string(player.getId()) + "\n");
     }
 }
 
@@ -425,6 +430,7 @@ void zappy::game::CommandHandler::handleTake(
     tile.removeResource(resource);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
+    this->messageToGUI("pgt " + std::to_string(player.getId()) + " " + std::to_string(castResource(resource)) + "\n");
 }
 
 void zappy::game::CommandHandler::handleDrop(
@@ -448,6 +454,7 @@ void zappy::game::CommandHandler::handleDrop(
     player.dropRessource(resource);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
+    this->messageToGUI("pdr " + std::to_string(player.getId()) + " " + std::to_string(castResource(resource)) + "\n");
 }
 
 std::vector<std::weak_ptr<zappy::game::ServerPlayer>>
@@ -559,13 +566,20 @@ void zappy::game::CommandHandler::_elevatePlayer(
                 std::string("Current level:") +
                 std::to_string(sharedPlayer->level) + "\n");
         });
+    this->messageToGUI(std::string("pie " +
+                std::to_string(player.x) + " " +
+                std::to_string(player.y) + " 1\n"));
 }
 
 void zappy::game::CommandHandler::handleIncantation(
     zappy::game::ServerPlayer &player)
 {
-    if (!this->_checkIncantationConditions(player))
+    if (!this->_checkIncantationConditions(player)) {
+        this->messageToGUI(std::string("pie " +
+                std::to_string(player.x) + " " +
+                std::to_string(player.y) + " 0\n"));
         return player.getClient().sendMessage("ko\n");
+    }
     this->_setPrayer(player);
     std::string guiMsg = "pic " + std::to_string(player.x) + " " +
                          std::to_string(player.y) + " " +
@@ -585,8 +599,12 @@ void zappy::game::CommandHandler::handleIncantation(
     this->messageToGUI(guiMsg);
     this->_waitCommand(timeLimit::INCANTATION);
 
-    if (!this->_checkIncantationConditions(player))
+    if (!this->_checkIncantationConditions(player)) {
+        this->messageToGUI(std::string("pie " +
+                std::to_string(player.x) + " " +
+                std::to_string(player.y) + " 0\n"));
         return player.getClient().sendMessage("ko\n");
+    }
     this->_consumeElevationResources(player.x, player.y, player.level);
     this->_elevatePlayer(player);
     player.setInAction(false);

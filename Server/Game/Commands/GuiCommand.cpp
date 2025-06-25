@@ -171,5 +171,5 @@ void zappy::game::CommandHandlerGui::processClientInput(const std::string &input
     if (it != this->_commandMapGui.end()) {
         it->second(player, args);
     } else
-        player.getClient().sendMessage("ko\n");
+        player.getClient().sendMessage("suc\n");
 }
