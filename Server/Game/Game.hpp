@@ -32,7 +32,7 @@ namespace zappy {
                 _baseFreqMs(freq),
                 _clientNb(clientNb)
             {
-                for (auto &team : _teamList) {
+                for (auto &team : this->_teamList) {
                     auto teamCast = (dynamic_cast<TeamsPlayer*>(&(*team)));
                     if (teamCast)
                         teamCast->setClientNb(_clientNb);

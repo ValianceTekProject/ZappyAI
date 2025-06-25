@@ -7,11 +7,13 @@
 
 #include "ClientCommand.hpp"
 #include "Game.hpp"
+#include "GameError.hpp"
 #include "Player.hpp"
 #include "Resource.hpp"
 #include "ServerPlayer.hpp"
 #include <algorithm>
 #include <chrono>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <unistd.h>
@@ -160,33 +162,34 @@ std::pair<int, int> zappy::game::CommandHandler::_computeLookTarget(
     return {targetX, targetY};
 }
 
-std::string zappy::game::CommandHandler::_getTileContent(size_t x, size_t y, bool isPlayerTile)
+std::string zappy::game::CommandHandler::_getTileContent(
+    size_t x, size_t y, bool isPlayerTile)
 {
     std::string content = "";
     auto &tile = this->_map.getTile(x, y);
     bool hasContent = false;
-    
+
     for (const auto &resourceName : names) {
         zappy::game::Resource resource = getResource(resourceName);
         size_t quantity = tile.getResourceQuantity(resource);
-        
+
         for (size_t i = 0; i < quantity; ++i) {
             if (isPlayerTile) {
                 content += " " + resourceName;
-            } else {
-                if (hasContent) {
-                    content += " ";
-                }
-                content += resourceName;
-                hasContent = true;
+                continue;
             }
+            if (hasContent)
+                content += " ";
+            content += resourceName;
+            hasContent = true;
         }
     }
-    
+
     return content;
 }
 
-bool zappy::game::CommandHandler::_checkLastTileInLook(size_t playerLevel, size_t line, int offset)
+bool zappy::game::CommandHandler::_checkLastTileInLook(
+    size_t playerLevel, size_t line, int offset)
 {
     return (line == playerLevel && offset == static_cast<int>(line));
 }
@@ -255,14 +258,109 @@ void zappy::game::CommandHandler::handleInventory(
     player.getClient().sendMessage(msg);
 }
 
+std::pair<int, int> zappy::game::CommandHandler::_computeBroadcastDistance(
+    int x1, int y1, int x2, int y2)
+{
+    int dx = x2 - x1;
+    int dx_round = 0;
+    if (dx > 0)
+        dx_round = dx - static_cast<int>(this->_widthMap);
+    else
+        dx_round = dx + static_cast<int>(this->_widthMap);
+    if (std::abs(dx_round) < std::abs(dx))
+        dx = dx_round;
+
+    int dy = y2 - y1;
+    int dy_round = 0;
+    if (dy > 0)
+        dy_round = dy - static_cast<int>(this->_heightMap);
+    else
+        dy_round = dy + static_cast<int>(this->_heightMap);
+    if (std::abs(dy_round) < std::abs(dy))
+        dy = dy_round;
+
+    return {dx, dy};
+}
+
+int zappy::game::CommandHandler::_getSoundCardinalPoint(
+    int relativeX, int relativeY)
+{
+    if (relativeY < 0) {
+        if (relativeX < 0)
+            return static_cast<int>(SoundDirection::NORTHWEST);
+        else if (relativeX > 0)
+            return static_cast<int>(SoundDirection::NORTHEAST);
+        else
+            return static_cast<int>(SoundDirection::NORTH);
+    } else if (relativeY > 0) {
+        if (relativeX < 0)
+            return static_cast<int>(SoundDirection::SOUTHWEST);
+        else if (relativeX > 0)
+            return static_cast<int>(SoundDirection::SOUTHEAST);
+        else
+            return static_cast<int>(SoundDirection::SOUTH);
+    } else {
+        if (relativeX < 0)
+            return static_cast<int>(SoundDirection::WEST);
+    }
+    return static_cast<int>(SoundDirection::EAST);
+}
+
+int zappy::game::CommandHandler::_computeSoundDirection(
+    const ServerPlayer &player, const ServerPlayer &receiver)
+{
+    if (player.x == receiver.x && player.y == receiver.y)
+        return static_cast<int>(SoundDirection::SAME_POSITION);
+
+    auto [dx, dy] = this->_computeBroadcastDistance(
+        static_cast<int>(receiver.x), static_cast<int>(receiver.y),
+        static_cast<int>(player.x), static_cast<int>(player.y));
+
+    int relativeX = 0;
+    int relativeY = 0;
+
+    switch (receiver.orientation) {
+        case Orientation::NORTH:
+            relativeX = dx;
+            relativeY = dy;
+            break;
+        case Orientation::EAST:
+            relativeX = -dy;
+            relativeY = dx;
+            break;
+        case Orientation::SOUTH:
+            relativeX = -dx;
+            relativeY = -dy;
+            break;
+        case Orientation::WEST:
+            relativeX = dy;
+            relativeY = -dx;
+            break;
+    }
+    return this->_getSoundCardinalPoint(relativeX, relativeY);
+}
+
 void zappy::game::CommandHandler::handleBroadcast(
     zappy::game::ServerPlayer &player, const std::string &arg)
 {
-    (void)arg;
     this->_waitCommand(timeLimit::BROADCAST);
+
+    for (auto &team : this->_teamList) {
+        for (auto &teamPlayer : team->getPlayerList()) {
+            std::cout << "PlayerPos: " << teamPlayer->x << " " << teamPlayer->y
+                      << std::endl;
+            if (teamPlayer->getClient().getSocket() !=
+                player.getClient().getSocket()) {
+                int direction =
+                    this->_computeSoundDirection(player, *teamPlayer);
+                std::string broadcastMsg =
+                    "message " + std::to_string(direction) + "," + arg + "\n";
+                teamPlayer->getClient().sendMessage(broadcastMsg);
+            }
+        }
+    }
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    // implement broadcast;
 }
 
 void zappy::game::CommandHandler::handleConnectNbr(
@@ -336,6 +434,130 @@ void zappy::game::CommandHandler::handleDrop(
     player.getClient().sendMessage("ok\n");
 }
 
+std::vector<std::weak_ptr<zappy::game::ServerPlayer>>
+zappy::game::CommandHandler::_getPlayersOnTile(int x, int y, size_t level)
+{
+    std::vector<std::weak_ptr<ServerPlayer>> players;
+
+    for (auto &team : this->_teamList) {
+        for (auto &player : team->getPlayerList()) {
+            if (player->x == x && player->y == y && player->level == level &&
+                !player->isInAction()) {
+                players.push_back(player);
+            }
+        }
+    }
+    return players;
+}
+
+bool zappy::game::CommandHandler::_checkIncantationResources(
+    size_t x, size_t y, size_t level)
+{
+    if (level < minLevel || level >= maxLevel)
+        return false;
+
+    auto &tile = this->_map.getTile(x, y);
+    const auto &requirements = elevationRequirements[level - 1];
+
+    return tile.getResourceQuantity(Resource::LINEMATE) >=
+               requirements.linemate &&
+           tile.getResourceQuantity(Resource::DERAUMERE) >=
+               requirements.deraumere &&
+           tile.getResourceQuantity(Resource::SIBUR) >= requirements.sibur &&
+           tile.getResourceQuantity(Resource::MENDIANE) >=
+               requirements.mendiane &&
+           tile.getResourceQuantity(Resource::PHIRAS) >= requirements.phiras &&
+           tile.getResourceQuantity(Resource::THYSTAME) >=
+               requirements.thystame;
+}
+
+bool zappy::game::CommandHandler::_checkIncantationConditions(
+    const zappy::game::ServerPlayer &player)
+{
+    const auto &requirements = elevationRequirements[player.level - 1];
+
+    if (player.level >= maxLevel)
+        return false;
+    auto players = this->_getPlayersOnTile(player.x, player.y, player.level);
+
+    if (players.size() < requirements.players) {
+        return false;
+    }
+    return this->_checkIncantationResources(player.x, player.y, player.level);
+}
+
+void zappy::game::CommandHandler::_consumeElevationResources(
+    size_t x, size_t y, size_t level)
+{
+    std::lock_guard<std::mutex> lock(this->_resourceMutex);
+    auto &tile = this->_map.getTile(x, y);
+    const auto &req = elevationRequirements[level - 1];
+
+    for (size_t i = 0; i < req.linemate; i += 1)
+        tile.removeResource(Resource::LINEMATE);
+    for (size_t i = 0; i < req.deraumere; i += 1)
+        tile.removeResource(Resource::DERAUMERE);
+    for (size_t i = 0; i < req.sibur; i += 1)
+        tile.removeResource(Resource::SIBUR);
+    for (size_t i = 0; i < req.mendiane; i += 1)
+        tile.removeResource(Resource::MENDIANE);
+    for (size_t i = 0; i < req.phiras; i += 1)
+        tile.removeResource(Resource::PHIRAS);
+    for (size_t i = 0; i < req.thystame; i += 1)
+        tile.removeResource(Resource::THYSTAME);
+}
+
+void zappy::game::CommandHandler::_setPrayer(zappy::game::ServerPlayer &player)
+{
+    auto playersOnTile =
+        this->_getPlayersOnTile(player.x, player.y, player.level);
+    std::for_each(playersOnTile.begin(), playersOnTile.end(),
+        [](std::weak_ptr<ServerPlayer> playerOnTile) {
+            auto sharedPlayer = playerOnTile.lock();
+            if (!sharedPlayer)
+                throw GameError("Unable to lock weak ptr", "Allowing praying");
+            if (sharedPlayer->isInAction())
+                return;
+            sharedPlayer->setInAction(true);
+            sharedPlayer->pray();
+        });
+}
+
+void zappy::game::CommandHandler::_elevatePlayer(
+    zappy::game::ServerPlayer &player)
+{
+    auto playersOnTile =
+        this->_getPlayersOnTile(player.x, player.y, player.level);
+    std::for_each(playersOnTile.begin(), playersOnTile.end(),
+        [](std::weak_ptr<ServerPlayer> playerOnTile) {
+            auto sharedPlayer = playerOnTile.lock();
+            if (!sharedPlayer)
+                throw GameError("Unable to lock weak ptr", "Elevation");
+            if (!sharedPlayer->isPraying())
+                return;
+            sharedPlayer->level += 1;
+            sharedPlayer->stopPraying();
+            sharedPlayer->setInAction(false);
+        });
+}
+
+
+void zappy::game::CommandHandler::handleIncantation(
+    zappy::game::ServerPlayer &player)
+{
+    if (!this->_checkIncantationConditions(player))
+        return player.getClient().sendMessage("ko\n");
+    this->_setPrayer(player);
+    this->_waitCommand(timeLimit::INCANTATION);
+
+    if (!this->_checkIncantationConditions(player))
+        return player.getClient().sendMessage("ko\n");
+    this->_consumeElevationResources(player.x, player.y, player.level);
+    this->_elevatePlayer(player);
+    player.setInAction(false);
+    player.getClient().sendMessage("ok\n");
+}
+
 void zappy::game::CommandHandler::_executeCommand(
     zappy::game::ServerPlayer &player,
     std::function<void(ServerPlayer &, const std::string &)> function,
@@ -350,6 +572,7 @@ void zappy::game::CommandHandler::_executeCommand(
 
         player.getClient().queueMessage.pop();
         function(player, args);
+        player.setInAction(false);
     });
     commandThread.detach();
 }

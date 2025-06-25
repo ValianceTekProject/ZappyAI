@@ -17,6 +17,24 @@
 
 namespace zappy {
     namespace game {
+        constexpr int minLevel = 1;
+        constexpr int maxLevel = 8;
+
+        typedef struct elevation_s {
+            size_t players;
+            size_t linemate;
+            size_t deraumere;
+            size_t sibur;
+            size_t mendiane;
+            size_t phiras;
+            size_t thystame;
+        } elevation_t;
+
+        const std::array<elevation_t, 7> elevationRequirements = {{
+            {1, 1, 0, 0, 0, 0, 0}, {2, 1, 1, 1, 0, 0, 0},
+            {2, 2, 0, 1, 0, 2, 0}, {4, 1, 1, 2, 0, 1, 0},
+            {4, 1, 2, 1, 3, 0, 0}, {6, 1, 2, 3, 0, 1, 0},
+            {6, 2, 2, 2, 2, 2, 1}}};
 
         class CommandHandler {
            public:
@@ -33,6 +51,18 @@ namespace zappy {
                 TAKE = 7,
                 SET = 7,
                 INCANTATION = 300
+            };
+
+            enum class SoundDirection : int {
+                SAME_POSITION = 0,
+                NORTH = 1,
+                NORTHWEST = 2,
+                WEST = 3,
+                SOUTHWEST = 4,
+                SOUTH = 5,
+                SOUTHEAST = 6,
+                EAST = 7,
+                NORTHEAST = 8
             };
 
             CommandHandler(int &freq, int width, int height, int clientNb,
@@ -75,11 +105,19 @@ namespace zappy {
             std::pair<int, int> _computeLookTarget(
                 ServerPlayer &player, size_t line, int offset);
             std::string _getTileContent(size_t x, size_t y, bool isPlayerTile);
-            bool _checkLastTileInLook(size_t playerLevel, size_t line, int offset);
+            bool _checkLastTileInLook(
+                size_t playerLevel, size_t line, int offset);
 
             void handleInventory(zappy::game::ServerPlayer &player);
+
             void handleBroadcast(
                 zappy::game::ServerPlayer &player, const std::string &arg);
+            std::pair<int, int> _computeBroadcastDistance(
+                int x1, int y1, int x2, int y2);
+            int _computeSoundDirection(
+                const ServerPlayer &player, const ServerPlayer &receiver);
+            int _getSoundCardinalPoint(int relativeX, int relativeY);
+
             void handleConnectNbr(zappy::game::ServerPlayer &player);
             void handleFork(zappy::game::ServerPlayer &player);
 
@@ -93,10 +131,14 @@ namespace zappy {
             void handleDrop(
                 zappy::game::ServerPlayer &player, const std::string &arg);
 
-            void handleIncantation(zappy::game::ServerPlayer &player)
-            {
-                (void)player;
-            }
+            void handleIncantation(zappy::game::ServerPlayer &player);
+            bool _checkIncantationConditions(const ServerPlayer &player);
+            std::vector<std::weak_ptr<ServerPlayer>> _getPlayersOnTile(
+                int x, int y, size_t level);
+            bool _checkIncantationResources(size_t x, size_t y, size_t level);
+            void _consumeElevationResources(size_t x, size_t y, size_t level);
+            void _elevatePlayer(ServerPlayer &player);
+            void _setPrayer(zappy::game::ServerPlayer &player);
 
             void _waitCommand(timeLimit limit);
 
