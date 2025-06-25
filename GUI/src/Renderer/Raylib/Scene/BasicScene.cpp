@@ -31,9 +31,6 @@ void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)
 void zappy::gui::raylib::BasicScene::update()
 {
     AScene::update();
-    StartIncantation(3, 3, 2, {0, 1});
-    StartIncantation(5, 5, 2, {0, 1});
-    StartIncantation(6, 6, 2, {0, 1});
 }
 
 void zappy::gui::raylib::BasicScene::render() const
