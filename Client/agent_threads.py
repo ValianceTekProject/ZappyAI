@@ -15,11 +15,10 @@ class AgentThreads:
     On supprime proprement les threads dont l'Agent est mort.
     """
 
-    def __init__(self, host: str, port: int, team_name: str, freq: int, model: str):
+    def __init__(self, host: str, port: int, team_name: str, model: str):
         self.host = host
         self.port = port
         self.team_name = team_name
-        self.freq = freq
 
         self.model = model
 
@@ -34,7 +33,7 @@ class AgentThreads:
         conn = Connection(self.host, self.port)
         conn.handshake(self.team_name)
 
-        agent = Agent(conn, self.freq, self.team_name, self, self.model)
+        agent = Agent(conn, self.team_name, self, self.model)
         t = threading.Thread(target=agent.run_loop, daemon=True)
         with self._lock:
             self._threads.append(t)
@@ -51,7 +50,7 @@ class AgentThreads:
         conn = Connection(self.host, self.port)
         conn.handshake(self.team_name)
 
-        agent = Agent(conn, self.freq, self.team_name ,self, self.model)
+        agent = Agent(conn, self.team_name ,self, self.model)
         t = threading.Thread(target=agent.run_loop, daemon=True)
         with self._lock:
             self._threads.append(t)

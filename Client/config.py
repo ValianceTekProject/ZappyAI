@@ -11,7 +11,6 @@ import time
 class Constants(Enum):
     HOST = 'localhost'
     PORT_DEFAULT = 6666
-    FREQ_DEFAULT = 100  # freq (100ms)
     MAX_PENDING = 10
     TIME_UNIT = 1.0  # seconds
     FOODS_LOSS_TIME = 126 # times units send inventory for look nb of food
@@ -44,6 +43,11 @@ class Constants(Enum):
 
     VISION_RANGE = 3
     MAX_LEVEL = 8
+
+    INCANT_MIN_FOOD = 35
+    COLLECT_RESOURCES_MIN_FOOD = 25
+    REPRODUCTION_MIN_FOOD = 25
+    REPRODUCTION_SAFE_FOOD = 35
 
 class Item(Enum):
     FOOD = 1

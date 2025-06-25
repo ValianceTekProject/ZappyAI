@@ -18,24 +18,31 @@ class MessageBus:
         self.ttl = ttl
 
     def subscribe(self, msg_type: MessageType, handler: Callable):
-        """Enregistre handler(sender_id, data, direction)."""
-        self.subscribers.setdefault(msg_type, []).append(handler)
+        """Register handler, replacing any existing handler for this type."""
+        if msg_type not in self.subscribers:
+            self.subscribers[msg_type] = []
+        self.subscribers[msg_type].append(handler)
 
     def publish_raw(self, direction: int, token: str):
-        """Reçoit le token Base64, décode, filtre niveau/team/TTL, puis dispatch."""
+        """
+        Reçoit le token Base64, décode, filtre niveau/team/TTL, puis dispatch.
+        """
         decoded = Message.decode_msg(token)
         if not decoded:
             return
         msg_type, sender_id, payload = decoded
 
-        if sender_id != self.team_id:
+        # Filtre équipe
+        if payload.get("team_id") != self.team_id:
             return
 
+        # Filtre TTL
         ts = payload.get("timestamp", payload.get("time", None))
         if ts and (time.time() - ts) > self.ttl:
             return
 
+        # Appel de **tous** les handlers abonnés
         for handler in self.subscribers.get(msg_type, []):
-            handler(sender_id=payload["sender_id"],
+            handler(sender_id=sender_id,
                     data=payload,
                     direction=direction)

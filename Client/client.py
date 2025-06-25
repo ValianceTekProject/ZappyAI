@@ -18,11 +18,10 @@ def main():
         parser.add_argument('--host', default=Constants.HOST.value)
         parser.add_argument('--port', type=int, required=True)
         parser.add_argument('--team', required=True)
-        parser.add_argument('--freq', type=int, default=Constants.FREQ_DEFAULT.value)
         parser.add_argument('--model', type=str, default="basic")
         args = parser.parse_args()
 
-        pool = AgentThreads(args.host, args.port, args.team, args.freq, args.model)
+        pool = AgentThreads(args.host, args.port, args.team, args.model)
         pool.start_initial_agent()
 
         while True:
