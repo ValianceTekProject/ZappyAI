@@ -17,6 +17,24 @@
 
 namespace zappy {
     namespace game {
+        constexpr int minLevel = 1;
+        constexpr int maxLevel = 8;
+
+        typedef struct elevation_s {
+            size_t players;
+            size_t linemate;
+            size_t deraumere;
+            size_t sibur;
+            size_t mendiane;
+            size_t phiras;
+            size_t thystame;
+        } elevation_t;
+
+        const std::array<elevation_t, 7> elevationRequirements = {{
+            {1, 1, 0, 0, 0, 0, 0}, {2, 1, 1, 1, 0, 0, 0},
+            {2, 2, 0, 1, 0, 2, 0}, {4, 1, 1, 2, 0, 1, 0},
+            {4, 1, 2, 1, 3, 0, 0}, {6, 1, 2, 3, 0, 1, 0},
+            {6, 2, 2, 2, 2, 2, 1}}};
 
         class CommandHandler {
            public:
@@ -111,10 +129,14 @@ namespace zappy {
             void handleDrop(
                 zappy::game::ServerPlayer &player, const std::string &arg);
 
-            void handleIncantation(zappy::game::ServerPlayer &player)
-            {
-                (void)player;
-            }
+            void handleIncantation(zappy::game::ServerPlayer &player);
+            bool _checkIncantationConditions(const ServerPlayer &player);
+            std::vector<std::weak_ptr<ServerPlayer>> _getPlayersOnTile(
+                int x, int y, size_t level);
+            bool _checkIncantationResources(size_t x, size_t y, size_t level);
+            void _consumeElevationResources(size_t x, size_t y, size_t level);
+            void _elevatePlayer(ServerPlayer &player);
+            void _setPrayer(zappy::game::ServerPlayer &player);
 
             void _waitCommand(timeLimit limit);
 

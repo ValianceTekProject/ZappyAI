@@ -7,11 +7,13 @@
 
 #include "ClientCommand.hpp"
 #include "Game.hpp"
+#include "GameError.hpp"
 #include "Player.hpp"
 #include "Resource.hpp"
 #include "ServerPlayer.hpp"
 #include <algorithm>
 #include <chrono>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <unistd.h>
@@ -280,7 +282,8 @@ std::pair<int, int> zappy::game::CommandHandler::_computeBroadcastDistance(
     return {dx, dy};
 }
 
-int zappy::game::CommandHandler::_getSoundCardinalPoint(int relativeX, int relativeY)
+int zappy::game::CommandHandler::_getSoundCardinalPoint(
+    int relativeX, int relativeY)
 {
     if (relativeY < 0) {
         if (relativeX < 0)
@@ -344,7 +347,8 @@ void zappy::game::CommandHandler::handleBroadcast(
 
     for (auto &team : this->_teamList) {
         for (auto &teamPlayer : team.getPlayerList()) {
-            std::cout << "PlayerPos: " << teamPlayer->x << " " << teamPlayer->y << std::endl;
+            std::cout << "PlayerPos: " << teamPlayer->x << " " << teamPlayer->y
+                      << std::endl;
             if (teamPlayer->getClient().getSocket() !=
                 player.getClient().getSocket()) {
                 int direction =
@@ -424,6 +428,130 @@ void zappy::game::CommandHandler::handleDrop(
     player.getClient().sendMessage("ok\n");
 }
 
+std::vector<std::weak_ptr<zappy::game::ServerPlayer>>
+zappy::game::CommandHandler::_getPlayersOnTile(int x, int y, size_t level)
+{
+    std::vector<std::weak_ptr<ServerPlayer>> players;
+
+    for (auto &team : this->_teamList) {
+        for (auto &player : team.getPlayerList()) {
+            if (player->x == x && player->y == y && player->level == level &&
+                !player->isInAction()) {
+                players.push_back(player);
+            }
+        }
+    }
+    return players;
+}
+
+bool zappy::game::CommandHandler::_checkIncantationResources(
+    size_t x, size_t y, size_t level)
+{
+    if (level < minLevel || level >= maxLevel)
+        return false;
+
+    auto &tile = this->_map.getTile(x, y);
+    const auto &requirements = elevationRequirements[level - 1];
+
+    return tile.getResourceQuantity(Resource::LINEMATE) >=
+               requirements.linemate &&
+           tile.getResourceQuantity(Resource::DERAUMERE) >=
+               requirements.deraumere &&
+           tile.getResourceQuantity(Resource::SIBUR) >= requirements.sibur &&
+           tile.getResourceQuantity(Resource::MENDIANE) >=
+               requirements.mendiane &&
+           tile.getResourceQuantity(Resource::PHIRAS) >= requirements.phiras &&
+           tile.getResourceQuantity(Resource::THYSTAME) >=
+               requirements.thystame;
+}
+
+bool zappy::game::CommandHandler::_checkIncantationConditions(
+    const zappy::game::ServerPlayer &player)
+{
+    const auto &requirements = elevationRequirements[player.level - 1];
+
+    if (player.level >= maxLevel)
+        return false;
+    auto players = this->_getPlayersOnTile(player.x, player.y, player.level);
+
+    if (players.size() < requirements.players) {
+        return false;
+    }
+    return this->_checkIncantationResources(player.x, player.y, player.level);
+}
+
+void zappy::game::CommandHandler::_consumeElevationResources(
+    size_t x, size_t y, size_t level)
+{
+    std::lock_guard<std::mutex> lock(this->_resourceMutex);
+    auto &tile = this->_map.getTile(x, y);
+    const auto &req = elevationRequirements[level - 1];
+
+    for (size_t i = 0; i < req.linemate; i += 1)
+        tile.removeResource(Resource::LINEMATE);
+    for (size_t i = 0; i < req.deraumere; i += 1)
+        tile.removeResource(Resource::DERAUMERE);
+    for (size_t i = 0; i < req.sibur; i += 1)
+        tile.removeResource(Resource::SIBUR);
+    for (size_t i = 0; i < req.mendiane; i += 1)
+        tile.removeResource(Resource::MENDIANE);
+    for (size_t i = 0; i < req.phiras; i += 1)
+        tile.removeResource(Resource::PHIRAS);
+    for (size_t i = 0; i < req.thystame; i += 1)
+        tile.removeResource(Resource::THYSTAME);
+}
+
+void zappy::game::CommandHandler::_setPrayer(zappy::game::ServerPlayer &player)
+{
+    auto playersOnTile =
+        this->_getPlayersOnTile(player.x, player.y, player.level);
+    std::for_each(playersOnTile.begin(), playersOnTile.end(),
+        [](std::weak_ptr<ServerPlayer> playerOnTile) {
+            auto sharedPlayer = playerOnTile.lock();
+            if (!sharedPlayer)
+                throw GameError("Unable to lock weak ptr", "Allowing praying");
+            if (sharedPlayer->isInAction())
+                return;
+            sharedPlayer->setInAction(true);
+            sharedPlayer->pray();
+        });
+}
+
+void zappy::game::CommandHandler::_elevatePlayer(
+    zappy::game::ServerPlayer &player)
+{
+    auto playersOnTile =
+        this->_getPlayersOnTile(player.x, player.y, player.level);
+    std::for_each(playersOnTile.begin(), playersOnTile.end(),
+        [](std::weak_ptr<ServerPlayer> playerOnTile) {
+            auto sharedPlayer = playerOnTile.lock();
+            if (!sharedPlayer)
+                throw GameError("Unable to lock weak ptr", "Elevation");
+            if (!sharedPlayer->isPraying())
+                return;
+            sharedPlayer->level += 1;
+            sharedPlayer->stopPraying();
+            sharedPlayer->setInAction(false);
+        });
+}
+
+
+void zappy::game::CommandHandler::handleIncantation(
+    zappy::game::ServerPlayer &player)
+{
+    if (!this->_checkIncantationConditions(player))
+        return player.getClient().sendMessage("ko\n");
+    this->_setPrayer(player);
+    this->_waitCommand(timeLimit::INCANTATION);
+
+    if (!this->_checkIncantationConditions(player))
+        return player.getClient().sendMessage("ko\n");
+    this->_consumeElevationResources(player.x, player.y, player.level);
+    this->_elevatePlayer(player);
+    player.setInAction(false);
+    player.getClient().sendMessage("ok\n");
+}
+
 void zappy::game::CommandHandler::_executeCommand(
     zappy::game::ServerPlayer &player,
     std::function<void(ServerPlayer &, const std::string &)> function,
@@ -438,6 +566,7 @@ void zappy::game::CommandHandler::_executeCommand(
 
         player.getClient().queueMessage.pop();
         function(player, args);
+        player.setInAction(false);
     });
     commandThread.detach();
 }
