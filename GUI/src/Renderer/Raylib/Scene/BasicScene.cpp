@@ -20,7 +20,6 @@ void zappy::gui::raylib::BasicScene::init()
         auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type); // ou AResourceModel si tu préfères
         _mapRenderer->addResourceModel(type, std::move(model));
     }
-    addPlayer(1);
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)

@@ -82,6 +82,8 @@ namespace zappy {
 
                     void _addRotation(const APlayerModel &player, const float &angle);
 
+                    void _updateMovements(const float &deltaUnits);
+
                     void _updateBroadcasts(const float &deltaUnits);
 
                     void _updateIncantationAnimation(float deltaTime);
