@@ -9,24 +9,33 @@
 
 #include "IBroadcastEffect.hpp"
 
+#include <raylib.h>
+
 namespace zappy {
     namespace gui {
         namespace raylib {
             class ABroadcastEffect : public IBroadcastEffect
             {
                 public:
+                    ABroadcastEffect(
+                        const int &playerId,
+                        const float &duration,
+                        const Color &color
+                    );
                     virtual ~ABroadcastEffect() = default;
 
-                    virtual bool isFinished() const = 0;
-                    virtual void update(float deltaTime) = 0;
+                    virtual bool isFinished() const;
+                    virtual void update(const float &deltaUnits);
 
                     virtual void render() const = 0;
 
                 protected:
-                    int playerId;
+                    int _playerId;
 
-                    float elapsed;
-                    float duration;
+                    float _elapsedTime;
+                    float _duration;
+
+                    Color _color;
             };
         } // namespace raylib
     } // namespace gui

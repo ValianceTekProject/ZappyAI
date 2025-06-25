@@ -111,10 +111,15 @@ void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
         if (player.get().getId() == id)
             continue;
 
-        int newX = (playerThatExpelled.x + (1 * (orientation == game::Orientation::WEST ? -1 : 1)))
-            % _gameState->getMap()->getWidth();
-        int newY = (playerThatExpelled.y + (1 * (orientation == game::Orientation::SOUTH ? -1 : 1)))
-            % _gameState->getMap()->getHeight();
+        int newX = playerThatExpelled.x;
+        int newY = playerThatExpelled.y;
+
+        if (orientation == game::Orientation::EAST || orientation == game::Orientation::WEST)
+            newX = (newX + (1 * (orientation == game::Orientation::WEST ? -1 : 1)))
+                % _gameState->getMap()->getWidth();
+        if (orientation == game::Orientation::NORTH || orientation == game::Orientation::SOUTH)
+            newY = (newY + (1 * (orientation == game::Orientation::SOUTH ? -1 : 1)))
+                % _gameState->getMap()->getHeight();
 
         _mapRenderer->playerExpulsion(p.getId(), newX, newY);
     }

@@ -18,7 +18,7 @@ namespace zappy {
                     virtual ~IBroadcastEffect() = default;
 
                     virtual bool isFinished() const = 0;
-                    virtual void update(float deltaTime) = 0;
+                    virtual void update(const float &deltaUnits) = 0;
 
                     virtual void render() const = 0;
             };
