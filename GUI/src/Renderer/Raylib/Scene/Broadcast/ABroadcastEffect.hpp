@@ -24,10 +24,10 @@ namespace zappy {
                     );
                     virtual ~ABroadcastEffect() = default;
 
-                    virtual bool isFinished() const;
                     virtual void update(const float &deltaUnits);
+                    virtual void render(const Vector3 &position) const = 0;
 
-                    virtual void render() const = 0;
+                    virtual bool isFinished() const;
 
                 protected:
                     int _playerId;

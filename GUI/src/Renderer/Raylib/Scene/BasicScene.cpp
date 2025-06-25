@@ -79,19 +79,14 @@ void zappy::gui::raylib::BasicScene::updatePlayerInventory(const int &id, const 
     AScene::updatePlayerInventory(id, inventory);
 }
 
-void zappy::gui::raylib::BasicScene::StartIncantation(const int &x, const int &y, const int &level, const std::vector<int> &playerIds)
+void zappy::gui::raylib::BasicScene::startIncantation(const int &x, const int &y, const int &level, const std::vector<int> &playerIds)
 {
-    (void)x;
-    (void)y;
-    (void)level;
-    (void)playerIds;
-    _mapRenderer->setIncantationTile(x, y);
+    AScene::startIncantation(x, y, level, playerIds);
 }
 
-void zappy::gui::raylib::BasicScene::EndIncantation(const int &x, const int &y, const bool &result)
+void zappy::gui::raylib::BasicScene::endIncantation(const int &x, const int &y, const bool &result)
 {
-    (void)result;
-    _mapRenderer->clearIncantationTile(x, y);
+    AScene::endIncantation(x, y, result);
 }
 
 void zappy::gui::raylib::BasicScene::hatchEgg(const int &id)

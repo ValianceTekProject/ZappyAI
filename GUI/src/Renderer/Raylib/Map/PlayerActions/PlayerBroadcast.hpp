@@ -1,0 +1,37 @@
+/*
+** EPITECH PROJECT, 2024
+** Zappy
+** File description:
+** PlayerBroadcast.hpp
+*/
+
+#pragma once
+
+#include "APlayerAction.hpp"
+#include "BroadcastEffectFactory.hpp"
+
+namespace zappy {
+    namespace gui {
+        namespace raylib {
+            class PlayerBroadcast : public APlayerAction {
+                public:
+                    PlayerBroadcast(
+                        const int &playerId,
+                        const ActionType &type,
+                        std::unique_ptr<IBroadcastEffect> effect,
+                        const float &timeUnit,
+                        const float &elapsedTime = 0.f
+                    );
+                    ~PlayerBroadcast() override = default;
+
+                    void update(const float &deltaUnits, APlayerModel &player) override;
+                    void finishAction(APlayerModel &player) override;
+
+                    void render(const Vector3 &position);
+
+                private:
+                    std::unique_ptr<IBroadcastEffect> _effect;
+            };
+        }
+    }
+}

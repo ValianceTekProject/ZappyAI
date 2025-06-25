@@ -47,16 +47,16 @@ namespace zappy {
                 virtual void updatePlayerLevel(const int &id, const size_t &level) = 0;
                 virtual void updatePlayerInventory(const int &id, const game::Inventory &inventory) = 0;
 
-                virtual void PlayerExpulsion(const int &id) = 0;
+                virtual void playerExpulsion(const int &id) = 0;
 
-                virtual void PlayerBroadcast(const int &id, const std::string &message) = 0;
+                virtual void playerBroadcast(const int &id, const std::string &message) = 0;
 
-                virtual void StartIncantation(
+                virtual void startIncantation(
                     const int &x, const int &y,
                     const int &level,
                     const std::vector<int> &playerIds
                 ) = 0;
-                virtual void EndIncantation(const int &x, const int &y, const bool &result) = 0;
+                virtual void endIncantation(const int &x, const int &y, const bool &result) = 0;
 
                 virtual void hatchEgg(const int &eggId) = 0;
 

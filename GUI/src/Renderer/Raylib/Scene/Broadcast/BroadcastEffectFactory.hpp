@@ -24,7 +24,12 @@ namespace zappy {
 
             class BroadcastEffectFactory {
                 public:
-                    static std::unique_ptr<IBroadcastEffect> create(const BroadcastType &type, const int &playerId, const float &duration, const Color &color);
+                    static std::unique_ptr<IBroadcastEffect> create(
+                        const BroadcastType &type,
+                        const int &playerId,
+                        const float &duration,
+                        const Color &color
+                    );
 
                 private:
                     static std::unique_ptr<IBroadcastEffect> createWave(const int &playerId, const float &duration, const Color &color);

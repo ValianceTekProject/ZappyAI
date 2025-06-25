@@ -9,6 +9,9 @@
 
 #include "PlayerTranslation.hpp"
 #include "PlayerRotation.hpp"
+#include "PlayerBroadcast.hpp"
+
+#include "BroadcastEffectFactory.hpp"
 
 #include <memory>
 
@@ -21,19 +24,25 @@ namespace zappy {
                     PlayerActionFactory() = delete;
                     ~PlayerActionFactory() = delete;
 
-                    static std::unique_ptr<IPlayerAction> createTranslation(
+                    static std::shared_ptr<IPlayerAction> createTranslation(
                         const int &playerId,
-                        const ActionType &actionType,
                         const Translation &translation,
                         std::shared_ptr<IFloor> floor,
                         const float &timeUnit,
                         const float &elapsedTime = 0.f
                     );
 
-                    static std::unique_ptr<IPlayerAction> createRotation(
+                    static std::shared_ptr<IPlayerAction> createRotation(
                         const int &playerId,
-                        const ActionType &actionType,
                         const Rotation &rotation,
+                        const float &timeUnit,
+                        const float &elapsedTime = 0.f
+                    );
+
+                    static std::shared_ptr<IPlayerAction> createBroadcast(
+                        const int &playerId,
+                        const BroadcastType &type,
+                        const Color &color,
                         const float &timeUnit,
                         const float &elapsedTime = 0.f
                     );

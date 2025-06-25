@@ -97,7 +97,7 @@ void zappy::gui::raylib::AScene::updatePlayerInventory(const int &id, const game
     (void)inventory;
 }
 
-void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
+void zappy::gui::raylib::AScene::playerExpulsion(const int &id)
 {
     game::Player &playerThatExpelled = _gameState->getPlayerById(id);
     game::Orientation orientation = playerThatExpelled.orientation;
@@ -125,30 +125,25 @@ void zappy::gui::raylib::AScene::PlayerExpulsion(const int &id)
     }
 }
 
-void zappy::gui::raylib::AScene::PlayerBroadcast(const int &id, const std::string &message)
+void zappy::gui::raylib::AScene::playerBroadcast(const int &id, const std::string &message)
 {
-    // Envoyer un message à un joueur
-    (void)id;
+    _mapRenderer->playerBroadcast(id);
     (void)message;
 }
 
-void zappy::gui::raylib::AScene::StartIncantation(
+void zappy::gui::raylib::AScene::startIncantation(
     const int &x, const int &y,
     const int &level,
     const std::vector<int> &playerIds
 ) {
-    // Démarrer une incantation
-    (void)x;
-    (void)y;
+    _mapRenderer->startIncantation(x, y);
     (void)level;
     (void)playerIds;
 }
 
-void zappy::gui::raylib::AScene::EndIncantation(const int &x, const int &y, const bool &result)
+void zappy::gui::raylib::AScene::endIncantation(const int &x, const int &y, const bool &result)
 {
-    // Terminer une incantation
-    (void)x;
-    (void)y;
+    _mapRenderer->endIncantation(x, y);
     (void)result;
 }
 
@@ -160,12 +155,10 @@ void zappy::gui::raylib::AScene::hatchEgg(const int &id)
 
 void zappy::gui::raylib::AScene::removeEgg(const int &id)
 {
-    // Supprimer un œuf
-    (void)id;
+    _mapRenderer->removeEgg(id);
 }
 
 void zappy::gui::raylib::AScene::removePlayer(const int &id)
 {
-    // Supprimer un joueur
-    (void)id;
+    _mapRenderer->removePlayer(id);
 }

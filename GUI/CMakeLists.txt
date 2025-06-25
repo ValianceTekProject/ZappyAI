@@ -99,6 +99,7 @@ set(SOURCES
     ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAction.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerTranslation.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerRotation.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerBroadcast.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerActionFactory.cpp
 
     ${RAYLIB_MAP_DIR}/Incantation.cpp

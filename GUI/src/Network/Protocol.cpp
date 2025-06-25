@@ -411,7 +411,7 @@ void zappy::network::Protocol::handlePlayerExpulsion(const std::string &params)
 
     iss >> playerId;
 
-    _renderer->PlayerExpulsion(playerId);
+    _renderer->playerExpulsion(playerId);
     printDebug("Player " + std::to_string(playerId) + " expelled");
 }
 
@@ -437,7 +437,7 @@ void zappy::network::Protocol::handlePlayerBroadcast(const std::string &params)
 
     iss >> playerId >> message;
 
-    _renderer->PlayerBroadcast(playerId, message);
+    _renderer->playerBroadcast(playerId, message);
     printDebug("Player " + std::to_string(playerId) + " broadcast: " + message);
 }
 
@@ -468,7 +468,7 @@ void zappy::network::Protocol::handleIncantationStart(const std::string &params)
     while (iss >> playerId)
         playerIds.push_back(playerId);
 
-    _renderer->StartIncantation(x, y, level, playerIds);
+    _renderer->startIncantation(x, y, level, playerIds);
     std::string result;
     result += "Incantation started at (" + std::to_string(x) + ", " + std::to_string(y) + ") for level " + std::to_string(level) + " with players:";
     for (const auto &playerId : playerIds)
@@ -494,7 +494,7 @@ void zappy::network::Protocol::handleIncantationEnd(const std::string &params)
 
     iss >> x >> y >> success;
 
-    _renderer->EndIncantation(x, y, success);
+    _renderer->endIncantation(x, y, success);
     printDebug("Incantation " + std::string(success ? "succeeded" : "failed") + " at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
 }
 

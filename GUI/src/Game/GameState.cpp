@@ -34,7 +34,7 @@ void zappy::game::GameState::updatePlayerInventory(const int &id, const Inventor
     player.setInventory(inventory);
 }
 
-void zappy::game::GameState::PlayerExpulsion(const int &id)
+void zappy::game::GameState::playerExpulsion(const int &id)
 {
     Player &playerThatExpelled = getPlayerById(id);
 
@@ -50,10 +50,10 @@ void zappy::game::GameState::PlayerExpulsion(const int &id)
     }
 }
 
-void zappy::game::GameState::PlayerBroadcast(const int &, const std::string &)
+void zappy::game::GameState::playerBroadcast(const int &, const std::string &)
 {}
 
-void zappy::game::GameState::StartIncantation(
+void zappy::game::GameState::startIncantation(
     const int &, const int &,
     const int &,
     const std::vector<int> &playerIds
@@ -64,7 +64,7 @@ void zappy::game::GameState::StartIncantation(
     }
 }
 
-void zappy::game::GameState::EndIncantation(const int &x, const int &y, const bool &result)
+void zappy::game::GameState::endIncantation(const int &x, const int &y, const bool &result)
 {
     auto players = getPlayersByCoord(x, y);
 

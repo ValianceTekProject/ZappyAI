@@ -18,7 +18,7 @@ void zappy::gui::RaylibRenderer::init()
 {
     // Initialisation Raylib ici
     InitWindow(1280, 720, "Zappy");
-    ToggleFullscreen();
+    // ToggleFullscreen();
     SetTargetFPS(60);
     DisableCursor();
 
@@ -90,31 +90,31 @@ void zappy::gui::RaylibRenderer::updatePlayerInventory(const int &id, const game
     ARenderer::updatePlayerInventory(id, inventory);
 }
 
-void zappy::gui::RaylibRenderer::PlayerExpulsion(const int &id)
+void zappy::gui::RaylibRenderer::playerExpulsion(const int &id)
 {
-    _scene->PlayerExpulsion(id);
-    ARenderer::PlayerExpulsion(id);
+    _scene->playerExpulsion(id);
+    ARenderer::playerExpulsion(id);
 }
 
-void zappy::gui::RaylibRenderer::PlayerBroadcast(const int &id, const std::string &message)
+void zappy::gui::RaylibRenderer::playerBroadcast(const int &id, const std::string &message)
 {
-    ARenderer::PlayerBroadcast(id, message);
-    _scene->PlayerBroadcast(id, message);
+    ARenderer::playerBroadcast(id, message);
+    _scene->playerBroadcast(id, message);
 }
 
-void zappy::gui::RaylibRenderer::StartIncantation(
+void zappy::gui::RaylibRenderer::startIncantation(
     const int &x, const int &y,
     const int &level,
     const std::vector<int> &playerIds
 ) {
-    ARenderer::StartIncantation(x, y, level, playerIds);
-    _scene->StartIncantation(x, y, level, playerIds);
+    ARenderer::startIncantation(x, y, level, playerIds);
+    _scene->startIncantation(x, y, level, playerIds);
 }
 
-void zappy::gui::RaylibRenderer::EndIncantation(const int &x, const int &y, const bool &result)
+void zappy::gui::RaylibRenderer::endIncantation(const int &x, const int &y, const bool &result)
 {
-    ARenderer::EndIncantation(x, y, result);
-    _scene->EndIncantation(x, y, result);
+    ARenderer::endIncantation(x, y, result);
+    _scene->endIncantation(x, y, result);
 }
 
 void zappy::gui::RaylibRenderer::hatchEgg(const int &eggId)

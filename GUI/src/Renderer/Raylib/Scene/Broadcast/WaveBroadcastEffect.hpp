@@ -24,7 +24,7 @@ namespace zappy {
 
                     void update(const float &deltaUnits) override;
 
-                    void render() const override;
+                    void render(const Vector3 &position) const override;
 
                 private:
                     float _radius;

@@ -16,7 +16,8 @@ zappy::gui::raylib::APlayerAction::APlayerAction(
     playerId(playerId),
     actionType(actionType),
     _timeUnit(timeUnit),
-    _elapsedTime(elapsedTime)
+    _elapsedTime(elapsedTime),
+    _hasStarted(false)
 {}
 
 void zappy::gui::raylib::APlayerAction::update(const float &deltaUnits, APlayerModel &player)
