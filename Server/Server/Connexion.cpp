@@ -15,7 +15,7 @@ void zappy::server::Server::handleClientMessage(
     int clientSocket, std::string buffer)
 {
     for (auto &team : this->_game->getTeamList()) {
-        for (auto &player : team.getPlayerList()) {
+        for (auto &player : team->getPlayerList()) {
             if (clientSocket == player->getClient().getSocket() &&
         player->getClient().getState() == zappy::server::ClientState::CONNECTED) {
                 std::lock_guard<std::mutex> lock(*(player->getClient().queueMutex));
@@ -56,7 +56,8 @@ void zappy::server::Server::runLoop()
     while (this->_serverRun == RunningState::RUN) {
         this->_socket->getData(this->_fds);
 
-        for (auto &pfd : this->_fds) {
+        for (size_t i = 0; i < this->_fds.size(); i += 1) {
+            auto &pfd = this->_fds[i];
             if (pfd.revents & POLLIN) {
                 if (this->_handleNewConnection(pfd) == true)
                     continue;

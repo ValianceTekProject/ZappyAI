@@ -8,34 +8,44 @@
 #include "Game.hpp"
 #include "Server.hpp"
 #include "ServerPlayer.hpp"
-#include "Teams.hpp"
 #include <algorithm>
 #include <thread>
 
 const constexpr int nbOrientation = 4;
 
 void zappy::game::Game::_addPlayerToTeam(
-    zappy::game::Team &team, int clientSocket)
+    std::shared_ptr<zappy::game::ITeams> team, int clientSocket)
 {
     std::srand(std::time({}));
     int randVal = std::rand() % nbOrientation;
     zappy::game::Orientation orientation =
         static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
-    zappy::game::Egg egg = this->_eggList.front();
-    this->_eggList.pop();
+    zappy::game::Egg egg = this->_map.popEgg();
     user.setState(zappy::server::ClientState::CONNECTED);
     auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
-        std::move(user), _idPlayerTot, egg.x, egg.y, orientation, 1);
-    _idPlayerTot += 1;
-    team.addPlayer(std::move(newPlayer));
-    this->_playerList.push_back(std::move(newPlayer));
+        std::move(user), _idPlayerTot, egg.x, egg.y, orientation, *team, 1);
+    newPlayer->teamName = team->getName();
+    this->_idPlayerTot += 1;
+    team->addPlayer(newPlayer);
+    this->_playerList.push_back(newPlayer);
+    if (auto lastPlayer = this->_playerList.back().lock(); lastPlayer) {
+        std::cout << "Team name = '" << lastPlayer->teamName << "'" << std::endl;
+        if (lastPlayer->teamName != "GRAPHIC") {
+            std::ostringstream orientationStream;
+            orientationStream << lastPlayer->orientation;
+            this->_commandHandler.messageToGUI(std::string("pnw " + std::to_string(this->_idPlayerTot) + " "
+                + std::to_string(lastPlayer->x) + " " + std::to_string(lastPlayer->y) + " "
+                + orientationStream.str() + " " + std::to_string(lastPlayer->level) + " "
+                + lastPlayer->teamName + "\n"));
+        }
+    }
 }
 
 bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
 {
     for (const auto &team : this->_teamList) {
-        for (const auto &player : team.getPlayerList()) {
+        for (const auto &player : team->getPlayerList()) {
             const auto &socket = player->getClient();
             if (socket.getSocket() == clientSocket) {
                 return true;
@@ -45,35 +55,22 @@ bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
     return false;
 }
 
-bool zappy::game::Game::_checkGraphicalFull(const std::string &teamName)
-{
-    if (teamName == "GRAPHIC") {
-        auto graphicTeam = std::find_if(this->_teamList.begin(),
-            this->_teamList.end(), [](const zappy::game::Team &team) {
-                return team.getName() == "GRAPHIC";
-            });
-        if (graphicTeam->getPlayerList().size() >= 1) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool zappy::game::Game::handleTeamJoin(
     int clientSocket, const std::string &teamName)
 {
     auto it = std::find_if(this->_teamList.begin(), this->_teamList.end(),
-        [&teamName](const zappy::game::Team &team) {
-            return team.getName() == teamName;
+        [&teamName](const std::shared_ptr<zappy::game::ITeams> (team)) {
+            return team->getName() == teamName;
         });
 
-    if (it == this->_teamList.end() ||
-        static_cast<int>(it->getPlayerList().size()) >= this->_clientNb) {
-        return false;
+    auto itPlayerTeam = std::dynamic_pointer_cast<TeamsPlayer>(*it);
+    if (itPlayerTeam) {
+        if (it == this->_teamList.end() ||
+            static_cast<int>(itPlayerTeam->getPlayerList().size()) >= itPlayerTeam->getClientNb()) {
+            return false;
+        }
     }
 
-    if (this->_checkGraphicalFull(teamName) == true)
-        return false;
     if (this->_checkAlreadyInTeam(clientSocket) == true)
         return false;
 
@@ -83,24 +80,14 @@ bool zappy::game::Game::handleTeamJoin(
 
 void zappy::game::Game::removeFromTeam(int clientSocket)
 {
-    for (auto &team : this->_teamList) {
-        for (auto &player : team.getPlayerList()) {
+    for (size_t i = 0; i < this->_teamList.size(); i += 1) {
+        auto &team = this->_teamList[i];
+        for (auto &player : team->getPlayerList()) {
             if (player->getClient().getSocket() == clientSocket) {
-                team.removePlayer(clientSocket);
+                team->removePlayer(clientSocket);
+                return;
             }
         }
-    }
-}
-
-void zappy::game::Game::setEggsonMap()
-{
-    for (int i = 0; i < static_cast<int>((_clientNb * _teamList.size()));
-        i += 1) {
-        size_t x = std::rand() % _map.getWidth();
-        size_t y = std::rand() % _map.getHeight();
-        zappy::game::Egg newEgg(_idEggTot, SERVER_FATHER_ID, x, y);
-        _idEggTot += 1;
-        this->_eggList.push(newEgg);
     }
 }
 
@@ -108,18 +95,21 @@ void zappy::game::Game::runGame()
 {
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
-    this->_commandHandler = CommandHandler(this->getFreq(), this->getMap().getWidth(), this->getMap().getHeight());
 
     while (this->_isRunning != RunningState::STOP) {
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - lastUpdate);
         for (auto &team : this->getTeamList()) {
-            for (auto &player : team.getPlayerList()) {
+            for (auto &player : team->getPlayerList()) {
                 if (!player->getClient().queueMessage.empty()) {
-                    this->_commandHandler.processClientInput(
-                        player->getClient().queueMessage.front(), *player);
-                    player->getClient().queueMessage.pop();
+                    if (player->teamName.compare("GRAPHIC") == 0) {
+                        this->_commandHandlerGui.processClientInput(
+                            player->getClient().queueMessage.front(), *player);
+                        player->getClient().queueMessage.pop();
+                    } else
+                        this->_commandHandler.processClientInput(
+                            player->getClient().queueMessage.front(), *player);
                 }
             }
         }

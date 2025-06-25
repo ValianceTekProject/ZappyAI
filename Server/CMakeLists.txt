@@ -64,8 +64,10 @@ set(SOURCES
     ${GAME_DIR}/Game.cpp
     ${GAME_DIR}/Turn.cpp
     ${COMMANDS_DIR}/ClientCommand.cpp
+    ${COMMANDS_DIR}/GuiCommand.cpp
     ${MAP_DIR}/Base.cpp
     ${TEAMS_DIR}/Base.cpp
+    ${TEAMS_DIR}/ATeams.cpp
     ${IVENTORY}/ServerInventory.cpp
     ${NETWORK_DIR}/SocketServer.cpp
     ${SERVER_DIR}/Base.cpp

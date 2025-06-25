@@ -22,14 +22,18 @@ std::string zappy::server::Server::_getClientCommand(const struct pollfd &pfd)
 
 void zappy::server::Server::_handleClientCommand(const std::string &command, struct pollfd &pfd)
 {
-    for (const auto &team : this->_game->getTeamList()) {
-        if (command.compare(team.getName()) == 0) {
-            bool hasJoin = this->_game->handleTeamJoin(pfd.fd, team.getName());
+    for (auto &team : this->_game->getTeamList()) {
+        if (command.compare(team->getName()) == 0) {
+            bool hasJoin = this->_game->handleTeamJoin(pfd.fd, team->getName());
             if (hasJoin) {
-                std::string msg = std::to_string(this->_clientNb - team.getPlayerList().size());
-                this->_socket->sendMessage(pfd.fd, msg);
-                msg = std::to_string(this->_width) + " " + std::to_string(this->_height);
-                this->_socket->sendMessage(pfd.fd, msg);
+                auto teamsPlayer = std::dynamic_pointer_cast<zappy::game::TeamsPlayer>(team);
+                if (teamsPlayer) {
+                    std::string msg = std::to_string(teamsPlayer->getClientNb() - teamsPlayer->getPlayerList().size());
+                    this->_socket->sendMessage(pfd.fd, msg);
+                    msg = std::to_string(this->_width) + " " + std::to_string(this->_height);
+                    this->_socket->sendMessage(pfd.fd, msg);
+                    return;
+                }
                 return;
             }
             this->_socket->sendMessage(pfd.fd, "Invalid team");
