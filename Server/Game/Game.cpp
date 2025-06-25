@@ -13,18 +13,6 @@
 
 const constexpr int nbOrientation = 4;
 
-void zappy::game::Game::messageToGUI(const std::string &msg)
-{
-    for (auto &team : this->getTeamList()) {
-        if (team->getName() == "GRAPHIC") {
-            for (auto &player : team->getPlayerList()) {
-                if (player)
-                    player->getClient().sendMessage(msg);
-            }
-        }
-    }
-}
-
 void zappy::game::Game::_addPlayerToTeam(
     std::shared_ptr<zappy::game::ITeams> team, int clientSocket)
 {
@@ -46,7 +34,7 @@ void zappy::game::Game::_addPlayerToTeam(
         if (lastPlayer->teamName != "GRAPHIC") {
             std::ostringstream orientationStream;
             orientationStream << lastPlayer->orientation;
-            this->messageToGUI(std::string("pnw " + std::to_string(this->_idPlayerTot) + " "
+            this->_commandHandler.messageToGUI(std::string("pnw " + std::to_string(this->_idPlayerTot) + " "
                 + std::to_string(lastPlayer->x) + " " + std::to_string(lastPlayer->y) + " "
                 + orientationStream.str() + " " + std::to_string(lastPlayer->level) + " "
                 + lastPlayer->teamName + "\n"));

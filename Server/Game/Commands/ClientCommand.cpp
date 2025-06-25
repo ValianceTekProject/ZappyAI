@@ -18,6 +18,18 @@
 #include <thread>
 #include <unistd.h>
 
+void zappy::game::CommandHandler::messageToGUI(const std::string &msg)
+{
+    for (auto &team : _teamList) {
+        if (team->getName() == "GRAPHIC") {
+            for (auto &player : team->getPlayerList()) {
+                if (player)
+                    player->getClient().sendMessage(msg);
+            }
+        }
+    }
+}
+
 void zappy::game::CommandHandler::initCommandMap()
 {
     this->_commandMap = {
@@ -354,13 +366,14 @@ void zappy::game::CommandHandler::handleBroadcast(
                 int direction =
                     this->_computeSoundDirection(player, *teamPlayer);
                 std::string broadcastMsg =
-                    "message " + std::to_string(direction) + "," + arg + "\n";
+                    "message " + std::to_string(direction) + ", " + arg + "\n";
                 teamPlayer->getClient().sendMessage(broadcastMsg);
             }
         }
     }
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
+    this->messageToGUI(std::string("pbc " + std::to_string(player.getId()) + " " + arg + "\n"));
 }
 
 void zappy::game::CommandHandler::handleConnectNbr(
@@ -548,6 +561,9 @@ void zappy::game::CommandHandler::handleIncantation(
     if (!this->_checkIncantationConditions(player))
         return player.getClient().sendMessage("ko\n");
     this->_setPrayer(player);
+    // ICI Bebou
+    this->_getPlayersOnTile();
+    this->messageToGUI(std::string("pic " + std::to_string(player.x) + " " + std::to_string(player.y) + " " + std::to_string(player.level) + " "));
     this->_waitCommand(timeLimit::INCANTATION);
 
     if (!this->_checkIncantationConditions(player))

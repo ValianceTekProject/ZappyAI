@@ -78,6 +78,8 @@ namespace zappy {
 
             int &getFreq() { return _freq; }
 
+            void messageToGUI(const std::string &msg);
+
            protected:
             int &_freq;
             int _widthMap;
