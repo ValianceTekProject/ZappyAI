@@ -19,7 +19,7 @@ zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> ma
 void zappy::gui::raylib::MapRenderer::init()
 {
     // Init la carte
-    _floor = std::make_unique<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
+    _floor = std::make_shared<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
     _floor->init();
 
     // Init les resources
@@ -194,7 +194,15 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
     auto &player = _getPlayer(id);
     Translation translation = _floor->createTranslation(player, x, y, FORWARD_TIME);
 
-    _movementQueues[id].push(translation);
+    std::unique_ptr<IPlayerAction> action = PlayerActionFactory::createTranslation(
+        id,
+        ActionType::TRANSLATION,
+        translation,
+        this->_floor,
+        FORWARD_TIME
+    );
+
+    _playerActionQueues[id].push(std::move(action));
 
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
@@ -208,7 +216,15 @@ void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &
 
     Translation translation = _floor->createTranslation(player, x, y, EXPULSION_TIME);
 
-    _movementQueues[id].push(translation);
+    std::unique_ptr<IPlayerAction> action = PlayerActionFactory::createTranslation(
+        id,
+        ActionType::TRANSLATION,
+        translation,
+        this->_floor,
+        EXPULSION_TIME
+    );
+
+    _playerActionQueues[id].push(std::move(action));
 
     player.setGamePosition(Vector2{ static_cast<float>(x), static_cast<float>(y) });
 }
@@ -279,41 +295,37 @@ void zappy::gui::raylib::MapRenderer::_addRotation(const APlayerModel &player, c
 
     Rotation rotation = {
         player.getId(),
-        MovementType::ROTATION,
         destination,
-        perStep,
-        ROTATION_TIME,
-        0
+        perStep
     };
 
-    _movementQueues[player.getId()].push(rotation);
+    std::unique_ptr<IPlayerAction> action = PlayerActionFactory::createRotation(
+        player.getId(),
+        ActionType::ROTATION,
+        rotation,
+        ROTATION_TIME
+    );
+
+    _playerActionQueues[player.getId()].push(std::move(action));
 }
 
 void zappy::gui::raylib::MapRenderer::_updateMovements(const float &deltaUnits)
 {
-    for (auto it = _movementQueues.begin(); it != _movementQueues.end(); ) {
+    for (auto it = _playerActionQueues.begin(); it != _playerActionQueues.end(); ) {
         auto &queue = it->second;
         if (queue.empty()) {
-            it = _movementQueues.erase(it);
+            it = _playerActionQueues.erase(it);
             continue;
         }
 
-        Movement &m = queue.front();
-        APlayerModel &p = _getPlayer(m.id);
+        auto &action = queue.front();
+        APlayerModel &player = _getPlayer(action->getPlayerId());
 
-        if (m.elapsedTime + deltaUnits >= m.timeUnits) {
-            if (m.type == MovementType::TRANSLATION)
-                p.setPosition(m.destination);
-            else if (m.type == MovementType::ROTATION)
-                p.rotate(Vector3Subtract(m.destination, p.getRotation()));
+        if (action->ActionWillEnd(deltaUnits)) {
+            action->finishAction(player);
             queue.pop();
-        } else {
-            if (m.type == MovementType::TRANSLATION)
-                _floor->translate(deltaUnits, m.movementVector, m.destination, p);
-            else if (m.type == MovementType::ROTATION)
-                p.rotate(Vector3Scale(m.movementVector, deltaUnits));
-            m.elapsedTime += deltaUnits;
-        }
+        } else
+            action->update(deltaUnits, player);
         ++it;
     }
 }

@@ -12,19 +12,20 @@
 namespace zappy {
     namespace gui {
         namespace raylib {
-            enum class MovementType {
+            enum class ActionType {
                 TRANSLATION,
-                ROTATION
+                ROTATION,
+                BROADCAST,
             };
 
             struct Movement {
                 int id;
-                MovementType type;
                 Vector3 destination;
                 Vector3 movementVector;
-                int timeUnits;
-                float elapsedTime;
             };
+
+            using Translation = Movement;
+            using Rotation = Movement;
         }
     }
 }

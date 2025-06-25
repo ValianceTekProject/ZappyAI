@@ -14,12 +14,15 @@
 
 #include "Map.hpp"
 #include "FlatFloor.hpp"
-#include "Movement.hpp"
+
+#include "PlayerActionFactory.hpp"
 
 // #include "AResourceModel.hpp"
 #include "AEggModel.hpp"
 #include "APlayerModel.hpp"
 #include "Resource.hpp"
+
+#include "BroadcastEffectFactory.hpp"
 
 #include <memory>
 #include <vector>
@@ -30,8 +33,6 @@
 namespace zappy {
     namespace gui {
         namespace raylib {
-                    using Rotation = Movement;
-
             class MapRenderer {
                 public:
                     constexpr static int FORWARD_TIME = 7;
@@ -74,20 +75,22 @@ namespace zappy {
                     void _addRotation(const APlayerModel &player, const float &angle);
 
                     void _updateMovements(const float &deltaUnits);
-                    void _updateTranslations(const float &deltaUnits);
-                    void _updateRotations(const float &deltaUnits);
+
+                    void _updateBroadcasts(const float &deltaUnits);
 
                     const std::shared_ptr<game::Map> _map;
 
                     std::chrono::steady_clock::time_point _lastTime;
 
-                    std::unique_ptr<IFloor> _floor;
+                    std::shared_ptr<IFloor> _floor;
 
                     std::vector<std::unique_ptr<AEggModel>> _eggs;
                     std::vector<std::unique_ptr<APlayerModel>> _players;
                     std::array<std::unique_ptr<BasicResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
 
-                    std::unordered_map<int, std::queue<Movement>> _movementQueues;
+                    std::unordered_map<int, std::queue<std::unique_ptr<IPlayerAction>>> _playerActionQueues;
+
+                    // std::vector<std::unique_ptr<IBroadcastEffect>> _broadcasts;
             };
         }
     }

@@ -18,8 +18,6 @@
 namespace zappy {
     namespace gui {
         namespace raylib {
-            using Translation = Movement;
-
             class IFloor {
                 public:
                     virtual ~IFloor() = default;

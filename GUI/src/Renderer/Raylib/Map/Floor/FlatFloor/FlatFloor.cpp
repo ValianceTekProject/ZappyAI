@@ -121,11 +121,8 @@ zappy::gui::raylib::Translation zappy::gui::raylib::FlatFloor::createTranslation
 
     Translation t = {
         player.getId(),
-        MovementType::TRANSLATION,
         dest,
-        unitStep,
-        timeUnit,
-        0.0f
+        unitStep
     };
 
     return t;

@@ -14,9 +14,12 @@ set(NETWORK_DIR ${SRC_DIR}/Network)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
 set(RAYLIB_DIR ${RENDERER_DIR}/Raylib)
+
 set(RAYLIB_SCENE_DIR ${RAYLIB_DIR}/Scene)
+set(RAYLIB_BROADCAST_DIR ${RAYLIB_SCENE_DIR}/Broadcast)
 
 set(RAYLIB_MAP_DIR ${RAYLIB_DIR}/Map)
+set(RAYLIB_PLAYER_ACTIONS_DIR ${RAYLIB_MAP_DIR}/PlayerActions)
 
 set(RAYLIB_FLOOR_DIR ${RAYLIB_MAP_DIR}/Floor)
 set(RAYLIB_FLATFLOOR_DIR ${RAYLIB_FLOOR_DIR}/FlatFloor)
@@ -43,7 +46,10 @@ include_directories(
     ${RENDERER_DIR}
     ${RAYLIB_DIR}
     ${RAYLIB_SCENE_DIR}
+    ${RAYLIB_BROADCAST_DIR}
+
     ${RAYLIB_MAP_DIR}
+    ${RAYLIB_PLAYER_ACTIONS_DIR}
 
     ${RAYLIB_FLOOR_DIR}
     ${RAYLIB_FLATFLOOR_DIR}
@@ -82,9 +88,19 @@ set(SOURCES
 
     ${RAYLIB_DIR}/RaylibRenderer.cpp
     ${RAYLIB_SCENE_DIR}/InputManager.cpp
+
     ${RAYLIB_SCENE_DIR}/AScene.cpp
 
+    ${RAYLIB_BROADCAST_DIR}/ABroadcastEffect.cpp
+    ${RAYLIB_BROADCAST_DIR}/WaveBroadcastEffect.cpp
+    ${RAYLIB_BROADCAST_DIR}/BroadcastEffectFactory.cpp
+
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAction.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerTranslation.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerRotation.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerActionFactory.cpp
+
     ${RAYLIB_FLOOR_DIR}/AFloor.cpp
 
     ${RAYLIB_FLATFLOOR_DIR}/FlatFloor.cpp
