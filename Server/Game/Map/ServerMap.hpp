@@ -9,7 +9,7 @@
 
 #include "Egg.hpp"
 #include "Map.hpp"
-#include "Teams.hpp"
+#include "ITeams.hpp"
 #include <queue>
 
 namespace zappy {
@@ -22,7 +22,7 @@ namespace zappy {
             explicit MapServer(int mapWidth, int mapHeight);
             ~MapServer() = default;
 
-            void setEggsonMap(std::vector<Team> &teamList, int clientNb);
+            void setEggsonMap(std::vector<std::shared_ptr<ITeams>> &teamList, int clientNb);
             void addNewEgg(int teamId, int x, int y);
             zappy::game::Egg popEgg();
 

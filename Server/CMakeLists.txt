@@ -67,6 +67,7 @@ set(SOURCES
     ${COMMANDS_DIR}/GuiCommand.cpp
     ${MAP_DIR}/Base.cpp
     ${TEAMS_DIR}/Base.cpp
+    ${TEAMS_DIR}/ATeams.cpp
     ${IVENTORY}/ServerInventory.cpp
     ${NETWORK_DIR}/SocketServer.cpp
     ${SERVER_DIR}/Base.cpp

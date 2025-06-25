@@ -6,7 +6,6 @@
 //
 
 #include "ServerMap.hpp"
-#include "Teams.hpp"
 #include <chrono>
 
 zappy::game::MapServer::MapServer(int width, int height)
@@ -20,7 +19,7 @@ zappy::game::MapServer::MapServer(int width, int height)
 }
 
 void zappy::game::MapServer::setEggsonMap(
-    std::vector<Team> &teamList, int clientNb)
+    std::vector<std::shared_ptr<ITeams>> &teamList, int clientNb)
 {
     for (int i = 0; i < static_cast<int>(clientNb * teamList.size()); i += 1) {
         size_t x = std::rand() % this->getWidth();

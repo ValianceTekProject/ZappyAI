@@ -6,6 +6,7 @@
 */
 
 #include "Server.hpp"
+#include "TeamsGui.hpp"
 #include "SocketServer.hpp"
 #include "Error.hpp"
 #include "Game.hpp"
@@ -24,7 +25,7 @@ zappy::server::Server::Server(int argc, char const *argv[])
     this->_parseFlags(argc, argv);
     int &freq = this->_freq;
     this->_game = std::make_unique<zappy::game::Game>(
-        this->_width, this->_height, std::move(this->_teamList), freq, this->_clientNb);
+        this->_width, this->_height, this->_teamList, freq, this->_clientNb);
     this->_socket =
         std::make_unique<server::SocketServer>(this->_port, this->_clientNb);
     this->_fds.push_back({this->_socket->getSocket(), POLLIN, 0});
@@ -54,13 +55,16 @@ void zappy::server::Server::_parseName(int &index, char const *argv[])
         this->_namesTeam.push_back(argv[index]);
         if (std::string(argv[index]) == "GRAPHIC")
             throw error::InvalidArg("GRAPHIC is reserved for the gui");
-        this->_teamList.emplace_back(argv[index], teamId);
+        auto newTeam = std::make_shared<zappy::game::TeamsPlayer>(argv[index], teamId);
+        this->_teamList.push_back(newTeam);
+
         index += 1;
         teamId += 1;
     }
 
     this->_namesTeam.push_back("GRAPHIC");
-    this->_teamList.emplace_back("GRAPHIC", guiId);
+    auto newTeam = std::make_shared<zappy::game::TeamsGui>("GRAPHIC", guiId);
+    this->_teamList.push_back(newTeam);
     if (this->_teamList.size() == guiOnly)
         throw error::InvalidArg("Flag -n must have at least on argument !");
     index -= 1;

@@ -15,7 +15,7 @@ void zappy::server::Server::handleClientMessage(
     int clientSocket, std::string buffer)
 {
     for (auto &team : this->_game->getTeamList()) {
-        for (auto &player : team.getPlayerList()) {
+        for (auto &player : team->getPlayerList()) {
             if (clientSocket == player->getClient().getSocket() &&
         player->getClient().getState() == zappy::server::ClientState::CONNECTED) {
                 std::lock_guard<std::mutex> lock(*(player->getClient().queueMutex));

@@ -61,7 +61,7 @@ namespace zappy {
 
             std::vector<struct pollfd> _fds;
 
-            std::vector<zappy::game::Team> _teamList;
+            std::vector<std::shared_ptr<zappy::game::ITeams>> _teamList;
             std::unordered_map<std::string, std::function<void(int)>> _flags;
 
             std::mutex _socketLock;

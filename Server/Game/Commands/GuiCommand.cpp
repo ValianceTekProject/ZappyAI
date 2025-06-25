@@ -43,7 +43,7 @@ void zappy::game::CommandHandlerGui::handleMct(zappy::game::ServerPlayer &player
 void zappy::game::CommandHandlerGui::handleTna(zappy::game::ServerPlayer &player)
 {
     for (auto &team : this->_teamList)
-        player.getClient().sendMessage(std::string("tna " + team.getName() + "\n"));
+        player.getClient().sendMessage(std::string("tna " + team->getName() + "\n"));
 }
 
 void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player, const std::string &arg)
@@ -56,7 +56,7 @@ void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player
     stream >> playerId;
 
     for (auto &team : this->_teamList) {
-        for (auto &p : team.getPlayerList()) {
+        for (auto &p : team->getPlayerList()) {
             if (p->getId() == playerId) {
                 std::ostringstream orientationStream;
                 orientationStream << p->orientation;
@@ -83,7 +83,7 @@ void zappy::game::CommandHandlerGui::handlePlv(zappy::game::ServerPlayer &player
     stream >> playerId;
 
     for (auto &team : this->_teamList) {
-        for (auto &p : team.getPlayerList()) {
+        for (auto &p : team->getPlayerList()) {
             if (p->getId() == playerId) {
                 msg += std::to_string(playerId) + " " + std::to_string(p->level) + "\n";
                 player.getClient().sendMessage(msg);
@@ -104,7 +104,7 @@ void zappy::game::CommandHandlerGui::handlePin(zappy::game::ServerPlayer &player
     stream >> playerId;
 
     for (auto &team : this->_teamList) {
-        for (auto &p : team.getPlayerList()) {
+        for (auto &p : team->getPlayerList()) {
             if (p->getId() == playerId) {
                 msg += std::to_string(playerId) + " " + std::to_string(p->x) + " " + std::to_string(p->y) + " ";
                 zappy::game::Inventory playerInv = p->getInventory();

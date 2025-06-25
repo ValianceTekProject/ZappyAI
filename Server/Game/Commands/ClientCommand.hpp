@@ -9,7 +9,7 @@
 
 #include "ServerMap.hpp"
 #include "ServerPlayer.hpp"
-#include "Teams.hpp"
+#include "ITeams.hpp"
 #include <functional>
 #include <iostream>
 #include <map>
@@ -36,7 +36,7 @@ namespace zappy {
             };
 
             CommandHandler(int &freq, int width, int height, int clientNb,
-                zappy::game::MapServer &map, std::vector<Team> &teamList)
+                zappy::game::MapServer &map, std::vector<std::shared_ptr<ITeams>> &teamList)
                 : _freq(freq), _widthMap(width), _heightMap(height),
                   _clientNb(clientNb), _map(map), _teamList(teamList) {};
             ~CommandHandler() = default;
@@ -62,7 +62,7 @@ namespace zappy {
                 std::function<void(ServerPlayer &, const std::string &)>
                     function,
                 const std::string &args);
-            std::vector<Team> &_teamList;
+            std::vector<std::shared_ptr<ITeams>> &_teamList;
 
            private:
             void handleForward(zappy::game::ServerPlayer &player);

@@ -268,20 +268,26 @@ void zappy::game::CommandHandler::handleBroadcast(
 void zappy::game::CommandHandler::handleConnectNbr(
     zappy::game::ServerPlayer &player)
 {
-    int connectNbr = player.getTeam().getClientNb() -
-                     player.getTeam().getPlayerList().size();
-    player.setInAction(false);
-    player.getClient().sendMessage(std::to_string(connectNbr) + "\n");
+    auto playerTeam = dynamic_cast<zappy::game::TeamsPlayer*>(&player.getTeam());
+    if (playerTeam) {
+        int connectNbr = playerTeam->getClientNb() -
+                        playerTeam->getPlayerList().size();
+        player.setInAction(false);
+        player.getClient().sendMessage(std::to_string(connectNbr) + "\n");
+    }
 }
 
 void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 {
     this->_waitCommand(timeLimit::FORK);
     
-    player.getTeam().allowNewPlayer();
-    this->_map.addNewEgg(player.getTeam().getTeamId(), player.x, player.y);
-    player.setInAction(false);
-    player.getClient().sendMessage("ok\n");
+    auto playerTeam = dynamic_cast<zappy::game::TeamsPlayer*>(&player.getTeam());
+    if (playerTeam) {
+        playerTeam->allowNewPlayer();
+        this->_map.addNewEgg(playerTeam->getTeamId(), player.x, player.y);
+        player.setInAction(false);
+        player.getClient().sendMessage("ok\n");
+    }
 }
 
 void zappy::game::CommandHandler::handleTake(

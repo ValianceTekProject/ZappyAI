@@ -11,12 +11,12 @@
 
 #include "Client.hpp"
 #include "Player.hpp"
-#include "Teams.hpp"
+#include "ITeams.hpp"
 #include "ServerInventory.hpp"
 
 namespace zappy {
     namespace game {
-        class Team;
+        class ITeams;
 
         class ServerPlayer : public Player {
 
@@ -26,7 +26,7 @@ namespace zappy {
                  size_t x,
                  size_t y,
                  Orientation orientation,
-                 zappy::game::Team &team,
+                 zappy::game::ITeams &team,
                  size_t level = 1
                 )
                 : Player::Player(id, x, y, orientation, level),
@@ -47,7 +47,7 @@ namespace zappy {
 
             bool isInAction() { return _actionStarted; }
             void setInAction(bool status) { _actionStarted = status; }
-            zappy::game::Team &getTeam() { return _team; }
+            zappy::game::ITeams &getTeam() { return _team; }
 
 
            private:
@@ -56,7 +56,7 @@ namespace zappy {
             std::chrono::steady_clock::time_point _startTime;
 
             bool _actionStarted = false;
-            zappy::game::Team &_team;
+            zappy::game::ITeams &_team;
         };
     }
 }
