@@ -10,6 +10,7 @@
 #include "AScene.hpp"
 #include "BasicPlayerModel.hpp"
 #include "BasicEggModel.hpp"
+#include "BasicResourceModel.hpp"
 
 #include <raylib.h>
 #include <unordered_map>
@@ -37,6 +38,13 @@ namespace zappy {
                     void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) override;
                     void updatePlayerLevel(const int &id, const size_t &level) override;
                     void updatePlayerInventory(const int &id, const game::Inventory &inventory) override;
+
+                    void StartIncantation(
+                        const int &x, const int &y,
+                        const int &level,
+                        const std::vector<int> &playerIds
+                    ) override;
+                    void EndIncantation(const int &x, const int &y, const bool &result) override;
 
                     void hatchEgg(const int &eggId) override;
 

@@ -10,14 +10,13 @@
 #include "AResourceModel.hpp"
 #include "Orientation.hpp"
 #include "RendererError.hpp"
-#include "BasicResourceModel.hpp"
 
 #include "Map.hpp"
 #include "FlatFloor.hpp"
+#include "BasicResourceModel.hpp"
 
 #include "PlayerActionFactory.hpp"
 
-// #include "AResourceModel.hpp"
 #include "AEggModel.hpp"
 #include "APlayerModel.hpp"
 #include "Resource.hpp"
@@ -25,10 +24,12 @@
 #include "BroadcastEffectFactory.hpp"
 
 #include <memory>
+#include <optional>
 #include <vector>
 #include <unordered_map>
 #include <queue>
 #include <chrono>
+#include "Incantation.hpp"
 
 namespace zappy {
     namespace gui {
@@ -49,8 +50,12 @@ namespace zappy {
 
                     void render();
 
+                    void renderResources();
+                    void renderIncantations();
+
                     void addEgg(std::unique_ptr<AEggModel> egg);
                     void addPlayer(std::unique_ptr<APlayerModel> player);
+                    void addResourceModel(const zappy::game::Resource &type, std::unique_ptr<AResourceModel> model);
 
                     void setEggPosition(const int &id, const int &x, const int &y);
                     void setPlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation);
@@ -65,7 +70,10 @@ namespace zappy {
                     void removePlayer(const int &id);
                     void removeEgg(const int &id);
 
-                private:
+                    void setIncantationTile(const int &x, const int &y);
+                    void clearIncantationTile(const int &x, const int &y);
+
+                    private:
                     APlayerModel &_getPlayer(const int &id);
                     const APlayerModel &_getPlayer(const int &id) const;
 
@@ -74,9 +82,9 @@ namespace zappy {
 
                     void _addRotation(const APlayerModel &player, const float &angle);
 
-                    void _updateMovements(const float &deltaUnits);
-
                     void _updateBroadcasts(const float &deltaUnits);
+
+                    void _updateIncantationAnimation(float deltaTime);
 
                     const std::shared_ptr<game::Map> _map;
 
@@ -86,7 +94,9 @@ namespace zappy {
 
                     std::vector<std::unique_ptr<AEggModel>> _eggs;
                     std::vector<std::unique_ptr<APlayerModel>> _players;
-                    std::array<std::unique_ptr<BasicResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
+                    std::array<std::unique_ptr<AResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
+
+                    std::vector<std::unique_ptr<Incantation>> _incantations;
 
                     std::unordered_map<int, std::queue<std::unique_ptr<IPlayerAction>>> _playerActionQueues;
 

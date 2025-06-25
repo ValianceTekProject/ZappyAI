@@ -7,6 +7,7 @@
 
 #include "MapRenderer.hpp"
 #include "Resource.hpp"
+#include <rlgl.h>
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
@@ -21,14 +22,6 @@ void zappy::gui::raylib::MapRenderer::init()
     // Init la carte
     _floor = std::make_shared<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
     _floor->init();
-
-    // Init les resources
-    for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
-        auto type = static_cast<zappy::game::Resource>(i);
-        auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type);
-        model->init();
-        _resourceModels[i] = std::move(model);
-    }
 }
 
 void zappy::gui::raylib::MapRenderer::update(const int &frequency)
@@ -56,6 +49,7 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
     float deltaUnits = deltaSec * frequency;
 
     _updateMovements(deltaUnits);
+    _updateIncantationAnimation(deltaSec);
 }
 
 void zappy::gui::raylib::MapRenderer::render()
@@ -76,13 +70,23 @@ void zappy::gui::raylib::MapRenderer::render()
             egg->render();
     }
 
-    // Dessiner les resources
+    // Dessiner les ressources
+    renderResources();
+
+    // Dessiner les incantations
+    renderIncantations();
+}
+
+void zappy::gui::raylib::MapRenderer::renderResources()
+{
+    constexpr float uniformHeight = 0.1f;
+    float spacing = 0.2f;
+
     for (size_t y = 0; y < _map->getHeight(); ++y) {
         for (size_t x = 0; x < _map->getWidth(); ++x) {
             const auto &tile = _map->getTile(x, y);
             const auto &resources = tile.getResources();
             Vector3 basePos = _floor->get3DCoords(x, y);
-            float spacing = 0.2f;
             int typeIndex = 0;
 
             for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
@@ -93,18 +97,23 @@ void zappy::gui::raylib::MapRenderer::render()
                 for (size_t q = 0; q < quantity; ++q) {
                     Vector3 pos = {
                         basePos.x + (q % 2) * spacing + (typeIndex % 3) * spacing,
-                        basePos.y,
+                        uniformHeight,
                         basePos.z + (q / 2) * spacing + (typeIndex / 3) * spacing
                     };
 
                     _resourceModels[i]->setPosition(pos);
                     _resourceModels[i]->render();
                 }
-
                 typeIndex++;
             }
         }
     }
+}
+
+void zappy::gui::raylib::MapRenderer::renderIncantations()
+{
+    for (const auto& incantation : _incantations)
+        incantation->render(_floor.get());
 }
 
 void zappy::gui::raylib::MapRenderer::addEgg(std::unique_ptr<AEggModel> egg)
@@ -119,6 +128,13 @@ void zappy::gui::raylib::MapRenderer::addPlayer(std::unique_ptr<APlayerModel> pl
     player->init();
 
     _players.push_back(std::move(player));
+}
+
+void zappy::gui::raylib::MapRenderer::addResourceModel(const zappy::game::Resource &type, std::unique_ptr<AResourceModel> model)
+{
+    if (model)
+        model->init();
+    _resourceModels[static_cast<size_t>(type)] = std::move(model);
 }
 
 void zappy::gui::raylib::MapRenderer::setEggPosition(const int &id, const int &x, const int &y)
@@ -328,4 +344,31 @@ void zappy::gui::raylib::MapRenderer::_updateMovements(const float &deltaUnits)
             action->update(deltaUnits, player);
         ++it;
     }
+}
+
+void zappy::gui::raylib::MapRenderer::setIncantationTile(const int &x, const int &y)
+{
+    for (const auto& inc : _incantations) {
+        if (inc->isAt(x, y))
+            return;
+    }
+
+    _incantations.push_back(std::make_unique<Incantation>(Vector2{static_cast<float>(x), static_cast<float>(y)}));
+}
+
+void zappy::gui::raylib::MapRenderer::clearIncantationTile(const int &x, const int &y)
+{
+    _incantations.erase(
+        std::remove_if(_incantations.begin(), _incantations.end(),
+            [x, y](const std::unique_ptr<Incantation>& inc) {
+                return inc->isAt(x, y);
+            }),
+        _incantations.end()
+    );
+}
+
+void zappy::gui::raylib::MapRenderer::_updateIncantationAnimation(float deltaTime)
+{
+    for (auto& incantation : _incantations)
+        incantation->update(deltaTime);
 }
