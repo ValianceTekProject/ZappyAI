@@ -14,7 +14,12 @@ zappy::gui::raylib::BasicScene::BasicScene(const std::shared_ptr<game::GameState
 void zappy::gui::raylib::BasicScene::init()
 {
     AScene::init();
-    addPlayer(0);
+
+    for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
+        auto type = static_cast<zappy::game::Resource>(i);
+        auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type); // ou AResourceModel si tu préfères
+        _mapRenderer->addResourceModel(type, std::move(model));
+    }
     addPlayer(1);
 }
 
@@ -89,10 +94,8 @@ void zappy::gui::raylib::BasicScene::StartIncantation(const int &x, const int &y
 
 void zappy::gui::raylib::BasicScene::EndIncantation(const int &x, const int &y, const bool &result)
 {
-    (void)x;
-    (void)y;
     (void)result;
-    _mapRenderer->clearIncantationTile();
+    _mapRenderer->clearIncantationTile(x, y);
 }
 
 void zappy::gui::raylib::BasicScene::hatchEgg(const int &id)

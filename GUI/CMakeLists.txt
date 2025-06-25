@@ -85,6 +85,7 @@ set(SOURCES
     ${RAYLIB_SCENE_DIR}/AScene.cpp
 
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
+    ${RAYLIB_MAP_DIR}/Incantation.cpp
     ${RAYLIB_FLOOR_DIR}/AFloor.cpp
 
     ${RAYLIB_FLATFLOOR_DIR}/FlatFloor.cpp

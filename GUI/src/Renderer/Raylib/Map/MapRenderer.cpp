@@ -24,14 +24,6 @@ void zappy::gui::raylib::MapRenderer::init()
     // Init la carte
     _floor = std::make_unique<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
     _floor->init();
-
-    // Init les resources
-    for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
-        auto type = static_cast<zappy::game::Resource>(i);
-        auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type);
-        model->init();
-        _resourceModels[i] = std::move(model);
-    }
 }
 
 void zappy::gui::raylib::MapRenderer::update(const int &frequency)
@@ -81,13 +73,23 @@ void zappy::gui::raylib::MapRenderer::render()
             egg->render();
     }
 
-    // Dessiner les resources
+    // Dessiner les ressources
+    renderResources();
+
+    // Dessiner les incantations
+    renderIncantations();
+}
+
+void zappy::gui::raylib::MapRenderer::renderResources()
+{
+    constexpr float uniformHeight = 0.1f;
+    float spacing = 0.2f;
+
     for (size_t y = 0; y < _map->getHeight(); ++y) {
         for (size_t x = 0; x < _map->getWidth(); ++x) {
             const auto &tile = _map->getTile(x, y);
             const auto &resources = tile.getResources();
             Vector3 basePos = _floor->get3DCoords(x, y);
-            float spacing = 0.2f;
             int typeIndex = 0;
 
             for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
@@ -98,38 +100,23 @@ void zappy::gui::raylib::MapRenderer::render()
                 for (size_t q = 0; q < quantity; ++q) {
                     Vector3 pos = {
                         basePos.x + (q % 2) * spacing + (typeIndex % 3) * spacing,
-                        basePos.y,
+                        uniformHeight,
                         basePos.z + (q / 2) * spacing + (typeIndex / 3) * spacing
                     };
 
                     _resourceModels[i]->setPosition(pos);
                     _resourceModels[i]->render();
                 }
-
                 typeIndex++;
             }
         }
     }
+}
 
-    // Dessiner les incantations
-    if (_incantationTile.has_value()) {
-        Vector2 pos = _incantationTile.value();
-        Vector3 tilePos = _floor->get3DCoords(static_cast<int>(pos.x), static_cast<int>(pos.y));
-        tilePos.y += 0.15f;
-
-        float pulse = (sin(_incantationAnimationTime * 6.f) + 1.f) / 2.f;
-        float alpha = 0.5f + 0.5f * pulse;
-        float sizeScale = 0.8f + 0.3f * pulse;
-
-        Color colorCube = { 255, 255, 0, static_cast<unsigned char>(alpha * 200) };
-        DrawCube(tilePos, 1.f * sizeScale, 0.2f, 1.f * sizeScale, colorCube);
-
-        Color glowColor = ColorAlpha(YELLOW, alpha);
-        DrawCubeWires(tilePos, 1.4f * sizeScale, 0.25f, 1.4f * sizeScale, glowColor);
-
-        Color colorHalo = { 255, 255, 0, static_cast<unsigned char>(alpha * 80) };
-        DrawCircle3D(tilePos, 1.6f * sizeScale, Vector3{0.f, 1.f, 0.f}, 90.f, colorHalo);
-    }
+void zappy::gui::raylib::MapRenderer::renderIncantations()
+{
+    for (const auto& incantation : _incantations)
+        incantation->render(_floor.get());
 }
 
 void zappy::gui::raylib::MapRenderer::addEgg(std::unique_ptr<AEggModel> egg)
@@ -144,6 +131,13 @@ void zappy::gui::raylib::MapRenderer::addPlayer(std::unique_ptr<APlayerModel> pl
     player->init();
 
     _players.push_back(std::move(player));
+}
+
+void zappy::gui::raylib::MapRenderer::addResourceModel(const zappy::game::Resource &type, std::unique_ptr<AResourceModel> model)
+{
+    if (model)
+        model->init();
+    _resourceModels[static_cast<size_t>(type)] = std::move(model);
 }
 
 void zappy::gui::raylib::MapRenderer::setEggPosition(const int &id, const int &x, const int &y)
@@ -379,21 +373,27 @@ void zappy::gui::raylib::MapRenderer::_updateRotations(const float &deltaUnits)
 
 void zappy::gui::raylib::MapRenderer::setIncantationTile(const int &x, const int &y)
 {
-    _incantationTile = Vector2{ static_cast<float>(x), static_cast<float>(y) };
+    for (const auto& inc : _incantations) {
+        if (inc->isAt(x, y))
+            return;
+    }
+
+    _incantations.push_back(std::make_unique<Incantation>(Vector2{static_cast<float>(x), static_cast<float>(y)}));
 }
 
-void zappy::gui::raylib::MapRenderer::clearIncantationTile()
+void zappy::gui::raylib::MapRenderer::clearIncantationTile(const int &x, const int &y)
 {
-    _incantationTile.reset();
+    _incantations.erase(
+        std::remove_if(_incantations.begin(), _incantations.end(),
+            [x, y](const std::unique_ptr<Incantation>& inc) {
+                return inc->isAt(x, y);
+            }),
+        _incantations.end()
+    );
 }
 
 void zappy::gui::raylib::MapRenderer::_updateIncantationAnimation(float deltaTime)
 {
-    if (_incantationTile.has_value()) {
-        _incantationAnimationTime += deltaTime;
-        if (_incantationAnimationTime > 1000.f) // reset toutes les 1000 secondes (par sécurité)
-            _incantationAnimationTime = 0.f;
-    } else {
-        _incantationAnimationTime = 0.f;
-    }
+    for (auto& incantation : _incantations)
+        incantation->update(deltaTime);
 }

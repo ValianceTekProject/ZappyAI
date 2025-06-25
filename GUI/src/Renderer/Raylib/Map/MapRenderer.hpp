@@ -10,7 +10,6 @@
 #include "AResourceModel.hpp"
 #include "Orientation.hpp"
 #include "RendererError.hpp"
-#include "BasicResourceModel.hpp"
 
 #include "Map.hpp"
 #include "FlatFloor.hpp"
@@ -24,6 +23,7 @@
 #include <optional>
 #include <vector>
 #include <chrono>
+#include "Incantation.hpp"
 
 namespace zappy {
     namespace gui {
@@ -52,8 +52,12 @@ namespace zappy {
 
                     void render();
 
+                    void renderResources();
+                    void renderIncantations();
+
                     void addEgg(std::unique_ptr<AEggModel> egg);
                     void addPlayer(std::unique_ptr<APlayerModel> player);
+                    void addResourceModel(const zappy::game::Resource &type, std::unique_ptr<AResourceModel> model);
 
                     void setEggPosition(const int &id, const int &x, const int &y);
                     void setPlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation);
@@ -69,17 +73,17 @@ namespace zappy {
                     void removeEgg(const int &id);
 
                     void setIncantationTile(const int &x, const int &y);
-                    void clearIncantationTile();
-                    
+                    void clearIncantationTile(const int &x, const int &y);
+
                     private:
                     APlayerModel &_getPlayer(const int &id);
                     const APlayerModel &_getPlayer(const int &id) const;
-                    
+
                     AEggModel &_getEgg(const int &id);
                     const AEggModel &_getEgg(const int &id) const;
-                    
+
                     void _addRotation(const APlayerModel &player, const float &angle);
-                    
+
                     void _updateTranslations(const float &deltaUnits);
                     void _updateRotations(const float &deltaUnits);
                     void _updateIncantationAnimation(float deltaTime);
@@ -92,10 +96,9 @@ namespace zappy {
 
                     std::vector<std::unique_ptr<AEggModel>> _eggs;
                     std::vector<std::unique_ptr<APlayerModel>> _players;
-                    std::array<std::unique_ptr<BasicResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
+                    std::array<std::unique_ptr<AResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
 
-                    std::optional<Vector2> _incantationTile;
-                    float _incantationAnimationTime = 0.f;
+                    std::vector<std::unique_ptr<Incantation>> _incantations;
 
                     std::vector<Translation> _translations;
                     std::vector<Rotation> _rotations;
