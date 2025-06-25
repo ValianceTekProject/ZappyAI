@@ -536,6 +536,7 @@ void zappy::game::CommandHandler::_setPrayer(zappy::game::ServerPlayer &player)
                 return;
             sharedPlayer->setInAction(true);
             sharedPlayer->pray();
+            sharedPlayer->getClient().sendMessage("Elevation underway\n");
         });
 }
 
@@ -554,6 +555,9 @@ void zappy::game::CommandHandler::_elevatePlayer(
             sharedPlayer->level += 1;
             sharedPlayer->stopPraying();
             sharedPlayer->setInAction(false);
+            sharedPlayer->getClient().sendMessage(
+                std::string("Current level:") +
+                std::to_string(sharedPlayer->level) + "\n");
         });
 }
 
@@ -586,7 +590,6 @@ void zappy::game::CommandHandler::handleIncantation(
     this->_consumeElevationResources(player.x, player.y, player.level);
     this->_elevatePlayer(player);
     player.setInAction(false);
-    player.getClient().sendMessage("ok\n");
 }
 
 void zappy::game::CommandHandler::_executeCommand(
