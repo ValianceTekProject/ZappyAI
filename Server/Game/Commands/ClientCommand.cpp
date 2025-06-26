@@ -430,7 +430,10 @@ void zappy::game::CommandHandler::handleTake(
     tile.removeResource(resource);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    this->messageToGUI("pgt " + std::to_string(player.getId()) + " " + std::to_string(castResource(resource)) + "\n");
+    this->messageToGUI("pgt " +
+        std::to_string(player.getId()) +
+        " " + std::to_string(castResource(resource)) +
+        "\n");
 }
 
 void zappy::game::CommandHandler::handleDrop(

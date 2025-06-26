@@ -66,3 +66,25 @@ void zappy::game::MapServer::_placeResources()
         }
     }
 }
+
+void zappy::game::MapServer::replaceResources()
+{
+    size_t nbResources = zappy::game::coeff.size();
+
+    for (size_t resourceIdx = 0; resourceIdx < nbResources; resourceIdx += 1) {
+
+        int totResources = coeff[resourceIdx] * this->_width * this->_height;
+        int actualResources =
+            this->getResourceQuantity(static_cast<zappy::game::Resource>(resourceIdx));
+
+        for (int count = actualResources; count < totResources; count += 1) {
+
+            int randX = std::rand() % this->_width;
+            int randY = std::rand() % this->_height;
+
+            zappy::game::Tile &tile = this->getTile(randX, randY);
+            tile.addResource(
+                static_cast<zappy::game::Resource>(resourceIdx), 1);
+        }
+    }
+}

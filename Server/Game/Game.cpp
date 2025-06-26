@@ -96,9 +96,15 @@ void zappy::game::Game::runGame()
 {
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
+    std::chrono::seconds _respawnInterval =
+        std::chrono::seconds(TIME_BEFORE_RESPAWN * this->_baseFreqMs);
 
     while (this->_isRunning != RunningState::STOP) {
         auto now = std::chrono::steady_clock::now();
+        if (now - this->_map._lastResourceRespawn >= _respawnInterval) {
+            this->_map.replaceResources();
+            this->_map._lastResourceRespawn = now;
+        }
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - lastUpdate);
         for (auto &team : this->getTeamList()) {

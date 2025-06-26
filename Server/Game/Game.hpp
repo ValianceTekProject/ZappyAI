@@ -20,6 +20,7 @@
 namespace zappy {
     namespace game {
 
+        #define TIME_BEFORE_RESPAWN 20
 
         class Game {
 
