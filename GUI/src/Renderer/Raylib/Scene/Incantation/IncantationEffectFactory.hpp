@@ -11,6 +11,7 @@
 #include <array>
 
 #include "AIncantationEffect.hpp"
+#include "WaveIncantationEffect.hpp"
 
 namespace zappy {
     namespace gui {
