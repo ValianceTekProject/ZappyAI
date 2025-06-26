@@ -38,6 +38,7 @@ namespace zappy {
                     constexpr static int ROTATION_TIME = 7;
                     constexpr static int EXPULSION_TIME = 1;
                     constexpr static int BROADCAST_TIME = 7;
+                    constexpr static int INCANTATION_TIME = 300;
                     constexpr static int NO_ANIMATION = 0;
 
                     MapRenderer(const std::shared_ptr<game::Map> map);
@@ -112,6 +113,8 @@ namespace zappy {
                     std::unordered_map<int, std::queue<std::shared_ptr<IPlayerAction>>> _playerActionQueues;
 
                     std::vector<std::shared_ptr<APlayerAnimAction>> _playerAnimAction;
+
+                    std::unordered_map<ssize_t, Vector2> _incantationMap;
             };
         }
     }

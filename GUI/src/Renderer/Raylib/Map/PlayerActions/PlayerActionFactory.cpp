@@ -64,6 +64,7 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
     const int &playerId,
     const EffectType &type,
     const Color &color,
+    const Vector2 &pos,
     const float &timeUnit,
     const float &elapsedTime
 ) {
@@ -74,6 +75,7 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
         playerId,
         ActionType::INCANTATION,
         std::move(effect),
+        pos,
         timeUnit,
         elapsedTime
     );

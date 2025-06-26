@@ -53,6 +53,7 @@ namespace zappy {
                         const int &playerId,
                         const EffectType &type,
                         const Color &color,
+                        const Vector2 &pos,
                         const float &timeUnit,
                         const float &elapsedTime = 0.f
                     );

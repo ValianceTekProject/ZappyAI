@@ -6,12 +6,16 @@
 */
 
 #include "MapRenderer.hpp"
+#include "PlayerActions/APlayerAnimAction.hpp"
+#include "PlayerActions/IPlayerAction.hpp"
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
     _floor(nullptr),
     _broadcastType(EffectType::WAVE_BROADCAST),
     _broadcastColor(BLUE),
+    _incantationType(EffectType::SPIRAL_INCANTATION),
+    _incantationColor(BLUE),
     _eggs(),
     _players()
 {}
@@ -210,16 +214,33 @@ void zappy::gui::raylib::MapRenderer::playerBroadcast(const int &id)
 
 void zappy::gui::raylib::MapRenderer::startIncantation(const int &x, const int &y, const std::vector<int> &playerIds)
 {
-    (void)x;
-    (void)y;
-    (void)playerIds;
+    Vector2 incantationPos = Vector2{static_cast<float>(x), static_cast<float>(y)};
+
+    std::shared_ptr<IPlayerAction> action = PlayerActionFactory::createIncantation(
+        playerIds[0],
+        this->_incantationType,
+        this->_incantationColor,
+        incantationPos,
+        INCANTATION_TIME
+    );
+
+    for (auto id : playerIds)
+        this->_playerActionQueues[id].push(action);
+
+    this->_playerAnimAction.push_back(std::move(std::dynamic_pointer_cast<APlayerAnimAction>(action)));
+
+    APlayerAnimAction &animAction = static_cast<APlayerAnimAction &>(*action);
+    this->_incantationMap[animAction.getAnimationId()] = incantationPos;
 }
 
 void zappy::gui::raylib::MapRenderer::endIncantation(const int &x, const int &y, const bool &result)
 {
-    (void)x;
-    (void)y;
-    (void)result;
+    // (void)x;
+    // (void)y;
+    // (void)result;
+    // for (auto id : this->_incantationMap) {
+        
+    // }
 }
 
 void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)
