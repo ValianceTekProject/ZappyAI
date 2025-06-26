@@ -88,7 +88,29 @@ class ExploreState(State):
         discovery = self._analyze_current_vision()
         if discovery:
             logger.info(f"[ExploreState] 🎯 Découverte: {discovery['type']} x{discovery['count']}")
-            return None  # Laisser le planner gérer la transition
+            
+            # 🔧 CORRECTION : Faire les transitions directement au lieu de retourner None
+            if discovery['type'] == 'resources':
+                missing_resources = self._get_missing_resources()
+                if missing_resources:
+                    logger.info(f"[ExploreState] Transition vers collecte ressources: {missing_resources}")
+                    # Transition directe vers CollectResourcesState
+                    from ai.strategy.state.collect_resources import CollectResourcesState
+                    new_state = CollectResourcesState(self.planner)
+                    self.planner.fsm.transition_to(new_state)
+                    return new_state.execute()  # Exécuter immédiatement le nouvel état
+            
+            elif discovery['type'] == 'food':
+                current_food = self.state.get_food_count()
+                food_threshold = self._get_food_check_threshold()
+                
+                # Si pas assez de nourriture, transition vers collecte
+                if current_food <= food_threshold:
+                    logger.info(f"[ExploreState] Transition vers collecte nourriture ({current_food} <= {food_threshold})")
+                    from ai.strategy.state.collect_food import CollectFoodState
+                    new_state = CollectFoodState(self.planner)
+                    self.planner.fsm.transition_to(new_state)
+                    return new_state.execute()
         
         # 5. Exécuter commandes d'exploration en queue
         if self.exploration_commands:

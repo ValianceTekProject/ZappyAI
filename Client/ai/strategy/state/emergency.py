@@ -75,7 +75,7 @@ class EmergencyState(State):
             if food_target != self.emergency_target:
                 self.emergency_target = food_target
                 self.emergency_commands = self._plan_emergency_path(food_target)
-                logger.error(f"[EmergencyState] 🎯 Nouvelle cible nourriture: {food_target.rel_position}")
+                logger.error(f"[EmergencyState] 🎯 Nouvelle cible nourriture: {food_target}")
             
             if self.emergency_commands:
                 next_cmd = self.emergency_commands.pop(0)

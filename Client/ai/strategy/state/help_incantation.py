@@ -9,7 +9,7 @@ import time
 from typing import Any, Optional, List
 from config import CommandType
 from utils.logger import logger
-from Client.ai.strategy.state.fsm import State, Event
+from Client.ai.strategy.fsm import State, Event
 from teams.message import Message
 
 class HelpIncantationState(State):

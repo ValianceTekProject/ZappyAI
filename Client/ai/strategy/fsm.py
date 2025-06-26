@@ -11,21 +11,47 @@ from typing import Optional, Any
 from utils.logger import logger
 
 class Event(Enum):
-    """Événements du système FSM - COMPLETS."""
+    """Événements du système FSM - ENHANCED avec progression."""
     
-    # Événements alimentaires
+    # Événements alimentaires (existants)
     FOOD_EMERGENCY = "food_emergency"
     FOOD_LOW = "food_low"
     FOOD_SUFFICIENT = "food_sufficient"
     FOOD_FOUND = "food_found"
     
-    # Événements de vision
+    # Événements de vision (existants)
     NEED_VISION = "need_vision"
     NEED_INVENTORY = "need_inventory"
     
-    # Événements de ressources
+    # Événements de ressources (existants)
     RESOURCES_FOUND = "resources_found"
     RESOURCES_COLLECTED = "resources_collected"
+    
+    # NOUVEAUX: Événements de progression
+    CAN_INCANT = "can_incant"
+    INCANT_READY = "incant_ready"
+    INCANT_SUCCESS = "incant_success"
+    INCANT_FAILED = "incant_failed"
+    
+    # NOUVEAUX: Événements de reproduction
+    SHOULD_REPRODUCE = "should_reproduce"
+    REPRODUCTION_READY = "reproduction_ready"
+    REPRODUCTION_SUCCESS = "reproduction_success"
+    REPRODUCTION_FAILED = "reproduction_failed"
+    
+    # NOUVEAUX: Événements de niveau
+    LEVEL_UP = "level_up"
+    LEVEL_2_ACHIEVED = "level_2_achieved"
+    MAX_LEVEL_REACHED = "max_level_reached"
+    
+    # NOUVEAUX: Événements de ressources spécifiques
+    MISSING_RESOURCES = "missing_resources"
+    RESOURCES_COMPLETE = "resources_complete"
+    
+    # NOUVEAUX: Événements de coordination (pour plus tard)
+    BROADCAST_RECEIVED = "broadcast_received"
+    HELPER_NEEDED = "helper_needed"
+    HELPER_AVAILABLE = "helper_available"
 
 class State(ABC):
     """Classe de base CORRIGÉE pour tous les états FSM."""
@@ -104,8 +130,9 @@ class StateMachine:
         return type(self.state).__name__
 
 # ✅ NOUVEAU: Factory pour créer des états
+# ✅ NOUVEAU: Factory pour créer des états - ENHANCED
 class StateFactory:
-    """Factory pour créer des instances d'états."""
+    """Factory pour créer des instances d'états - VERSION ENHANCED."""
     
     @staticmethod
     def create_explore_state(planner):
@@ -124,3 +151,96 @@ class StateFactory:
         """Crée un état d'urgence."""
         from ai.strategy.state.emergency import EmergencyState
         return EmergencyState(planner)
+    
+    @staticmethod
+    def create_collect_resources_state(planner):
+        """Crée un état de collecte de ressources."""
+        from ai.strategy.state.collect_resources import CollectResourcesState
+        return CollectResourcesState(planner)
+    
+    @staticmethod
+    def create_incantation_state(planner):
+        """Crée un état d'incantation."""
+        from ai.strategy.state.incantation import IncantationState
+        return IncantationState(planner)
+    
+    @staticmethod
+    def create_reproduction_state(planner):
+        """Crée un état de reproduction."""
+        from ai.strategy.state.reproduction import ReproductionState
+        return ReproductionState(planner)
+    
+    @staticmethod
+    def create_state_by_name(state_name: str, planner):
+        """Crée un état par son nom de classe."""
+        factory_methods = {
+            'ExploreState': StateFactory.create_explore_state,
+            'CollectFoodState': StateFactory.create_collect_food_state,
+            'EmergencyState': StateFactory.create_emergency_state,
+            'CollectResourcesState': StateFactory.create_collect_resources_state,
+            'IncantationState': StateFactory.create_incantation_state,
+            'ReproductionState': StateFactory.create_reproduction_state
+        }
+        
+        if state_name in factory_methods:
+            return factory_methods[state_name](planner)
+        else:
+            raise ValueError(f"État inconnu: {state_name}")
+    
+    @staticmethod
+    def get_all_available_states():
+        """Retourne la liste de tous les états disponibles."""
+        return [
+            'ExploreState',
+            'CollectFoodState', 
+            'EmergencyState',
+            'CollectResourcesState',
+            'IncantationState',
+            'ReproductionState'
+        ]
+    
+    @staticmethod
+    def create_state_by_priority(planner, priority_level: str):
+        """Crée un état selon le niveau de priorité."""
+        priority_mapping = {
+            'critical': StateFactory.create_emergency_state,
+            'food': StateFactory.create_collect_food_state,
+            'progression': StateFactory.create_incantation_state,
+            'reproduction': StateFactory.create_reproduction_state,
+            'resources': StateFactory.create_collect_resources_state,
+            'exploration': StateFactory.create_explore_state
+        }
+        
+        if priority_level in priority_mapping:
+            return priority_mapping[priority_level](planner)
+        else:
+            # Fallback vers exploration
+            return StateFactory.create_explore_state(planner)
+    
+    @staticmethod
+    def create_state_for_situation(planner, food_count: int, level: int, has_resources: bool):
+        """Crée l'état le plus approprié selon la situation actuelle."""
+        # Logique de priorité pour choisir l'état optimal
+        
+        # Urgence alimentaire critique
+        if food_count <= 10:
+            return StateFactory.create_emergency_state(planner)
+        
+        # Collecte de nourriture préventive
+        if food_count <= 25:
+            return StateFactory.create_collect_food_state(planner)
+        
+        # Progression si conditions réunies
+        if has_resources and food_count >= 35:
+            return StateFactory.create_incantation_state(planner)
+        
+        # Reproduction si niveau 2+
+        if level >= 2 and food_count >= 45:
+            return StateFactory.create_reproduction_state(planner)
+        
+        # Collecte de ressources si manquantes
+        if not has_resources and food_count >= 30:
+            return StateFactory.create_collect_resources_state(planner)
+        
+        # Exploration par défaut
+        return StateFactory.create_explore_state(planner)

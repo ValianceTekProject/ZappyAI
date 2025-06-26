@@ -48,42 +48,40 @@ class CollectResourcesState(State):
         logger.info(f"[CollectResourcesState] ⚒️ Collecte ressources niveau {self.state.level} activée")
 
     def execute(self) -> Optional[Any]:
-        """
-        Logique de collecte de ressources optimisée.
-        Balance entre progression et sécurité alimentaire.
-        """
+        """Logique de collecte AMÉLIORÉE avec priorité linemate."""
         current_time = time.time()
         
-        # 1. Vérification sécurité alimentaire (priorité sur ressources)
+        # 1. Vérification sécurité alimentaire (seuil réduit)
         current_food = self.state.get_food_count()
-        if current_food <= self._get_food_safety_threshold():
-            logger.warning(f"[CollectResourcesState] Nourriture insuffisante pour collecte ({current_food}), transition")
-            return None  # Le planner gérera la transition vers collecte nourriture
+        safety_threshold = self._get_food_safety_threshold()  # Maintenant 15 au lieu de 25
         
-        # 2. Vérification inventaire périodique
+        if current_food <= safety_threshold:
+            logger.warning(f"[CollectResourcesState] Nourriture insuffisante ({current_food} <= {safety_threshold})")
+            return None  # Transition vers collecte nourriture
+        
+        # 2. PRIORITÉ ABSOLUE : linemate sur tuile actuelle (niveau 1)
+        linemate_action = self._force_collect_linemate_if_visible()
+        if linemate_action:
+            return linemate_action
+        
+        # 3. Vérification inventaire périodique
         if self._should_check_inventory(current_time):
-            logger.debug("[CollectResourcesState] Vérification inventaire périodique")
+            logger.debug("[CollectResourcesState] Vérification inventaire")
             self.last_inventory_check = current_time
             return self.cmd_mgr.inventory()
         
-        # 3. Mise à jour vision si nécessaire
+        # 4. Mise à jour vision si nécessaire
         if self._needs_vision_update():
-            logger.debug("[CollectResourcesState] Mise à jour vision nécessaire")
+            logger.debug("[CollectResourcesState] Mise à jour vision")
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
         
-        # 4. Ramasser ressource sur tuile actuelle
-        current_tile_resource = self._get_needed_resource_on_tile()
-        if current_tile_resource:
-            logger.info(f"[CollectResourcesState] ⚒️ {current_tile_resource} disponible ici, ramassage")
-            return self.cmd_mgr.take(current_tile_resource)
-        
-        # 5. Exécuter commandes de déplacement en queue
-        if self.movement_commands:
-            next_cmd = self.movement_commands.pop(0)
-            logger.debug(f"[CollectResourcesState] Déplacement vers {self.current_priority_resource}: {next_cmd}")
-            return self._execute_movement_command(next_cmd)
-        
+        # 5. Ramasser ressource nécessaire sur tuile actuelle
+        needed_resource = self._get_needed_resource_on_tile()
+        if needed_resource:
+            logger.info(f"[CollectResourcesState] ⚒️ {needed_resource} trouvé ici, collecte immédiate")
+            return self.cmd_mgr.take(needed_resource)
+
         # 6. Chercher et cibler nouvelle ressource prioritaire
         priority_target = self._find_priority_resource_target()
         if priority_target:
@@ -106,12 +104,13 @@ class CollectResourcesState(State):
         return self._explore_for_resources()
 
     def _get_food_safety_threshold(self) -> int:
-        """Seuil de sécurité alimentaire pour continuer la collecte."""
-        base = 25  # Plus élevé que le seuil normal de collecte nourriture
+        """Seuil de sécurité RÉDUIT pour continuer la collecte."""
+        # 🔧 CORRECTION : Réduire de 25 à 15 pour permettre la collecte
+        base = 15  # Au lieu de 25
         if self.state.level >= 7:
-            return int(base * 1.8)
+            return int(base * 1.4)  # Au lieu de 1.8
         elif self.state.level >= 4:
-            return int(base * 1.4)
+            return int(base * 1.2)  # Au lieu de 1.4
         return base
 
     def _should_check_inventory(self, current_time: float) -> bool:
@@ -195,20 +194,26 @@ class CollectResourcesState(State):
         return None
 
     def _get_resource_priority_order(self, missing_resources: Dict[str, int]) -> List[str]:
-        """Ordonne les ressources par priorité de collecte."""
-        # Ordre basé sur la rareté dans le jeu (du plus rare au plus commun)
+        """Ordre de priorité OPTIMISÉ pour incantation rapide."""
+        
+        # 🔥 PRIORITÉ ABSOLUE : Si niveau 1, linemate en premier
+        if hasattr(self, 'state') and getattr(self.state, 'level', 1) == 1:
+            if Constants.LINEMATE.value in missing_resources:
+                priority_list = [Constants.LINEMATE.value]
+                logger.info(f"[CollectResourcesState] 🔥 PRIORITÉ NIVEAU 1: {priority_list}")
+                return priority_list
+        
+        # Ordre général par rareté pour autres niveaux
         rarity_order = [
-            Constants.THYSTAME.value,    # 0.05 density
-            Constants.PHIRAS.value,      # 0.08 density  
-            Constants.MENDIANE.value,    # 0.1 density
-            Constants.SIBUR.value,       # 0.1 density
-            Constants.DERAUMERE.value,   # 0.15 density
-            Constants.LINEMATE.value     # 0.3 density
+            Constants.THYSTAME.value,
+            Constants.PHIRAS.value,
+            Constants.MENDIANE.value,
+            Constants.SIBUR.value,
+            Constants.DERAUMERE.value,
+            Constants.LINEMATE.value
         ]
         
-        # Filtrer seulement les ressources manquantes et ordonner par rareté
         priority_list = [res for res in rarity_order if res in missing_resources]
-        
         logger.debug(f"[CollectResourcesState] Priorité ressources: {priority_list}")
         return priority_list
 
@@ -227,6 +232,45 @@ class CollectResourcesState(State):
         # Limiter le trajet (ressources moins urgentes que nourriture)
         max_commands = 10
         return commands[:max_commands] if commands else []
+    
+    def _force_collect_linemate_if_visible(self) -> Optional[Any]:
+        """FORCE la collecte de linemate si visible (priorité absolue niveau 1)."""
+        if self.state.level != 1:
+            return None
+        
+        # Vérifier si linemate est présent sur tuile actuelle
+        vision = self.state.get_vision()
+        for data in vision.last_vision_data:
+            if data.rel_pos == (0, 0):
+                if Constants.LINEMATE.value in data.resources and data.resources[Constants.LINEMATE.value] > 0:
+                    logger.info("[CollectResourcesState] 🔥 LINEMATE ICI! Collecte forcée")
+                    return self.cmd_mgr.take(Constants.LINEMATE.value)
+        
+        return None
+
+    def _check_completion_frequently(self) -> bool:
+        """Vérification FRÉQUENTE de la complétion pour transition rapide."""
+        requirements = self.state.get_incantation_requirements()
+        inventory = self.state.get_inventory()
+        
+        missing = {}
+        for resource, needed in requirements.items():
+            current = inventory.get(resource, 0)
+            if current < needed:
+                missing[resource] = needed - current
+        
+        is_complete = len(missing) == 0
+        
+        if is_complete:
+            logger.info("[CollectResourcesState] ✅ RESSOURCES COMPLÈTES! Transition immédiate")
+            # Forcer transition vers incantation
+            from ai.strategy.state.incantation import IncantationState
+            new_state = IncantationState(self.planner)
+            self.planner.fsm.transition_to(new_state)
+            return True
+        else:
+            logger.debug(f"[CollectResourcesState] Encore manquant: {missing}")
+            return False
 
     def _execute_movement_command(self, command_type: CommandType):
         """Exécute une commande de mouvement."""

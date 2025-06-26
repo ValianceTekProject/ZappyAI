@@ -13,12 +13,10 @@ from protocol.commands import CommandManager
 from protocol.message_manager import MessageManager
 from teams.message_checker import MessageBus
 from utils.timing import TimingManager
-from utils.game_state import GameState  # Version améliorée
+from utils.game_state import GameState
 from utils.logger import logger
 from config import CommandType
-
-# Import de la FSM
-from ai.strategy.planner import Planner  # Version avec FSM intégrée
+from ai.strategy.planner import Planner
 
 class Agent:
     """
@@ -36,33 +34,30 @@ class Agent:
         self.agent_id = Agent._next_id
         Agent._next_id += 1
 
-        # Composants principaux
         self.timing = TimingManager()
         self.state = GameState(team_id, self.dimension_map, self.agent_id)
         self.commands = CommandManager(self.conn, self.timing, self.state)
         self.msg_bus = MessageBus(self.state.level, team_id)
         self.msg_manager = MessageManager(self.commands, self.msg_bus)
 
-        # 🎯 NOUVEAU: Utilisation de la FSM de survie
         self.planner = Planner(
             command_manager=self.commands,
             game_state=self.state, 
             message_bus=self.msg_bus,
-            use_fsm=True  # ✅ Activer la FSM
+            use_fsm=True
         )
 
-        # Détection de blocage améliorée
+        self.state.agent_thread = self.agent_thread 
+
         self._last_decision_time = time.time()
         self._last_command_time = time.time()
         self._last_food_check = time.time()
-        self._block_detection_threshold = 3.0  # Plus réactif
-        self._force_unlock_threshold = 6.0     # Plus rapide
+        self._block_detection_threshold = 3.0
+        self._force_unlock_threshold = 6.0
 
-        # État d'initialisation
         self.initialized = False
         self.init_stage = 0
 
-        # Statistiques de performance
         self.decisions_count = 0
         self.successful_actions = 0
         self.failed_actions = 0
@@ -77,7 +72,7 @@ class Agent:
         while True:
             try:
                 current_time = time.time()
-                
+
                 # 1. Lecture des réponses réseau
                 responses = self.read_non_blocking()
                 completed = self.msg_manager.process_responses(responses)
@@ -100,9 +95,9 @@ class Agent:
                 # 6. Initialisation si nécessaire
                 if not self.initialized:
                     if self._handle_initialization():
-                        continue  # Continuer l'initialisation
+                        continue
 
-                # 7. 🎯 DÉCISION FSM PRINCIPALE
+                # 7. Décision FSM
                 self._make_fsm_decision(current_time)
 
                 # 8. Sleep adaptatif optimisé
@@ -117,7 +112,7 @@ class Agent:
         self.agent_thread.agent_dead(self)
         final_food = self.state.get_food_count()
         survival_time = time.time() - (getattr(self, '_start_time', time.time()))
-        
+
         logger.info(f"[Agent {self.agent_id}] 💀 MORT à niveau {self.state.level} "
                    f"(Food: {final_food}, Survie: {survival_time:.1f}s, "
                    f"Décisions: {self.decisions_count})")
@@ -126,23 +121,20 @@ class Agent:
         """Détection de blocage avancée avec intervention automatique."""
         time_since_decision = current_time - self._last_decision_time
         time_since_command = current_time - self._last_command_time
-        
-        # Force unlock en cas de blocage prolongé
+
         if time_since_command > self._force_unlock_threshold:
             current_food = self.state.get_food_count()
             logger.error(f"[Agent {self.agent_id}] 🚨 DEADLOCK DÉTECTÉ! "
                         f"Aucune commande depuis {time_since_command:.1f}s "
                         f"(Food: {current_food})")
-            
+
             self.state.force_unlock()
             self._last_command_time = current_time
-            
-            # Action d'urgence selon la situation
+
             if current_food <= 5:
                 logger.error(f"[Agent {self.agent_id}] DEADLOCK + URGENCE ALIMENTAIRE!")
-                self.commands.look()  # Chercher nourriture désespérément
-            
-        # Avertissement si pas de décision
+                self.commands.look()
+
         elif time_since_decision > self._block_detection_threshold:
             logger.warning(f"[Agent {self.agent_id}] ⚠️ Pas de décision depuis "
                           f"{time_since_decision:.1f}s")
@@ -150,26 +142,21 @@ class Agent:
     def _process_completed_commands(self, completed: list, current_time: float):
         """Traite les commandes complétées avec notifications à la FSM."""
         for cmd in completed:
-            # Mise à jour de l'état
             self.state.update(cmd)
             self._last_command_time = current_time
-            
-            # 🎯 Notification à la FSM
+
             if cmd.status.value == 'success':
                 self.successful_actions += 1
                 self.planner.on_command_success(cmd.type, cmd.response)
-                
-                # Log spécial pour actions critiques
+
                 if cmd.type == CommandType.TAKE and 'food' in str(cmd.response):
                     new_food = self.state.get_food_count()
                     logger.info(f"[Agent {self.agent_id}] 🍖 NOURRITURE RÉCUPÉRÉE! "
                                f"Total: {new_food}")
-                
+
             elif cmd.status.value == 'failed':
                 self.failed_actions += 1
                 self.planner.on_command_failed(cmd.type, cmd.response)
-                
-                # Log d'échec avec contexte
                 logger.warning(f"[Agent {self.agent_id}] ❌ {cmd.type} échoué: {cmd.response}")
 
     def _update_emergency_timing(self):
@@ -201,7 +188,7 @@ class Agent:
             self.initialized = True
             self._start_time = time.time()
             initial_food = self.state.get_food_count()
-            
+
             logger.info(f"[Agent {self.agent_id}] ✅ INITIALISATION COMPLÈTE! "
                        f"Food: {initial_food}, Position: {self.state.get_position()}")
             return False
@@ -212,27 +199,23 @@ class Agent:
         """
         Prend une décision via la FSM avec conditions de sécurité.
         """
-        # Vérifications de sécurité
         if not self._can_make_decision():
             return
 
         try:
-            # 🎯 APPEL PRINCIPAL À LA FSM
             cmd = self.planner.decide_next_action()
-            
+
             if cmd:
                 self.decisions_count += 1
                 self._last_decision_time = current_time
                 self._last_command_time = current_time
-                
-                # Log périodique de statut
+
                 if self.decisions_count % 25 == 0:
                     self._log_agent_status()
-            
+
             else:
-                # FSM ne peut pas décider - action de sécurité
                 current_food = self.state.get_food_count()
-                if current_food <= 8:  # Seuil critique
+                if current_food <= 8:
                     logger.error(f"[Agent {self.agent_id}] FSM bloquée en urgence! "
                                 f"Force LOOK (Food: {current_food})")
                     self.commands.look()
@@ -240,44 +223,41 @@ class Agent:
 
         except Exception as e:
             logger.error(f"[Agent {self.agent_id}] Erreur FSM: {e}")
-            # Action de récupération
             self.commands.look()
 
     def _can_make_decision(self) -> bool:
         """Vérifie si l'agent peut prendre une décision."""
         if self.state.command_already_send:
             return False
-            
+
         if self.commands.get_pending_count() >= 8:
             return False
-            
+
         if not self.timing.can_execute_action():
             return False
-            
+
         return True
 
     def _adaptive_sleep(self):
         """Sleep adaptatif selon l'urgence de la situation."""
         sleep_time = self.timing.get_sleep_time()
-        
-        # Réduire sleep en cas d'urgence alimentaire
+
         current_food = self.state.get_food_count()
         if current_food <= 5:
-            sleep_time = min(sleep_time, 0.005)  # 5ms max en urgence critique
+            sleep_time = min(sleep_time, 0.005)
         elif current_food <= 10:
-            sleep_time = min(sleep_time, 0.01)   # 10ms max en urgence
-        
+            sleep_time = min(sleep_time, 0.01)
+
         if sleep_time > 0:
             time.sleep(sleep_time)
 
     def _handle_critical_error(self, error: Exception):
         """Gère les erreurs critiques avec récupération."""
         logger.error(f"[Agent {self.agent_id}] 🚨 ERREUR CRITIQUE: {error}")
-        
-        # Tentative de récupération
+
         try:
             self.state.force_unlock()
-            time.sleep(0.1)  # Pause de récupération
+            time.sleep(0.1)
         except:
             pass
 
@@ -285,11 +265,10 @@ class Agent:
         """Log périodique du statut de l'agent."""
         current_food = self.state.get_food_count()
         success_rate = (self.successful_actions / max(1, self.successful_actions + self.failed_actions)) * 100
-        
-        # Obtenir infos de stratégie FSM
+
         strategy_info = self.planner.get_current_strategy_info()
         current_state = strategy_info.get('state', 'unknown')
-        
+
         logger.info(f"[Agent {self.agent_id}] 📊 STATUS - "
                    f"État: {current_state}, Food: {current_food}, "
                    f"Niveau: {self.state.level}, Décisions: {self.decisions_count}, "
@@ -316,7 +295,7 @@ class Agent:
     def get_agent_stats(self) -> dict:
         """Retourne les statistiques de l'agent pour monitoring."""
         uptime = time.time() - getattr(self, '_start_time', time.time())
-        
+
         return {
             'agent_id': self.agent_id,
             'uptime': uptime,

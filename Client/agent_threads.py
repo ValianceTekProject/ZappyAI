@@ -1,4 +1,9 @@
-# agent_pool.py
+##
+## EPITECH PROJECT, 2025
+## Zappy
+## File description:
+## agent_threads
+##
 
 import threading
 import time
