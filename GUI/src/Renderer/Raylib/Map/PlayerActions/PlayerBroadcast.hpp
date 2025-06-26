@@ -8,7 +8,7 @@
 #pragma once
 
 #include "APlayerAction.hpp"
-#include "BroadcastEffectFactory.hpp"
+#include "BroadcatEffectFactory.hpp"
 
 namespace zappy {
     namespace gui {

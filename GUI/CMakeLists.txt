@@ -16,7 +16,10 @@ set(RENDERER_DIR ${SRC_DIR}/Renderer)
 set(RAYLIB_DIR ${RENDERER_DIR}/Raylib)
 
 set(RAYLIB_SCENE_DIR ${RAYLIB_DIR}/Scene)
-set(RAYLIB_BROADCAST_DIR ${RAYLIB_SCENE_DIR}/Broadcast)
+
+set(RAYLIB_EFFECT_DIR ${RAYLIB_SCENE_DIR}/Effect)
+set(RAYLIB_BROADCAST_EFFECT_DIR ${RAYLIB_EFFECT_DIR}/Broadcast)
+set(RAYLIB_INCANTATION_EFFECT_DIR ${RAYLIB_EFFECT_DIR}/Incantation)
 
 set(RAYLIB_MAP_DIR ${RAYLIB_DIR}/Map)
 set(RAYLIB_PLAYER_ACTIONS_DIR ${RAYLIB_MAP_DIR}/PlayerActions)
@@ -46,7 +49,9 @@ include_directories(
     ${RENDERER_DIR}
     ${RAYLIB_DIR}
     ${RAYLIB_SCENE_DIR}
-    ${RAYLIB_BROADCAST_DIR}
+    ${RAYLIB_EFFECT_DIR}
+    ${RAYLIB_BROADCAST_EFFECT_DIR}
+    ${RAYLIB_INCANTATION_EFFECT_DIR}
 
     ${RAYLIB_MAP_DIR}
     ${RAYLIB_PLAYER_ACTIONS_DIR}
@@ -91,9 +96,13 @@ set(SOURCES
 
     ${RAYLIB_SCENE_DIR}/AScene.cpp
 
-    ${RAYLIB_BROADCAST_DIR}/ABroadcastEffect.cpp
-    ${RAYLIB_BROADCAST_DIR}/WaveBroadcastEffect.cpp
-    ${RAYLIB_BROADCAST_DIR}/BroadcastEffectFactory.cpp
+    ${RAYLIB_EFFECT_DIR}/AEffect.cpp
+    ${RAYLIB_EFFECT_DIR}/EffectFactory.cpp
+
+    ${RAYLIB_BROADCAST_EFFECT_DIR}/ABroadcastEffect.cpp
+    ${RAYLIB_BROADCAST_EFFECT_DIR}/WaveBroadcastEffect.cpp
+    ${RAYLIB_INCANTATION_EFFECT_DIR}/AIncantationEffect.cpp
+    ${RAYLIB_INCANTATION_EFFECT_DIR}/IncantationEffectFactory.cpp
 
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAction.cpp
