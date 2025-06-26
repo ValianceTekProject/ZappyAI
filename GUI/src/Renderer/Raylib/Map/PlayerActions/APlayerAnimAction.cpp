@@ -8,7 +8,7 @@
 #include "PlayerBroadcast.hpp"
 
 zappy::gui::raylib::APlayerAnimAction::APlayerAnimAction(
-    const int &animationid,
+    const ssize_t &animationId,
     const int &playerId,
     const ActionType &type,
     std::unique_ptr<IEffect> effect,
@@ -17,7 +17,7 @@ zappy::gui::raylib::APlayerAnimAction::APlayerAnimAction(
 ) :
     APlayerAction(playerId, type, timeUnit, elapsedTime),
     _effect(std::move(effect)),
-    _animationid(animationid) {}
+    _animationId(animationId) {}
 
 void zappy::gui::raylib::APlayerAnimAction::update(const float &deltaUnits, APlayerModel &player)
 {

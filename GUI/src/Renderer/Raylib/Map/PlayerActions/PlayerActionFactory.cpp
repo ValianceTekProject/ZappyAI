@@ -7,6 +7,8 @@
 
 #include "PlayerActionFactory.hpp"
 
+ssize_t zappy::gui::raylib::PlayerActionFactory::_newId = 0;
+
 std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerActionFactory::createTranslation(
     const int &playerId,
     const Translation &translation,
@@ -49,6 +51,7 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
     auto effect = EffectFactory::create(type, playerId, timeUnit, color);
 
     return std::make_unique<PlayerBroadcast>(
+        _newId++,
         playerId,
         ActionType::BROADCAST,
         std::move(effect),
@@ -67,6 +70,7 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
     auto effect = EffectFactory::create(type, playerId, timeUnit, color);
 
     return std::make_unique<PlayerIncantation>(
+        _newId++,
         playerId,
         ActionType::INCANTATION,
         std::move(effect),

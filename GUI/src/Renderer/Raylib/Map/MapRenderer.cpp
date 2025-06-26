@@ -50,7 +50,6 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
     float deltaUnits = deltaSec * frequency;
 
     _updateActions(deltaUnits);
-    _updateIncantationAnimation(deltaSec);
 }
 
 void zappy::gui::raylib::MapRenderer::render()
@@ -61,8 +60,8 @@ void zappy::gui::raylib::MapRenderer::render()
     _renderPlayersAndEggs();
 
     _renderResources();
-    _renderIncantations();
-    _renderBroadcast();
+
+    _renderAnimActions();
 }
 
 void zappy::gui::raylib::MapRenderer::setBroadcastType(const zappy::gui::raylib::EffectType &type)
@@ -198,9 +197,6 @@ void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &
 
 void zappy::gui::raylib::MapRenderer::playerBroadcast(const int &id)
 {
-    if (this->_players.empty())
-        return;
-
     std::shared_ptr<IPlayerAction> action = PlayerActionFactory::createBroadcast(
         id,
         this->_broadcastType,
@@ -209,28 +205,21 @@ void zappy::gui::raylib::MapRenderer::playerBroadcast(const int &id)
     );
 
     this->_playerActionQueues[id].push(action);
-    this->_broadcasts.push_back(std::move(std::dynamic_pointer_cast<PlayerBroadcast>(action)));
+    this->_playerAnimAction.push_back(std::move(std::dynamic_pointer_cast<APlayerAnimAction>(action)));
 }
 
-void zappy::gui::raylib::MapRenderer::startIncantation(const int &x, const int &y)
+void zappy::gui::raylib::MapRenderer::startIncantation(const int &x, const int &y, const std::vector<int> &playerIds)
 {
-    for (const auto& inc : _incantations) {
-        if (inc->isAt(x, y))
-            return;
-    }
-
-    _incantations.push_back(std::make_unique<Incantation>(Vector2{static_cast<float>(x), static_cast<float>(y)}));
+    (void)x;
+    (void)y;
+    (void)playerIds;
 }
 
-void zappy::gui::raylib::MapRenderer::endIncantation(const int &x, const int &y)
+void zappy::gui::raylib::MapRenderer::endIncantation(const int &x, const int &y, const bool &result)
 {
-    _incantations.erase(
-        std::remove_if(_incantations.begin(), _incantations.end(),
-            [x, y](const std::unique_ptr<Incantation>& inc) {
-                return inc->isAt(x, y);
-            }),
-        _incantations.end()
-    );
+    (void)x;
+    (void)y;
+    (void)result;
 }
 
 void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)
@@ -335,26 +324,20 @@ void zappy::gui::raylib::MapRenderer::_updateActions(const float &deltaUnits)
         ++it;
     }
 
-    this->_updateBroadcasts(deltaUnits);
+    this->_updateAnimActions(deltaUnits);
 }
 
-void zappy::gui::raylib::MapRenderer::_updateBroadcasts(const float &deltaUnits)
+void zappy::gui::raylib::MapRenderer::_updateAnimActions(const float &deltaUnits)
 {
-    for (auto it = this->_broadcasts.begin(); it != this->_broadcasts.end(); ++it) {
+    for (auto it = this->_playerAnimAction.begin(); it != this->_playerAnimAction.end(); ++it) {
         if (it->use_count() > 1)
             continue;
 
-        auto broadcast = (*it);
-        APlayerModel &player = _getPlayer(broadcast->getPlayerId());
+        auto action = (*it);
+        APlayerModel &player = _getPlayer(action->getPlayerId());
 
-        broadcast->update(deltaUnits, player);
+        action->update(deltaUnits, player);
     }
-}
-
-void zappy::gui::raylib::MapRenderer::_updateIncantationAnimation(float deltaTime)
-{
-    for (auto& incantation : _incantations)
-        incantation->update(deltaTime);
 }
 
 void zappy::gui::raylib::MapRenderer::_renderPlayersAndEggs()
@@ -399,29 +382,23 @@ void zappy::gui::raylib::MapRenderer::_renderResources()
     }
 }
 
-void zappy::gui::raylib::MapRenderer::_renderIncantations()
+void zappy::gui::raylib::MapRenderer::_renderAnimActions()
 {
-    for (const auto& incantation : _incantations)
-        incantation->render(this->_floor.get());
-}
-
-void zappy::gui::raylib::MapRenderer::_renderBroadcast()
-{
-    auto it = _broadcasts.begin();
-    while (it != _broadcasts.end()) {
-        const auto &broadcast = *it;
-        if (!broadcast || broadcast->hasEffectEnded()) {
-            it = _broadcasts.erase(it);
+    auto it = _playerAnimAction.begin();
+    while (it != _playerAnimAction.end()) {
+        const auto &action = *it;
+        if (!action || action->hasEffectEnded()) {
+            it = _playerAnimAction.erase(it);
             continue;
         }
 
-        if (!broadcast->hasActionStarted()) {
+        if (!action->hasActionStarted()) {
             ++it;
             continue;
         }
 
-        auto &player = _getPlayer(broadcast->getPlayerId());
-        broadcast->render(player.getPosition());
+        auto &player = _getPlayer(action->getPlayerId());
+        action->render(player.getPosition());
         ++it;
     }
 }

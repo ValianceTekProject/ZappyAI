@@ -8,7 +8,6 @@
 #pragma once
 
 #include "AResourceModel.hpp"
-#include "Orientation.hpp"
 #include "RendererError.hpp"
 
 #include "Map.hpp"
@@ -29,7 +28,6 @@
 #include <unordered_map>
 #include <queue>
 #include <chrono>
-#include "Incantation.hpp"
 
 namespace zappy {
     namespace gui {
@@ -52,6 +50,10 @@ namespace zappy {
                     void render();
 
                     void setBroadcastType(const EffectType &type);
+                    void setBroadcastColor(const Color &color);
+
+                    void setIncantationType(const EffectType &type);
+                    void setIncantationColor(const Color &color);
 
                     void addEgg(std::unique_ptr<AEggModel> egg);
                     void addPlayer(std::unique_ptr<APlayerModel> player);
@@ -69,8 +71,8 @@ namespace zappy {
 
                     void playerBroadcast(const int &id);
 
-                    void startIncantation(const int &x, const int &y);
-                    void endIncantation(const int &x, const int &y);
+                    void startIncantation(const int &x, const int &y, const std::vector<int> &playerIds);
+                    void endIncantation(const int &x, const int &y, const bool &result);
 
                     void removePlayer(const int &id);
                     void removeEgg(const int &id);
@@ -85,14 +87,12 @@ namespace zappy {
                     void _addRotation(const APlayerModel &player, const float &angle);
 
                     void _updateActions(const float &deltaUnits);
-                    void _updateBroadcasts(const float &deltaUnits);
-
-                    void _updateIncantationAnimation(float deltaTime);
+                    void _updateAnimActions(const float &deltaUnits);
 
                     void _renderPlayersAndEggs();
                     void _renderResources();
-                    void _renderIncantations();
-                    void _renderBroadcast();
+
+                    void _renderAnimActions();
 
                     const std::shared_ptr<game::Map> _map;
                     std::shared_ptr<IFloor> _floor;
@@ -100,17 +100,18 @@ namespace zappy {
                     EffectType _broadcastType;
                     Color _broadcastColor;
 
+                    EffectType _incantationType;
+                    Color _incantationColor;
+
                     std::vector<std::unique_ptr<AEggModel>> _eggs;
                     std::vector<std::unique_ptr<APlayerModel>> _players;
                     std::array<std::unique_ptr<AResourceModel>, zappy::game::RESOURCE_QUANTITY> _resourceModels;
 
                     std::chrono::steady_clock::time_point _lastTime;
 
-                    std::vector<std::unique_ptr<Incantation>> _incantations;
-
                     std::unordered_map<int, std::queue<std::shared_ptr<IPlayerAction>>> _playerActionQueues;
 
-                    std::vector<std::shared_ptr<APlayerAnimAction>> _broadcasts;
+                    std::vector<std::shared_ptr<APlayerAnimAction>> _playerAnimAction;
             };
         }
     }

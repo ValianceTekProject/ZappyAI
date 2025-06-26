@@ -18,7 +18,7 @@ namespace zappy {
             class APlayerAnimAction : public APlayerAction {
                 public:
                     APlayerAnimAction(
-                        const int &animationid,
+                        const ssize_t &animationId,
                         const int &playerId,
                         const ActionType &actionType,
                         std::unique_ptr<IEffect> effect,
@@ -26,6 +26,8 @@ namespace zappy {
                         const float &elapsedTime = 0.f
                     );
                     virtual ~APlayerAnimAction() override = default;
+
+                    ssize_t getAnimationId() const { return _animationId; }
 
                     virtual void update(const float &deltaUnits, APlayerModel &player) override;
 
@@ -37,7 +39,7 @@ namespace zappy {
                     std::unique_ptr<IEffect> _effect;
 
                 private:
-                    int _animationid;
+                    ssize_t _animationId;
             };
         }
     }

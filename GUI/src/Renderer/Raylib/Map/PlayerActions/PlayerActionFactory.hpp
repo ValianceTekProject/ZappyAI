@@ -56,6 +56,9 @@ namespace zappy {
                         const float &timeUnit,
                         const float &elapsedTime = 0.f
                     );
+
+                private:
+                    static ssize_t _newId;
             };
         } // namespace raylib
     } // namespace gui

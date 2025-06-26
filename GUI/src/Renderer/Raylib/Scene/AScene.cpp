@@ -140,14 +140,14 @@ void zappy::gui::raylib::AScene::startIncantation(
     const int &level,
     const std::vector<int> &playerIds
 ) {
-    _mapRenderer->startIncantation(x, y);
+    _mapRenderer->startIncantation(x, y, playerIds);
     (void)level;
     (void)playerIds;
 }
 
 void zappy::gui::raylib::AScene::endIncantation(const int &x, const int &y, const bool &result)
 {
-    _mapRenderer->endIncantation(x, y);
+    _mapRenderer->endIncantation(x, y, result);
     (void)result;
 }
 

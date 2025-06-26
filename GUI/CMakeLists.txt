@@ -110,7 +110,6 @@ set(SOURCES
     ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAnimAction.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerActionFactory.cpp
 
-    ${RAYLIB_MAP_DIR}/Incantation.cpp
     ${RAYLIB_FLOOR_DIR}/AFloor.cpp
 
     ${RAYLIB_FLATFLOOR_DIR}/FlatFloor.cpp
