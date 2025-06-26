@@ -56,6 +56,8 @@ namespace zappy {
             MapServer &getMap() { return this->_map; }
             std::vector<std::shared_ptr<zappy::game::ITeams>> &getTeamList() { return this->_teamList; };
 
+            void foodManager(std::shared_ptr<ITeams> &team);
+
            private:
             int _idPlayerTot = 0;
             MapServer _map;

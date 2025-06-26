@@ -32,6 +32,7 @@ namespace zappy {
                 : Player::Player(id, x, y, orientation, level),
                 _user(std::move(user)),
                 _startTime(std::chrono::steady_clock::now()),
+                _lifeTime(std::chrono::steady_clock::now()),
                 _team(team) {}
 
             ~ServerPlayer() = default;
@@ -44,6 +45,10 @@ namespace zappy {
                 auto now = std::chrono::steady_clock::now();
                 return now - _startTime;
             }
+            std::chrono::duration<double> getLifeChrono() const {
+                auto now = std::chrono::steady_clock::now();
+                return now - _lifeTime;
+            }
 
             bool isInAction() { return _actionStarted; }
             void setInAction(bool status) { _actionStarted = status; }
@@ -54,6 +59,7 @@ namespace zappy {
             zappy::server::Client _user;
             zappy::game::player::InventoryServer _inventory;
             std::chrono::steady_clock::time_point _startTime;
+            std::chrono::steady_clock::time_point _lifeTime;
 
             bool _actionStarted = false;
             zappy::game::ITeams &_team;

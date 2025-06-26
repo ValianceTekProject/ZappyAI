@@ -92,12 +92,38 @@ void zappy::game::Game::removeFromTeam(int clientSocket)
     }
 }
 
+void zappy::game::Game::foodManager(std::shared_ptr<ITeams> &team)
+{
+    constexpr int unitLose = 126;
+
+    std::chrono::seconds loseFood =
+        std::chrono::seconds(unitLose / this->_baseFreqMs);
+
+    auto itPlayerTeam = std::dynamic_pointer_cast<TeamsPlayer>(team);
+
+    if (itPlayerTeam) {
+        for (auto &player : itPlayerTeam->getPlayerList()) {
+            if (player->getLifeChrono() >= loseFood) {
+                zappy::game::Inventory plyInv = player->getInventory();
+                if (plyInv.getResourceQuantity(zappy::game::Resource::FOOD) > 0)
+                    plyInv.removeResource(zappy::game::Resource::FOOD);
+                else {
+                    player->getClient().sendMessage("dead\n");
+                    this->_commandHandler.messageToGUI("pdi "+
+                        std::to_string(player->getClient().getSocket()) + "\n");
+                    itPlayerTeam->removePlayer(player->getClient().getSocket());
+                }
+            }
+        }
+    }
+}
+
 void zappy::game::Game::runGame()
 {
     this->_isRunning = RunningState::RUN;
     auto lastUpdate = std::chrono::steady_clock::now();
     std::chrono::seconds _respawnInterval =
-        std::chrono::seconds(TIME_BEFORE_RESPAWN * this->_baseFreqMs);
+        std::chrono::seconds(TIME_BEFORE_RESPAWN / this->_baseFreqMs);
 
     while (this->_isRunning != RunningState::STOP) {
         auto now = std::chrono::steady_clock::now();
@@ -107,7 +133,9 @@ void zappy::game::Game::runGame()
         }
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
             now - lastUpdate);
+        
         for (auto &team : this->getTeamList()) {
+            foodManager(team);
             for (auto &player : team->getPlayerList()) {
                 if (!player->getClient().queueMessage.empty()) {
                     if (player->teamName.compare("GRAPHIC") == 0) {
