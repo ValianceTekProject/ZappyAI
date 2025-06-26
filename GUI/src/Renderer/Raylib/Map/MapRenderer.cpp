@@ -65,7 +65,7 @@ void zappy::gui::raylib::MapRenderer::render()
     _renderBroadcast();
 }
 
-void zappy::gui::raylib::MapRenderer::changeBroadcastType(const zappy::gui::raylib::BroadcastType &type)
+void zappy::gui::raylib::MapRenderer::setBroadcastType(const zappy::gui::raylib::BroadcastType &type)
 {
     this->_broadcastType = type;
 }

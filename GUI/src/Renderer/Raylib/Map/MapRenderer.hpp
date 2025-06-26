@@ -51,7 +51,7 @@ namespace zappy {
 
                     void render();
 
-                    void changeBroadcastType(const BroadcastType &type);
+                    void setBroadcastType(const BroadcastType &type);
 
                     void addEgg(std::unique_ptr<AEggModel> egg);
                     void addPlayer(std::unique_ptr<APlayerModel> player);
