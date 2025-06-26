@@ -10,6 +10,7 @@
 #include "PlayerActions/APlayerAction.hpp"
 #include "PlayerActions/Movement.hpp"
 #include "IEffect.hpp"
+#include <memory>
 
 namespace zappy {
     namespace gui {
