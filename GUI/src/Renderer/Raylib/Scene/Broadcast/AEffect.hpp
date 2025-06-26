@@ -2,28 +2,35 @@
 ** EPITECH PROJECT, 2024
 ** Zappy
 ** File description:
-** ABroadcastEffect.hpp
+** AEffect.hpp
 */
 
 #pragma once
 
-#include "AEffect.hpp"
+#include "IEffect.hpp"
 
 #include <raylib.h>
 
 namespace zappy {
     namespace gui {
         namespace raylib {
-            class ABroadcastEffect : public AEffect
+            class AEffect : public IEffect
             {
                 public:
-                    ABroadcastEffect(
+                    AEffect(
                         const int &playerId,
                         const float &duration,
                         const Color &color
                     );
-                    virtual ~ABroadcastEffect() override = default;
+                    virtual ~AEffect() override = default;
 
+                    virtual void update(const float &deltaUnits) override;
+
+                    virtual void render(const Vector3 &position) const override = 0;
+
+                    virtual bool hasEnded() const override;
+
+                protected:
                     int _playerId;
 
                     float _elapsedTime;

@@ -11,7 +11,7 @@
 #include "PlayerRotation.hpp"
 #include "PlayerBroadcast.hpp"
 
-#include "BroadcastEffectFactory.hpp"
+#include "EffectFactory.hpp"
 
 #include <memory>
 
@@ -39,7 +39,7 @@ namespace zappy {
                         const float &elapsedTime = 0.f
                     );
 
-                    static std::shared_ptr<IPlayerAction> createBroadcast(
+                    static std::shared_ptr<APlayerAction> createBroadcast(
                         const int &playerId,
                         const BroadcastType &type,
                         const Color &color,

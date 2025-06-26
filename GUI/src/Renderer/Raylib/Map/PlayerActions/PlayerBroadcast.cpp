@@ -10,7 +10,7 @@
 zappy::gui::raylib::PlayerBroadcast::PlayerBroadcast(
     const int &playerId,
     const ActionType &type,
-    std::unique_ptr<IBroadcastEffect> effect,
+    std::unique_ptr<IEffect> effect,
     const float &timeUnit,
     const float &elapsedTime
 ) :

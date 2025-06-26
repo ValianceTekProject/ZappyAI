@@ -21,7 +21,7 @@
 #include "APlayerModel.hpp"
 #include "Resource.hpp"
 
-#include "BroadcastEffectFactory.hpp"
+#include "EffectFactory.hpp"
 
 #include <memory>
 #include <optional>
@@ -110,7 +110,7 @@ namespace zappy {
 
                     std::unordered_map<int, std::queue<std::shared_ptr<IPlayerAction>>> _playerActionQueues;
 
-                    std::vector<std::shared_ptr<PlayerBroadcast>> _broadcasts;
+                    std::vector<std::shared_ptr<APlayerAnimAction>> _broadcasts;
             };
         }
     }
