@@ -7,9 +7,11 @@
 
 #pragma once
 
+#include "PlayerActions/IPlayerAction.hpp"
 #include "PlayerTranslation.hpp"
 #include "PlayerRotation.hpp"
 #include "PlayerBroadcast.hpp"
+#include "PlayerIncantation.hpp"
 
 #include "EffectFactory.hpp"
 
@@ -40,6 +42,14 @@ namespace zappy {
                     );
 
                     static std::shared_ptr<IPlayerAction> createBroadcast(
+                        const int &playerId,
+                        const EffectType &type,
+                        const Color &color,
+                        const float &timeUnit,
+                        const float &elapsedTime = 0.f
+                    );
+
+                    static std::shared_ptr<IPlayerAction> createIncantation(
                         const int &playerId,
                         const EffectType &type,
                         const Color &color,

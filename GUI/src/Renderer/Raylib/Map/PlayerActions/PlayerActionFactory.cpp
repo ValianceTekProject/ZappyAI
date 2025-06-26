@@ -56,3 +56,21 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
         elapsedTime
     );
 }
+
+std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerActionFactory::createIncantation(
+    const int &playerId,
+    const EffectType &type,
+    const Color &color,
+    const float &timeUnit,
+    const float &elapsedTime
+) {
+    auto effect = EffectFactory::create(type, playerId, timeUnit, color);
+
+    return std::make_unique<PlayerIncantation>(
+        playerId,
+        ActionType::INCANTATION,
+        std::move(effect),
+        timeUnit,
+        elapsedTime
+    );
+}

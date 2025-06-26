@@ -8,7 +8,8 @@
 #include "EffectFactory.hpp"
 
 const std::array<zappy::gui::raylib::EffectFactory::CreateMethod, zappy::gui::raylib::EFFECT_COUNT> zappy::gui::raylib::EffectFactory::_createMethods = {
-    &zappy::gui::raylib::EffectFactory::createWave
+    &zappy::gui::raylib::EffectFactory::createWave,
+    &zappy::gui::raylib::EffectFactory::createIncantation
 };
 
 std::unique_ptr<zappy::gui::raylib::IEffect> zappy::gui::raylib::EffectFactory::create(

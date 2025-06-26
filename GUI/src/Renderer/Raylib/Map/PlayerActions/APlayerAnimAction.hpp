@@ -18,6 +18,7 @@ namespace zappy {
             class APlayerAnimAction : public APlayerAction {
                 public:
                     APlayerAnimAction(
+                        const int &animationid,
                         const int &playerId,
                         const ActionType &actionType,
                         std::unique_ptr<IEffect> effect,
@@ -34,6 +35,9 @@ namespace zappy {
 
                 protected:
                     std::unique_ptr<IEffect> _effect;
+
+                private:
+                    int _animationid;
             };
         }
     }

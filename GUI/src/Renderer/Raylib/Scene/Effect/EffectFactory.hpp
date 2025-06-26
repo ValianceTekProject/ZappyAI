@@ -19,6 +19,7 @@ namespace zappy {
         namespace raylib {
             enum class EffectType {
                 WAVE_BROADCAST,
+                SPIRAL_INCANTATION,
                 EFFECT_COUNT
             };
 

@@ -16,6 +16,7 @@ namespace zappy {
                 TRANSLATION,
                 ROTATION,
                 BROADCAST,
+                INCANTATION
             };
 
             struct Movement {
