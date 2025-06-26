@@ -5,7 +5,6 @@
 ## message
 ##
 
-## Updated encryption in teams/message.py
 import json
 import base64
 import time
@@ -23,7 +22,6 @@ class MessageType(Enum):
     DEFENSE_REQUEST = "defense_req"
 
 class Message:
-    # Shared secret key (rotate per deployment)
     _SECRET_KEY = b"s3cr3t_team_key_2025"
     _KEY_STREAM_SIZE = 256
 
@@ -148,7 +146,7 @@ class Message:
             "team_id": team_id,
             "request_sender": request_sender,
             "resource": resource,
-            "status": status,  # e.g., 'on_way', 'unavailable', 'delivered'
+            "status": status,
             "action": "resource_resp",
             "timestamp": timestamp if timestamp is not None else time.time()
         }

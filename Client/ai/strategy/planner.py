@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## Planner principal intégrant la FSM de survie
+## planner
 ##
 
 import time
@@ -16,7 +16,7 @@ class Planner:
     Planner principal intégrant la logique FSM de survie.
     Point d'entrée unique pour toutes les décisions de l'IA.
     """
-    
+
     def __init__(self, command_manager, game_state, message_bus, use_fsm=True):
         """
         Initialise le planner avec option FSM.
@@ -31,23 +31,19 @@ class Planner:
         self.state = game_state
         self.bus = message_bus
         self.use_fsm = use_fsm
-        
-        # Initialisation du planificateur de survie FSM
+
         if self.use_fsm:
             self.fsm_planner = FSMPlanner(command_manager, game_state, message_bus)
             logger.info("[Planner] FSM de survie initialisée")
         else:
             self.fsm_planner = None
             logger.info("[Planner] Mode classique (sans FSM)")
-        
-        # Statistiques et debug
+
         self.total_decisions = 0
         self.last_log_time = time.time()
-        self.log_interval = 30.0  # Log toutes les 30 secondes
-        
-        # État de l'agent pour coordination future
-        self.agent_role = getattr(game_state, 'role', 'survivor')  # survivor par défaut
-        
+        self.log_interval = 30.0
+        self.agent_role = getattr(game_state, 'role', 'survivor')
+
     def decide_next_action(self) -> Optional[Any]:
         """
         Point d'entrée principal pour toutes les décisions.
@@ -55,102 +51,73 @@ class Planner:
         """
         self.total_decisions += 1
         current_time = time.time()
-        
+
         try:
-            # Vérifications préliminaires communes
             if not self._can_make_decision():
                 return None
-            
-            # Log périodique des statistiques
+
             if current_time - self.last_log_time >= self.log_interval:
                 self._log_planner_status()
                 self.last_log_time = current_time
-            
-            # Utiliser FSM de survie si activée
+
             if self.use_fsm and self.fsm_planner:
                 return self._fsm_decision()
             else:
                 return self._fallback_decision()
-                
+
         except Exception as e:
             logger.error(f"[Planner] Erreur critique dans decide_next_action: {e}")
-            # En cas d'erreur, action de sécurité
             return self._emergency_action()
 
     def _can_make_decision(self) -> bool:
         """Vérifications préliminaires avant toute décision."""
-        # Éviter les décisions si commande déjà envoyée
         if self.state.command_already_send:
             return False
-        
-        # Limiter le nombre de commandes en attente
         if self.cmd_mgr.get_pending_count() >= 8:
             return False
-        
-        # Vérifier timing si disponible
         if hasattr(self.cmd_mgr, 'timing') and not self.cmd_mgr.timing.can_execute_action():
             return False
-        
         return True
 
     def _fsm_decision(self) -> Optional[Any]:
         """Décision utilisant la FSM de survie."""
         try:
             action = self.fsm_planner.decide_next_action()
-            
             if action is None:
-                # FSM ne peut pas décider, utiliser fallback léger
                 logger.debug("[Planner] FSM retourne None, fallback minimal")
                 return self._minimal_fallback()
-            
             return action
-            
         except Exception as e:
             logger.error(f"[Planner] Erreur FSM: {e}, fallback d'urgence")
             return self._emergency_action()
 
     def _fallback_decision(self) -> Optional[Any]:
         """Décision fallback simple sans FSM."""
-        # Version simplifiée de la logique de base
-        
-        # 1. Vision si nécessaire
         if self.state.needs_look or not self.state.get_vision().last_vision_data:
             return self.cmd_mgr.look()
-        
-        # 2. Inventaire si perte de nourriture suspectée
         if hasattr(self.cmd_mgr, 'timing') and self.cmd_mgr.timing.has_lost_food():
             return self.cmd_mgr.inventory()
-        
-        # 3. Survie alimentaire basique
         current_food = self.state.get_food_count()
-        if current_food <= 10:  # Seuil critique simple
+        if current_food <= 10:
             food_pos = self._find_food_simple()
             if food_pos == (0, 0):
                 return self.cmd_mgr.take('food')
             elif food_pos:
                 return self._move_towards_simple(food_pos)
-        
-        # 4. Exploration basique
         return self.cmd_mgr.forward()
 
     def _minimal_fallback(self) -> Optional[Any]:
         """Fallback minimal quand FSM ne peut pas décider."""
-        # Actions de base essentielles
-        
         if self.state.needs_look:
             return self.cmd_mgr.look()
-        
         current_food = self.state.get_food_count()
-        if current_food <= 5:  # Très critique
-            return self.cmd_mgr.look()  # Chercher nourriture désespérément
-        
-        return self.cmd_mgr.forward()  # Explorer basique
+        if current_food <= 5:
+            return self.cmd_mgr.look()
+        return self.cmd_mgr.forward()
 
     def _emergency_action(self) -> Optional[Any]:
         """Action d'urgence en cas d'erreur critique."""
         logger.error("[Planner] 🚨 ACTION D'URGENCE - Erreur critique détectée")
-        
-        # Toujours privilégier LOOK en cas de problème
         return self.cmd_mgr.look()
 
     def _find_food_simple(self) -> Optional[tuple]:
@@ -158,17 +125,14 @@ class Planner:
         vision = self.state.get_vision()
         if not vision.last_vision_data:
             return None
-        
         for data in vision.last_vision_data:
             if 'food' in data.resources and data.resources['food'] > 0:
                 return data.rel_pos
-        
         return None
 
     def _move_towards_simple(self, target_pos: tuple) -> Optional[Any]:
         """Mouvement simple vers une position (fallback)."""
         x, y = target_pos
-        
         if x > 0:
             return self.cmd_mgr.right()
         elif x < 0:
@@ -196,15 +160,14 @@ class Planner:
         """Log périodique du statut du planner."""
         current_food = self.state.get_food_count()
         level = self.state.level
-        
         if self.use_fsm and self.fsm_planner:
             strategy_info = self.fsm_planner.get_current_strategy_info()
             logger.info(f"[Planner] FSM - État: {strategy_info.get('state', 'unknown')}, "
-                       f"Food: {current_food}, Level: {level}, "
-                       f"Décisions: {self.total_decisions}")
+                        f"Food: {current_food}, Level: {level}, "
+                        f"Décisions: {self.total_decisions}")
         else:
             logger.info(f"[Planner] Classique - Food: {current_food}, Level: {level}, "
-                       f"Décisions: {self.total_decisions}")
+                        f"Décisions: {self.total_decisions}")
 
     def get_current_strategy_info(self) -> Dict[str, Any]:
         """Retourne les informations de stratégie actuelles."""
@@ -215,11 +178,9 @@ class Planner:
             'current_food': self.state.get_food_count(),
             'current_level': self.state.level
         }
-        
         if self.use_fsm and self.fsm_planner:
             fsm_info = self.fsm_planner.get_current_strategy_info()
             base_info.update(fsm_info)
-        
         return base_info
 
     def set_agent_role(self, role: str):
@@ -264,8 +225,6 @@ class Planner:
                 'can_send': self.cmd_mgr._can_send() if hasattr(self.cmd_mgr, '_can_send') else 'unknown'
             }
         }
-        
         if self.use_fsm and self.fsm_planner:
             debug_info['fsm_info'] = self.fsm_planner.get_current_strategy_info()
-        
         return debug_info

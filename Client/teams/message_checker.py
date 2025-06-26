@@ -32,16 +32,13 @@ class MessageBus:
             return
         msg_type, sender_id, payload = decoded
 
-        # Filtre équipe
         if payload.get("team_id") != self.team_id:
             return
 
-        # Filtre TTL
         ts = payload.get("timestamp", payload.get("time", None))
         if ts and (time.time() - ts) > self.ttl:
             return
 
-        # Appel de **tous** les handlers abonnés
         for handler in self.subscribers.get(msg_type, []):
             handler(sender_id=sender_id,
                     data=payload,
