@@ -24,6 +24,14 @@ void zappy::gui::RaylibRenderer::init()
 
     _scene = std::make_unique<raylib::BasicScene>(_gameState);
     _scene->init();
+
+    constexpr int id = 0;
+    game::Player p(id, 0, 9);
+    this->addPlayer(p);
+    this->updatePlayerPosition(0, 0, 8, game::Orientation::NORTH);
+    this->updatePlayerPosition(0, 0, 8, game::Orientation::EAST);
+    this->playerBroadcast(id, "là là là");
+    this->updatePlayerPosition(0, 1, 8, game::Orientation::EAST);
 }
 
 void zappy::gui::RaylibRenderer::handleInput()

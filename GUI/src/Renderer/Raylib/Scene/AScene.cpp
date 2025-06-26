@@ -16,9 +16,9 @@ zappy::gui::raylib::AScene::AScene(const std::shared_ptr<game::GameState> &gameS
 void zappy::gui::raylib::AScene::init()
 {
     // Initialize Camera
-    _camera.position = Vector3{ 10.0f, 10.0f, 10.0f };
+    _camera.position = Vector3{ 0, 10.0f, 10.0f };
     _camera.target = Vector3{ 0.0f, 0.0f, 0.0f };
-    _camera.up = Vector3{ 0.0f, 0.9f, 0.0f };
+    _camera.up = Vector3{ 0.0f, 0.45f, 0.0f };
     _camera.fovy = 45.0f;
     _camera.projection = CAMERA_PERSPECTIVE;
 
@@ -56,8 +56,6 @@ void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const int &
 {
     game::Player player = _gameState->getPlayerById(id);
 
-    std::cout << "player " << id << " going to (" << x << ", " << y << ") " << game::orientationStrings[static_cast<int>(orientation)] << std::endl;
-
     if (player.orientation != orientation) {
         if (orientation == player.orientation - 1)
             _mapRenderer->playerLookLeft(player.getId());
@@ -74,8 +72,8 @@ void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const int &
         int mapHeight = static_cast<int>(_gameState->getMap()->getHeight());
 
         if (player.x == x) {
-            if ((y == (player.y + 1) % mapHeight && player.orientation == game::Orientation::NORTH) ||
-                (y == (player.y - 1) % mapHeight && player.orientation == game::Orientation::SOUTH)) {
+            if ((y == (player.y - 1) % mapHeight && player.orientation == game::Orientation::NORTH) ||
+                (y == (player.y + 1) % mapHeight && player.orientation == game::Orientation::SOUTH)) {
                     _mapRenderer->playerForward(player.getId(), x, y);
             }
         } else if (player.y == y) {

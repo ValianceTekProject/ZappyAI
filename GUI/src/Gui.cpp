@@ -89,7 +89,7 @@ void zappy::gui::Gui::run()
 {
     init();
 
-    _protocol->setTimeUnit(3);
+    _protocol->setTimeUnit(7);
 
     bool running = true;
     while (running) {

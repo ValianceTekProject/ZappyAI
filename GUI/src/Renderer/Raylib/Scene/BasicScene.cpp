@@ -20,12 +20,6 @@ void zappy::gui::raylib::BasicScene::init()
         auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type); // ou AResourceModel si tu préfères
         _mapRenderer->addResourceModel(type, std::move(model));
     }
-
-    // constexpr int id = 0;
-    // game::Player p(id, 0, 0);
-    // _gameState->addPlayer(p);
-    // this->addPlayer(id);
-    // this->playerBroadcast(id, "là là là");
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)
@@ -68,46 +62,6 @@ void zappy::gui::raylib::BasicScene::addPlayer(const int &id)
     _mapRenderer->addPlayer(std::move(player));
 
     AScene::addPlayer(id);
-}
-
-void zappy::gui::raylib::BasicScene::updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation)
-{
-    AScene::updatePlayerPosition(id, x, y, orientation);
-}
-
-void zappy::gui::raylib::BasicScene::updatePlayerLevel(const int &id, const size_t &level)
-{
-    AScene::updatePlayerLevel(id, level);
-}
-
-void zappy::gui::raylib::BasicScene::updatePlayerInventory(const int &id, const game::Inventory &inventory)
-{
-    AScene::updatePlayerInventory(id, inventory);
-}
-
-void zappy::gui::raylib::BasicScene::startIncantation(const int &x, const int &y, const int &level, const std::vector<int> &playerIds)
-{
-    AScene::startIncantation(x, y, level, playerIds);
-}
-
-void zappy::gui::raylib::BasicScene::endIncantation(const int &x, const int &y, const bool &result)
-{
-    AScene::endIncantation(x, y, result);
-}
-
-void zappy::gui::raylib::BasicScene::hatchEgg(const int &id)
-{
-    AScene::hatchEgg(id);
-}
-
-void zappy::gui::raylib::BasicScene::removeEgg(const int &id)
-{
-    AScene::removeEgg(id);
-}
-
-void zappy::gui::raylib::BasicScene::removePlayer(const int &id)
-{
-    AScene::removePlayer(id);
 }
 
 void zappy::gui::raylib::BasicScene::endGame(const std::string &teamName)

@@ -35,22 +35,6 @@ namespace zappy {
                     void addEgg(const int &id) override;
                     void addPlayer(const int &id) override;
 
-                    void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) override;
-                    void updatePlayerLevel(const int &id, const size_t &level) override;
-                    void updatePlayerInventory(const int &id, const game::Inventory &inventory) override;
-
-                    void startIncantation(
-                        const int &x, const int &y,
-                        const int &level,
-                        const std::vector<int> &playerIds
-                    ) override;
-                    void endIncantation(const int &x, const int &y, const bool &result) override;
-
-                    void hatchEgg(const int &eggId) override;
-
-                    void removeEgg(const int &eggId) override;
-                    void removePlayer(const int &id) override;
-
                     void endGame(const std::string &teamName) override;
 
                 private:

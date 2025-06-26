@@ -39,8 +39,10 @@ void zappy::gui::raylib::FlatFloor::render() const
 
     for (size_t x = 0; x < this->getWidth(); ++x) {
         for (size_t z = 0; z < this->getHeight(); ++z) {
+            size_t invertedZ = this->getHeight() - 1 - z;
+
             float posX = startX + x * tileSize + tileSize / 2.0f;
-            float posZ = startZ + z * tileSize + tileSize / 2.0f;
+            float posZ = startZ + invertedZ * tileSize + tileSize / 2.0f;
 
             Vector3 position = {posX, 0.0f, posZ};
             Vector3 scale = {tileSize, 1.0f, tileSize};
@@ -86,12 +88,12 @@ Vector3 zappy::gui::raylib::FlatFloor::get3DCoords(const int &x, const int &y) c
     const float worldDepth = this->getHeight() * tileSize;
 
     const float offsetX = -worldWidth * 0.5f + tileSize * 0.5f;
-    const float offsetZ =  worldDepth * 0.5f - tileSize * 0.5f;
+    const float offsetZ = -worldDepth * 0.5f + tileSize * 0.5f;
 
     Vector3 pos;
     pos.x = offsetX + x * tileSize;
     pos.y = 0.0f;
-    pos.z = offsetZ - y * tileSize;
+    pos.z = offsetZ + y * tileSize;
     return pos;
 }
 
@@ -114,7 +116,7 @@ zappy::gui::raylib::Translation zappy::gui::raylib::FlatFloor::createTranslation
         finalDestY += height;
     }
 
-    Vector3 cur = player.getPosition();
+    Vector3 cur = get3DCoords(playerGamePos.x, playerGamePos.y);
     Vector3 dest = get3DCoords(finalDestX, finalDestY);
     Vector3 direction = Vector3Subtract(dest, cur);
     Vector3 unitStep = Vector3Scale(direction, 1.0f / static_cast<float>(timeUnit));
