@@ -35,9 +35,9 @@ namespace zappy {
                     virtual void finishAction(const float &deltaUnits, APlayerModel &player) override;
 
                 protected:
-                    int playerId;
+                    int _playerId;
 
-                    ActionType actionType;
+                    ActionType _actionType;
 
                     float _timeUnit;
                     float _elapsedTime;
