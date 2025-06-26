@@ -60,7 +60,7 @@ void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player
             if (p->getId() == playerId) {
                 std::ostringstream orientationStream;
                 orientationStream << p->orientation;
-                std::string msg = std::to_string(playerId) + " " + 
+                std::string msg = msg + std::to_string(playerId) + " " + 
                                   std::to_string(p->x) + " " + 
                                   std::to_string(p->y) + " " + 
                                   orientationStream.str() + "\n";
