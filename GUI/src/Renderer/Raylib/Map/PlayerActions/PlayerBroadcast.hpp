@@ -25,8 +25,9 @@ namespace zappy {
                     ~PlayerBroadcast() override = default;
 
                     void update(const float &deltaUnits, APlayerModel &player) override;
-                    void finishAction(APlayerModel &player) override;
+                    void finishAction(const float &deltaUnits, APlayerModel &player) override;
 
+                    bool hasEffectEnded() { return _effect->hasEnded(); }
                     void render(const Vector3 &position);
 
                 private:

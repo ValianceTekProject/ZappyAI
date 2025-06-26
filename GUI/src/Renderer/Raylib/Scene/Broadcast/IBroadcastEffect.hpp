@@ -19,9 +19,10 @@ namespace zappy {
                     virtual ~IBroadcastEffect() = default;
 
                     virtual void update(const float &deltaUnits) = 0;
+
                     virtual void render(const Vector3 &position) const = 0;
 
-                    virtual bool isFinished() const = 0;
+                    virtual bool hasEnded() const = 0;
             };
         } // namespace raylib
     } // namespace gui

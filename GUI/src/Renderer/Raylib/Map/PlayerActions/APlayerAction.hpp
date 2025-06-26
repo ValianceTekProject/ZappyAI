@@ -32,7 +32,7 @@ namespace zappy {
                     virtual void update(const float &deltaUnits, APlayerModel &player) override;
 
                     virtual bool ActionWillEnd(const float &deltaUnits) const override;
-                    virtual void finishAction(APlayerModel &player) override = 0;
+                    virtual void finishAction(const float &deltaUnits, APlayerModel &player) override;
 
                 protected:
                     int playerId;

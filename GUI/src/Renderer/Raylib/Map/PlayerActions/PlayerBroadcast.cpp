@@ -25,10 +25,9 @@ void zappy::gui::raylib::PlayerBroadcast::update(const float &deltaUnits, APlaye
     APlayerAction::update(deltaUnits, player);
 }
 
-void zappy::gui::raylib::PlayerBroadcast::finishAction(APlayerModel &player)
+void zappy::gui::raylib::PlayerBroadcast::finishAction(const float &deltaUnits, APlayerModel &player)
 {
-    (void)player;
-    this->_effect.reset();
+    APlayerAction::finishAction(deltaUnits, player);
 }
 
 void zappy::gui::raylib::PlayerBroadcast::render(const Vector3 &position)

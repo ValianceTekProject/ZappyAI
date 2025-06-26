@@ -30,3 +30,8 @@ bool zappy::gui::raylib::APlayerAction::ActionWillEnd(const float &deltaUnits) c
 {
     return this->_elapsedTime + deltaUnits >= this->_timeUnit;
 }
+
+void zappy::gui::raylib::APlayerAction::finishAction(const float &deltaUnits, APlayerModel &player)
+{
+    update(deltaUnits, player);
+}

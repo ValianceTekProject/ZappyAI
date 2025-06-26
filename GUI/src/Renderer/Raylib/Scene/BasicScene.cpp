@@ -20,6 +20,12 @@ void zappy::gui::raylib::BasicScene::init()
         auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type); // ou AResourceModel si tu préfères
         _mapRenderer->addResourceModel(type, std::move(model));
     }
+
+    // constexpr int id = 0;
+    // game::Player p(id, 0, 0);
+    // _gameState->addPlayer(p);
+    // this->addPlayer(id);
+    // this->playerBroadcast(id, "là là là");
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)

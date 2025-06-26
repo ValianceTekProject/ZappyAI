@@ -23,7 +23,7 @@ void zappy::gui::raylib::ABroadcastEffect::update(const float &deltaUnits)
     this->_elapsedTime += deltaUnits;
 }
 
-bool zappy::gui::raylib::ABroadcastEffect::isFinished() const
+bool zappy::gui::raylib::ABroadcastEffect::hasEnded() const
 {
     return this->_elapsedTime >= this->_duration;
 }

@@ -27,7 +27,7 @@ namespace zappy {
                     virtual void update(const float &deltaUnits, APlayerModel &player) = 0;
 
                     virtual bool ActionWillEnd(const float &deltaUnits) const = 0;
-                    virtual void finishAction(APlayerModel &player) = 0;
+                    virtual void finishAction(const float &deltaUnits, APlayerModel &player) = 0;
             };
         } // namespace raylib
     } // namespace gui

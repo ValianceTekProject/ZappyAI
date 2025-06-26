@@ -85,6 +85,8 @@ namespace zappy {
                     void _addRotation(const APlayerModel &player, const float &angle);
 
                     void _updateActions(const float &deltaUnits);
+                    void _updateBroadcasts(const float &deltaUnits);
+
                     void _updateIncantationAnimation(float deltaTime);
 
                     void _renderPlayersAndEggs();
@@ -108,7 +110,7 @@ namespace zappy {
 
                     std::unordered_map<int, std::queue<std::shared_ptr<IPlayerAction>>> _playerActionQueues;
 
-                    std::vector<std::weak_ptr<PlayerBroadcast>> _broadcasts;
+                    std::vector<std::shared_ptr<PlayerBroadcast>> _broadcasts;
             };
         }
     }

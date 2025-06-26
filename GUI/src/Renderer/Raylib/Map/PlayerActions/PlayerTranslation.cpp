@@ -31,7 +31,8 @@ void zappy::gui::raylib::PlayerTranslation::update(const float &deltaUnits, APla
     APlayerAction::update(deltaUnits, player);
 }
 
-void zappy::gui::raylib::PlayerTranslation::finishAction(APlayerModel &player)
+void zappy::gui::raylib::PlayerTranslation::finishAction(const float &deltaUnits, APlayerModel &player)
 {
+    APlayerAction::finishAction(deltaUnits, player);
     player.setPosition(_movement.destination);
 }

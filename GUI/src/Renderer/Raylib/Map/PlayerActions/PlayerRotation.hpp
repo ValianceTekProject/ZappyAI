@@ -28,7 +28,7 @@ namespace zappy {
 
                     void update(const float &deltaUnits, APlayerModel &player);
 
-                    void finishAction(APlayerModel &player);
+                    void finishAction(const float &deltaUnits, APlayerModel &player);
 
                 private:
                     Movement _movement;

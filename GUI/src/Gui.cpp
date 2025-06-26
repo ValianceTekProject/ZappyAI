@@ -56,7 +56,7 @@ void zappy::gui::Gui::parseArgs(int argc, char const *argv[])
         throw ParsingError("Port out of range: " + std::to_string(_port), "Parsing");
     }
 
-    if (_debug) {
+    if (!raylib && _debug) {
         _renderer = std::make_shared<DebugRenderer>();
     } else if (!_renderer) {
         if (raylib)
@@ -89,7 +89,7 @@ void zappy::gui::Gui::run()
 {
     init();
 
-    _protocol->setTimeUnit(50);
+    _protocol->setTimeUnit(3);
 
     bool running = true;
     while (running) {

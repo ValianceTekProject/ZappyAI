@@ -24,7 +24,8 @@ void zappy::gui::raylib::PlayerRotation::update(const float &deltaUnits, APlayer
     APlayerAction::update(deltaUnits, player);
 }
 
-void zappy::gui::raylib::PlayerRotation::finishAction(APlayerModel &player)
+void zappy::gui::raylib::PlayerRotation::finishAction(const float &deltaUnits, APlayerModel &player)
 {
+    APlayerAction::finishAction(deltaUnits, player);
     player.rotate(Vector3Subtract(this->_movement.destination, player.getRotation()));
 }

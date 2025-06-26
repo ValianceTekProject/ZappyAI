@@ -13,21 +13,22 @@ zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> ma
     _broadcastType(BroadcastType::WAVE),
     _broadcastColor(BLUE),
     _eggs(),
-    _players(),
-    _lastTime(std::chrono::steady_clock::now())
+    _players()
 {}
 
 void zappy::gui::raylib::MapRenderer::init()
 {
     // Init la carte
-    _floor = std::make_shared<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
-    _floor->init();
+    this->_floor = std::make_shared<FlatFloor>(_map->getWidth(), _map->getHeight(), 1);
+    this->_floor->init();
+
+    this->_lastTime = std::chrono::steady_clock::now();
 }
 
 void zappy::gui::raylib::MapRenderer::update(const int &frequency)
 {
     // Mettre à jour la carte
-    _floor->update();
+    this->_floor->update();
 
     // Mettre à jour les players
     if (!this->_players.empty()) {
@@ -55,7 +56,7 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
 void zappy::gui::raylib::MapRenderer::render()
 {
     // Dessiner la carte
-    _floor->render();
+    this->_floor->render();
 
     _renderPlayersAndEggs();
 
@@ -96,7 +97,7 @@ void zappy::gui::raylib::MapRenderer::setEggPosition(const int &id, const int &x
         return;
 
     auto &egg = this->_getEgg(id);
-    Vector3 position3D = _floor->get3DCoords(x, y);
+    Vector3 position3D = this->_floor->get3DCoords(x, y);
 
     egg.setPosition(position3D);
 }
@@ -108,7 +109,7 @@ void zappy::gui::raylib::MapRenderer::setPlayerPosition(const int &id, const int
         return;
 
     auto &player = this->_getPlayer(id);
-    Vector3 postion3D = _floor->get3DCoords(x, y);
+    Vector3 postion3D = this->_floor->get3DCoords(x, y);
 
     player.setPosition(postion3D);
 
@@ -161,7 +162,7 @@ void zappy::gui::raylib::MapRenderer::playerForward(const int &id, const int &x,
         return;
 
     APlayerModel &player = _getPlayer(id);
-    Translation translation = _floor->createTranslation(player, x, y, FORWARD_TIME);
+    Translation translation = this->_floor->createTranslation(player, x, y, FORWARD_TIME);
 
     std::shared_ptr<IPlayerAction> action = PlayerActionFactory::createTranslation(
         id,
@@ -181,7 +182,7 @@ void zappy::gui::raylib::MapRenderer::playerExpulsion(const int &id, const int &
         return;
 
     APlayerModel &player = _getPlayer(id);
-    Translation translation = _floor->createTranslation(player, x, y, EXPULSION_TIME);
+    Translation translation = this->_floor->createTranslation(player, x, y, EXPULSION_TIME);
 
     std::shared_ptr<IPlayerAction> action = PlayerActionFactory::createTranslation(
         id,
@@ -208,7 +209,7 @@ void zappy::gui::raylib::MapRenderer::playerBroadcast(const int &id)
     );
 
     this->_playerActionQueues[id].push(action);
-    this->_broadcasts.push_back(std::dynamic_pointer_cast<PlayerBroadcast>(action));
+    this->_broadcasts.push_back(std::move(std::dynamic_pointer_cast<PlayerBroadcast>(action)));
 }
 
 void zappy::gui::raylib::MapRenderer::startIncantation(const int &x, const int &y)
@@ -327,11 +328,26 @@ void zappy::gui::raylib::MapRenderer::_updateActions(const float &deltaUnits)
             action->startAction();
 
         if (action->ActionWillEnd(deltaUnits)) {
-            action->finishAction(player);
+            action->finishAction(deltaUnits, player);
             queue.pop();
         } else
             action->update(deltaUnits, player);
         ++it;
+    }
+
+    this->_updateBroadcasts(deltaUnits);
+}
+
+void zappy::gui::raylib::MapRenderer::_updateBroadcasts(const float &deltaUnits)
+{
+    for (auto it = this->_broadcasts.begin(); it != this->_broadcasts.end(); ++it) {
+        if (it->use_count() > 1)
+            continue;
+
+        auto broadcast = (*it);
+        APlayerModel &player = _getPlayer(broadcast->getPlayerId());
+
+        broadcast->update(deltaUnits, player);
     }
 }
 
@@ -359,7 +375,7 @@ void zappy::gui::raylib::MapRenderer::_renderResources()
         for (size_t x = 0; x < _map->getWidth(); ++x) {
             const auto &tile = _map->getTile(x, y);
             const auto &resources = tile.getResources();
-            Vector3 basePos = _floor->get3DCoords(x, y);
+            Vector3 basePos = this->_floor->get3DCoords(x, y);
             int typeIndex = 0;
 
             for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
@@ -386,21 +402,26 @@ void zappy::gui::raylib::MapRenderer::_renderResources()
 void zappy::gui::raylib::MapRenderer::_renderIncantations()
 {
     for (const auto& incantation : _incantations)
-        incantation->render(_floor.get());
+        incantation->render(this->_floor.get());
 }
 
 void zappy::gui::raylib::MapRenderer::_renderBroadcast()
 {
-    for (auto it = _broadcasts.begin(); it != _broadcasts.end(); ) {
-        if (auto shared = it->lock()) {
-            if (!shared->hasActionStarted())
-                continue;
-
-            auto &player = _getPlayer(shared->getPlayerId());
-            shared->render(player.getPosition());
-            ++it;
-        } else {
+    auto it = _broadcasts.begin();
+    while (it != _broadcasts.end()) {
+        const auto &broadcast = *it;
+        if (!broadcast || broadcast->hasEffectEnded()) {
             it = _broadcasts.erase(it);
+            continue;
         }
+
+        if (!broadcast->hasActionStarted()) {
+            ++it;
+            continue;
+        }
+
+        auto &player = _getPlayer(broadcast->getPlayerId());
+        broadcast->render(player.getPosition());
+        ++it;
     }
 }

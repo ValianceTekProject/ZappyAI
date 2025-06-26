@@ -56,6 +56,8 @@ void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const int &
 {
     game::Player player = _gameState->getPlayerById(id);
 
+    std::cout << "player " << id << " going to (" << x << ", " << y << ") " << game::orientationStrings[static_cast<int>(orientation)] << std::endl;
+
     if (player.orientation != orientation) {
         if (orientation == player.orientation - 1)
             _mapRenderer->playerLookLeft(player.getId());
@@ -67,8 +69,10 @@ void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const int &
         // determine if the player go forward
         if (player.x == x && player.y == y)
             return;
+
         int mapWidth = static_cast<int>(_gameState->getMap()->getWidth());
         int mapHeight = static_cast<int>(_gameState->getMap()->getHeight());
+
         if (player.x == x) {
             if ((y == (player.y + 1) % mapHeight && player.orientation == game::Orientation::NORTH) ||
                 (y == (player.y - 1) % mapHeight && player.orientation == game::Orientation::SOUTH)) {
@@ -79,6 +83,8 @@ void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const int &
                 (x == (player.x - 1) % mapWidth && player.orientation == game::Orientation::WEST)) {
                     _mapRenderer->playerForward(player.getId(), x, y);
             }
+        } else {
+            _mapRenderer->setPlayerPosition(player.getId(), x, y, orientation);
         }
     }
 }

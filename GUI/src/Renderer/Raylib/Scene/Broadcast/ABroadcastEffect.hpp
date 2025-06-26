@@ -22,12 +22,13 @@ namespace zappy {
                         const float &duration,
                         const Color &color
                     );
-                    virtual ~ABroadcastEffect() = default;
+                    virtual ~ABroadcastEffect() override = default;
 
-                    virtual void update(const float &deltaUnits);
-                    virtual void render(const Vector3 &position) const = 0;
+                    virtual void update(const float &deltaUnits) override;
 
-                    virtual bool isFinished() const;
+                    virtual void render(const Vector3 &position) const override = 0;
+
+                    virtual bool hasEnded() const override;
 
                 protected:
                     int _playerId;
