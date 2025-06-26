@@ -35,7 +35,6 @@ class ppo_state():
         return None
 
     def position_to_vector(self, x, y):
-        """Convertit position relative en distance + angle"""
         distance = abs(x) + abs(y)
 
         if distance == 0:

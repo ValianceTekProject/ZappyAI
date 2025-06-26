@@ -31,15 +31,14 @@ class PPO:
         action_probs = self.actor(state)
         value = self.critic(state)
 
-        action_dist = tf.random.categorical(tf.math.log(action_probs), 1)
-        action = action_dist[0, 0].numpy()
+        result = tf.random.categorical(tf.math.log(action_probs), 1)
 
-        log_prob = tf.math.log(action_probs[0, action])
+        action_index = result[0, 0].numpy()
+        log_prob = tf.math.log(action_probs[0, action_index])
 
-        return action, value[0, 0].numpy(), log_prob.numpy()
+        return action_index, value[0, 0].numpy(), log_prob.numpy()
 
     def compute_gae(self, rewards, values, gamma=0.99, lam=0.95):
-        """Calcule returns et advantages avec GAE"""
         advantages = []
         last_advantage = 0
 
@@ -48,15 +47,13 @@ class PPO:
                 next_value = 0
             else:
                 next_value = values[t + 1]
-
             delta = rewards[t] + gamma * next_value - values[t]
             last_advantage = delta + gamma * lam * last_advantage
             advantages.insert(0, last_advantage)
 
         advantages = tf.convert_to_tensor(advantages, dtype=tf.float32)
-        returns = advantages + values
 
-        return returns, advantages
+        return advantages + values, advantages
 
     @tf.function
     def _update_actor(self, states, actions, advantages, old_log_probs):
@@ -94,7 +91,6 @@ class PPO:
         self.optimizer_critic.apply_gradients(zip(grads, self.critic.trainable_variables))
 
     def update(self):
-        """Méthode principale d'update PPO"""
         if len(self.states) == 0:
             return
 
