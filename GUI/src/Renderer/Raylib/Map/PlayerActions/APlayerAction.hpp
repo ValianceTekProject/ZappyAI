@@ -23,8 +23,8 @@ namespace zappy {
                     );
                     virtual ~APlayerAction() override = default;
 
-                    int getPlayerId() const override { return playerId; }
-                    ActionType getActionType() const override { return actionType; }
+                    int getPlayerId() const override { return _playerId; }
+                    ActionType getActionType() const override { return _actionType; }
 
                     bool hasActionStarted() const override { return _hasStarted; }
                     void startAction() override { _hasStarted = true; }
