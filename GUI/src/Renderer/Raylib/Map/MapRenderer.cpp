@@ -10,7 +10,7 @@
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
     _floor(nullptr),
-    _broadcastType(BroadcastType::WAVE),
+    _broadcastType(EffectType::WAVE_BROADCAST),
     _broadcastColor(BLUE),
     _eggs(),
     _players()
@@ -65,7 +65,7 @@ void zappy::gui::raylib::MapRenderer::render()
     _renderBroadcast();
 }
 
-void zappy::gui::raylib::MapRenderer::setBroadcastType(const zappy::gui::raylib::BroadcastType &type)
+void zappy::gui::raylib::MapRenderer::setBroadcastType(const zappy::gui::raylib::EffectType &type)
 {
     this->_broadcastType = type;
 }

@@ -49,6 +49,7 @@ include_directories(
     ${RENDERER_DIR}
     ${RAYLIB_DIR}
     ${RAYLIB_SCENE_DIR}
+
     ${RAYLIB_EFFECT_DIR}
     ${RAYLIB_BROADCAST_EFFECT_DIR}
     ${RAYLIB_INCANTATION_EFFECT_DIR}
@@ -99,16 +100,13 @@ set(SOURCES
     ${RAYLIB_EFFECT_DIR}/AEffect.cpp
     ${RAYLIB_EFFECT_DIR}/EffectFactory.cpp
 
-    ${RAYLIB_BROADCAST_EFFECT_DIR}/ABroadcastEffect.cpp
     ${RAYLIB_BROADCAST_EFFECT_DIR}/WaveBroadcastEffect.cpp
-    ${RAYLIB_INCANTATION_EFFECT_DIR}/AIncantationEffect.cpp
-    ${RAYLIB_INCANTATION_EFFECT_DIR}/IncantationEffectFactory.cpp
 
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAction.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerTranslation.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerRotation.cpp
-    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerBroadcast.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAnimAction.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerActionFactory.cpp
 
     ${RAYLIB_MAP_DIR}/Incantation.cpp

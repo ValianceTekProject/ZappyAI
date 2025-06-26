@@ -7,7 +7,7 @@
 
 #include "PlayerBroadcast.hpp"
 
-zappy::gui::raylib::PlayerBroadcast::PlayerBroadcast(
+zappy::gui::raylib::APlayerAnimAction::APlayerAnimAction(
     const int &playerId,
     const ActionType &type,
     std::unique_ptr<IEffect> effect,
@@ -18,19 +18,14 @@ zappy::gui::raylib::PlayerBroadcast::PlayerBroadcast(
     _effect(std::move(effect))
 {}
 
-void zappy::gui::raylib::PlayerBroadcast::update(const float &deltaUnits, APlayerModel &player)
+void zappy::gui::raylib::APlayerAnimAction::update(const float &deltaUnits, APlayerModel &player)
 {
     if (this->_effect)
         this->_effect->update(deltaUnits);
     APlayerAction::update(deltaUnits, player);
 }
 
-void zappy::gui::raylib::PlayerBroadcast::finishAction(const float &deltaUnits, APlayerModel &player)
-{
-    APlayerAction::finishAction(deltaUnits, player);
-}
-
-void zappy::gui::raylib::PlayerBroadcast::render(const Vector3 &position)
+void zappy::gui::raylib::APlayerAnimAction::render(const Vector3 &position)
 {
     if (this->_effect)
         this->_effect->render(position);

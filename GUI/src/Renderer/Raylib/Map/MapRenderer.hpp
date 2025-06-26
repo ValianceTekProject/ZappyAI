@@ -51,7 +51,7 @@ namespace zappy {
 
                     void render();
 
-                    void setBroadcastType(const BroadcastType &type);
+                    void setBroadcastType(const EffectType &type);
 
                     void addEgg(std::unique_ptr<AEggModel> egg);
                     void addPlayer(std::unique_ptr<APlayerModel> player);
@@ -97,7 +97,7 @@ namespace zappy {
                     const std::shared_ptr<game::Map> _map;
                     std::shared_ptr<IFloor> _floor;
 
-                    BroadcastType _broadcastType;
+                    EffectType _broadcastType;
                     Color _broadcastColor;
 
                     std::vector<std::unique_ptr<AEggModel>> _eggs;

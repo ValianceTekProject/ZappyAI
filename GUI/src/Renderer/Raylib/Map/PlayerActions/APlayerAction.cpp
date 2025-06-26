@@ -13,8 +13,8 @@ zappy::gui::raylib::APlayerAction::APlayerAction(
     const float &timeUnit,
     const float &elapsedTime
 ) :
-    playerId(playerId),
-    actionType(actionType),
+    _playerId(playerId),
+    _actionType(actionType),
     _timeUnit(timeUnit),
     _elapsedTime(elapsedTime),
     _hasStarted(false)

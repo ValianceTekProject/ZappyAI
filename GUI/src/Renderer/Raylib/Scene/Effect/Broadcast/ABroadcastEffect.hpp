@@ -21,15 +21,8 @@ namespace zappy {
                         const int &playerId,
                         const float &duration,
                         const Color &color
-                    );
+                    ) : AEffect::AEffect(playerId, duration, color) {}
                     virtual ~ABroadcastEffect() override = default;
-
-                    int _playerId;
-
-                    float _elapsedTime;
-                    float _duration;
-
-                    Color _color;
             };
         } // namespace raylib
     } // namespace gui

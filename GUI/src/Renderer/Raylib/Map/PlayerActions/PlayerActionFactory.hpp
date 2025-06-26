@@ -39,9 +39,9 @@ namespace zappy {
                         const float &elapsedTime = 0.f
                     );
 
-                    static std::shared_ptr<APlayerAction> createBroadcast(
+                    static std::shared_ptr<IPlayerAction> createBroadcast(
                         const int &playerId,
-                        const BroadcastType &type,
+                        const EffectType &type,
                         const Color &color,
                         const float &timeUnit,
                         const float &elapsedTime = 0.f

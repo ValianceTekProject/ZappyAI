@@ -40,9 +40,9 @@ namespace zappy {
                     std::vector<Pulse> _pulses;
                     float _pulseTimer;
 
-                    constexpr static float PULSE_INTERVAL = 2.0f;  // relancer un cercle toutes les 0.5 unités
-                    constexpr static float PULSE_SPEED = 3.0f;     // vitesse de propagation
-                    constexpr static float PULSE_LIFETIME = 3.0f;  // durée de vie de chaque cercle
+                    constexpr static float PULSE_INTERVAL = 2.0f;
+                    constexpr static float PULSE_SPEED = 3.0f;
+                    constexpr static float PULSE_LIFETIME = 3.0f;
             };
         } // namespace raylib
     } // namespace gui

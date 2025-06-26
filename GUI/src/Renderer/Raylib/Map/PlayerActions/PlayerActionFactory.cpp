@@ -41,12 +41,12 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
 
 std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerActionFactory::createBroadcast(
     const int &playerId,
-    const BroadcastType &type,
+    const EffectType &type,
     const Color &color,
     const float &timeUnit,
     const float &elapsedTime
 ) {
-    auto effect = BroadcastEffectFactory::create(type, playerId, timeUnit, color);
+    auto effect = EffectFactory::create(type, playerId, timeUnit, color);
 
     return std::make_unique<PlayerBroadcast>(
         playerId,

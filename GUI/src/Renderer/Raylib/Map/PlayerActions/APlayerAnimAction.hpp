@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "PlayerActions/APlayerAction.hpp"
-#include "PlayerActions/Movement.hpp"
+#include "APlayerAction.hpp"
 #include "IEffect.hpp"
+
 #include <memory>
 
 namespace zappy {
@@ -26,9 +26,11 @@ namespace zappy {
                     );
                     virtual ~APlayerAnimAction() override = default;
 
-                    bool hasEffectEnded() { return _effect->hadEnded(); }
+                    virtual void update(const float &deltaUnits, APlayerModel &player) override;
 
-                    virtual void render(const Vector3 &position) = 0;
+                    bool hasEffectEnded() { return _effect->hasEnded(); }
+
+                    virtual void render(const Vector3 &position);
 
                 protected:
                     std::unique_ptr<IEffect> _effect;
