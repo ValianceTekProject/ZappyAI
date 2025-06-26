@@ -2,14 +2,16 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## math utilities - CORRIGÉ
+## math
 ##
 
 import math
 from typing import Tuple, List
-from config import Orientation, CommandType
+from config import Orientation
 
 class MathUtils:
+    """Utilitaires mathématiques pour la navigation et les calculs de position."""
+
     @staticmethod
     def distance(x1: int, y1: int, x2: int, y2: int) -> float:
         """Calcule la distance euclidienne entre deux points."""
@@ -22,20 +24,8 @@ class MathUtils:
 
     @staticmethod
     def compute_relative_positions(vision_range: int, orientation: int) -> List[Tuple[int, int]]:
-        """
-        Génère les positions relatives dans l'ordre de la commande Look du serveur Zappy.
-
-        Le serveur renvoie les tuiles dans l'ordre suivant :
-        - D'abord la tuile courante (0,0)
-        - Puis par "ligne" croissante de distance, de gauche-à-droite relativement à l'orientation
-
-        Exemple pour vision_range=2, orientation=NORTH (0):
-        Distance 0: [(0,0)]
-        Distance 1: [(-1,-1), (0,-1), (1,-1)]
-        Distance 2: [(-2,-2), (-1,-2), (0,-2), (1,-2), (2,-2)]
-        """
+        """Génère les positions relatives dans l'ordre de la commande Look du serveur Zappy."""
         positions = []
-
         positions.append((0, 0))
 
         for distance in range(1, vision_range + 1):
@@ -52,13 +42,7 @@ class MathUtils:
 
     @staticmethod
     def _rotate_position(pos: Tuple[int, int], orientation: int) -> Tuple[int, int]:
-        """
-        Effectue une rotation des coordonnées selon l'orientation.
-        0: NORTH (pas de rotation)
-        1: EAST (rotation 90° horaire)
-        2: SOUTH (rotation 180°)
-        3: WEST (rotation 90° anti-horaire)
-        """
+        """Effectue une rotation des coordonnées selon l'orientation."""
         x, y = pos
 
         if orientation == Orientation.NORTH:
@@ -85,10 +69,7 @@ class MathUtils:
 
     @staticmethod
     def calculate_rotation_needed(current_ori: int, target_ori: int) -> Tuple[str, int]:
-        """
-        Calcule la rotation nécessaire pour passer de current_ori à target_ori.
-        Retourne (direction, nombre_de_rotations)
-        """
+        """Calcule la rotation nécessaire pour passer de current_ori à target_ori."""
         diff = (target_ori - current_ori) % 4
 
         if diff == 0:

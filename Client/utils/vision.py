@@ -13,7 +13,6 @@ from utils.logger import logger
 from utils.math import MathUtils
 from protocol.parser import Parser
 
-# Représentation des déplacements associés à chaque orientation
 DIRECTION_VECTORS = {
     0: (0, -1),  # NORD
     1: (1, 0),   # EST
@@ -23,6 +22,7 @@ DIRECTION_VECTORS = {
 
 class VisionData:
     """Contient les informations visuelles d'une tuile visible par le joueur."""
+
     def __init__(self, distance: int, angle: int, content: List[str], rel_pos: Tuple[int, int]):
         self.distance = distance
         self.angle = angle
@@ -34,7 +34,7 @@ class VisionData:
         self.parse_content()
 
     def parse_content(self) -> None:
-        """Remplit `players` et `resources` à partir du contenu brut de la tuile."""
+        """Remplit players et resources à partir du contenu brut de la tuile."""
         for item in self.content:
             if item == Constants.PLAYER.value:
                 self.players += 1
@@ -42,7 +42,8 @@ class VisionData:
                 self.resources[item] = self.resources.get(item, 0) + 1
 
 class Vision:
-    """Gère la perception visuelle d'un agent, avec logique de parsing et d'analyse de la vue."""
+    """Gère la perception visuelle d'un agent avec parsing et analyse optimisés."""
+
     def __init__(self):
         self.vision_range = Constants.VISION_RANGE.value
         self.last_vision_data: List[VisionData] = []
@@ -50,7 +51,7 @@ class Vision:
 
     @staticmethod
     def parse_look_matrix(text: str) -> List[List[str]]:
-        """Parse la réponse brute du serveur à la commande `Look`."""
+        """Parse la réponse brute du serveur à la commande Look."""
         return Parser.parse_look_response(text)
 
     def process_vision(self, look_response: str, agent_pos: Tuple[int, int], agent_orientation: int) -> List[VisionData]:
@@ -73,7 +74,7 @@ class Vision:
         self.last_vision_data.clear()
 
     def get_visible_resources(self) -> Dict[str, List[Tuple[int, int]]]:
-        """Retourne les positions relatives de toutes les ressources visibles, triées par type."""
+        """Retourne les positions relatives de toutes les ressources visibles."""
         result = defaultdict(list)
         for data in self.last_vision_data:
             for resource, count in data.resources.items():
@@ -85,7 +86,7 @@ class Vision:
         return [data.rel_pos for data in self.last_vision_data for _ in range(data.players)]
 
     def find_closest_resource(self, resource: str) -> Optional[Tuple[int, int]]:
-        """Trouve la position relative de la ressource la plus proche (distance de Manhattan)."""
+        """Trouve la position relative de la ressource la plus proche."""
         candidates = self.get_visible_resources().get(resource, [])
         if not candidates:
             return None
@@ -96,7 +97,7 @@ class Vision:
         return self.get_visible_players()
 
     def get_safe_directions(self) -> List[int]:
-        """Retourne les directions "sûres" (0=avant, 1=gauche, 2=droite) sans joueur directement visible."""
+        """Retourne les directions sûres sans joueur directement visible."""
         threats = self.get_visible_players()
         safe_dirs = []
         dir_mapping = {
@@ -110,7 +111,7 @@ class Vision:
         return safe_dirs
 
     def is_tile_empty(self, relative_pos: Tuple[int, int]) -> bool:
-        """Vérifie si une tuile est vide (aucun joueur, aucune ressource)."""
+        """Vérifie si une tuile est vide."""
         for data in self.last_vision_data:
             if data.rel_pos == relative_pos:
                 return data.players == 0 and not data.resources
@@ -125,7 +126,7 @@ class Vision:
         return dict(count)
 
     def add_resource_at(self, rel_pos: Tuple[int, int], resource: str):
-        """Ajoute artificiellement une ressource à une tuile donnée (ex: pour simulation)."""
+        """Ajoute artificiellement une ressource à une tuile donnée."""
         for data in self.last_vision_data:
             if data.rel_pos == rel_pos:
                 data.resources[resource] = data.resources.get(resource, 0) + 1

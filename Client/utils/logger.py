@@ -8,8 +8,8 @@
 import logging
 import sys
 
-def setup_logger(name: str = 'zappy_ai', level: int = logging.DEBUG) -> logging.Logger:
-    """Configure et retourne un logger."""
+def setup_logger(name: str = 'zappy_ai', level: int = logging.INFO) -> logging.Logger:
+    """Configure et retourne un logger optimisé pour Zappy."""
     logger_instance = logging.getLogger(name)
     logger_instance.setLevel(level)
 
@@ -18,7 +18,8 @@ def setup_logger(name: str = 'zappy_ai', level: int = logging.DEBUG) -> logging.
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        '%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%H:%M:%S'
     )
     console_handler.setFormatter(console_formatter)
     logger_instance.addHandler(console_handler)
