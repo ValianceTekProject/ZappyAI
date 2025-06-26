@@ -101,6 +101,7 @@ set(SOURCES
     ${RAYLIB_EFFECT_DIR}/EffectFactory.cpp
 
     ${RAYLIB_BROADCAST_EFFECT_DIR}/WaveBroadcastEffect.cpp
+    ${RAYLIB_INCANTATION_EFFECT_DIR}/SpiralIncantationEffect.cpp
 
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
     ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAction.cpp

@@ -22,5 +22,10 @@ std::unique_ptr<zappy::gui::raylib::IEffect> zappy::gui::raylib::EffectFactory::
 
 std::unique_ptr<zappy::gui::raylib::IEffect> zappy::gui::raylib::EffectFactory::createWave(const int &playerId, const float &duration, const Color &color)
 {
-    return std::make_unique<zappy::gui::raylib::WaveBroadcastEffect>(playerId, duration, color);
+    return std::make_unique<WaveBroadcastEffect>(playerId, duration, color);
+}
+
+std::unique_ptr<zappy::gui::raylib::IEffect> zappy::gui::raylib::EffectFactory::createIncantation(const int &playerId, const float &duration, const Color &color)
+{
+    return std::make_unique<SpiralIncantationEffect>(playerId, duration, color);
 }

@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include "IEffect.hpp"
 #include "WaveBroadcastEffect.hpp"
+#include "SpiralIncantationEffect.hpp"
 
 #include <memory>
 #include <array>
@@ -33,6 +35,7 @@ namespace zappy {
 
                 private:
                     static std::unique_ptr<IEffect> createWave(const int &playerId, const float &duration, const Color &color);
+                    static std::unique_ptr<IEffect> createIncantation(const int &playerId, const float &duration, const Color &color);
 
                     // function pointer array
                     using CreateMethod = std::unique_ptr<IEffect> (*)(const int &, const float &, const Color &);
