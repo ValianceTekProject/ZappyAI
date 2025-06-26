@@ -28,6 +28,9 @@ void zappy::game::Game::_addPlayerToTeam(
         std::move(user), _idPlayerTot, egg.x, egg.y, orientation, *team, 1);
     newPlayer->teamName = team->getName();
     this->_idPlayerTot += 1;
+    this->_commandHandler.messageToGUI("enw " + std::to_string(egg.getId()) + " " +
+        std::to_string(newPlayer->getId()) + " " + std::to_string(newPlayer->x) + " " +
+        std::to_string(newPlayer->y) + "\n");
     team->addPlayer(newPlayer);
     this->_playerList.push_back(newPlayer);
     if (auto lastPlayer = this->_playerList.back().lock(); lastPlayer) {
