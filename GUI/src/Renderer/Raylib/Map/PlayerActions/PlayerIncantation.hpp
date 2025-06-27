@@ -8,6 +8,7 @@
 #pragma once
 
 #include "APlayerAnimAction.hpp"
+#include "AIncantationEffect.hpp"
 
 namespace zappy {
     namespace gui {
@@ -26,6 +27,12 @@ namespace zappy {
                     ~PlayerIncantation() override = default;
 
                     const Vector2 &getPosition() const { return _pos ;}
+
+                    void incantationResult(const bool &res)
+                    {
+                        AIncantationEffect &effect = static_cast<AIncantationEffect &>(*_effect);
+                        effect.incantationResult(res);
+                    };
 
                 private:
                     Vector2 _pos;

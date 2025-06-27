@@ -23,6 +23,7 @@ namespace zappy {
 
                     virtual bool hasEnded() const = 0;
             };
+            
         } // namespace raylib
     } // namespace gui
 } // namespace zappy

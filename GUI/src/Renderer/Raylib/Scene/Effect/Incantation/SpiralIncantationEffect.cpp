@@ -12,6 +12,8 @@ zappy::gui::raylib::SpiralIncantationEffect::SpiralIncantationEffect(const int &
 
 void zappy::gui::raylib::SpiralIncantationEffect::update(const float &deltaUnits)
 {
+    AEffect::update(deltaUnits);
+
     _animationTime += deltaUnits;
     if (_animationTime > 3.0f)
         _animationTime -= 3.0f;
@@ -26,7 +28,8 @@ void zappy::gui::raylib::SpiralIncantationEffect::render(const Vector3 &position
 
 void zappy::gui::raylib::SpiralIncantationEffect::_renderSpiralParticles(const Vector3& center, float progress) const
 {
-    int numParticles = 200;
+    constexpr int numParticles = 200;
+    constexpr float particleSize = 0.025f;
     for (int i = 0; i < numParticles; i++) {
         float particleProgress = fmod(progress + i / (float)numParticles, 1.0f);
         float angle = particleProgress * 4 * PI + i * PI / 6;
@@ -38,10 +41,7 @@ void zappy::gui::raylib::SpiralIncantationEffect::_renderSpiralParticles(const V
         particlePos.z += sin(angle) * radius;
         particlePos.y += height;
 
-        Color particleColor = _color;
-
-        float particleSize = 0.025f;
-        DrawSphere(particlePos, particleSize, particleColor);
+        DrawSphere(particlePos, particleSize, _color);
     }
 }
 

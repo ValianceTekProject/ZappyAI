@@ -6,6 +6,9 @@
 */
 
 #include "MapRenderer.hpp"
+#include "PlayerActions/PlayerIncantation.hpp"
+#include <memory>
+#include <raylib.h>
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
@@ -257,15 +260,31 @@ void zappy::gui::raylib::MapRenderer::endIncantation(const int &x, const int &y,
     if (animationIdToRemove == -1)
         return;
 
-    _playerAnimAction.erase(
-        std::remove_if(_playerAnimAction.begin(), _playerAnimAction.end(),
-            [animationIdToRemove](const std::shared_ptr<APlayerAnimAction> &action) {
-                return action && action->getAnimationId() == animationIdToRemove;
-            }),
-        _playerAnimAction.end()
-    );
+    std::shared_ptr<PlayerIncantation> incantation = nullptr;
+
+    for (auto &action : _playerAnimAction) {
+        if (action && action->getAnimationId() == animationIdToRemove) {
+            // Recup shared ptr de playerIncantation
+            incantation = std::dynamic_pointer_cast<PlayerIncantation>(action);
+            break;
+        }
+    }
+
+    // Supprimer l'action de la queue des joueurs
+    int playerId = incantation->getPlayerId();
+
+    for (auto &[id, queue] : _playerActionQueues)
+        if (!queue.empty() && queue.front()->getPlayerId() == playerId &&
+        queue.front()->getActionType() == ActionType::INCANTATION)
+            queue.pop();
+
+    // Appeller IncantationResult();
+    incantation->incantationResult(result);
 
     _incantationMap.erase(animationIdToRemove);
+
+    if (!incantation->hasActionStarted())
+        incantation->startAction();
 }
 
 void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)

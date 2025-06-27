@@ -35,8 +35,12 @@ namespace zappy {
 
                     virtual void render(const Vector3 &position);
 
+                    IEffect *getEffect() const { return _effect.get(); }
+
                 protected:
                     std::unique_ptr<IEffect> _effect;
+                    float _effectDuration = 0.f;
+                    float _effectElapsed = 0.f;
 
                 private:
                     ssize_t _animationId;
