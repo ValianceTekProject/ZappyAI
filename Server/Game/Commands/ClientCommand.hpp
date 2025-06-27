@@ -14,6 +14,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include "GuiCommand.hpp"
 
 namespace zappy {
     namespace game {
@@ -36,7 +37,7 @@ namespace zappy {
             {4, 1, 2, 1, 3, 0, 0}, {6, 1, 2, 3, 0, 1, 0},
             {6, 2, 2, 2, 2, 2, 1}}};
 
-        class CommandHandler {
+        class CommandHandler : public CommandHandlerGui {
            public:
             enum class timeLimit {
                 FORWARD = 7,
@@ -67,34 +68,23 @@ namespace zappy {
 
             CommandHandler(int &freq, int width, int height, int clientNb,
                 zappy::game::MapServer &map, std::vector<std::shared_ptr<ITeams>> &teamList)
-                : _freq(freq), _widthMap(width), _heightMap(height),
-                  _clientNb(clientNb), _map(map), _teamList(teamList) {};
+                : CommandHandlerGui(freq, width, height, clientNb, map, teamList) {};
             ~CommandHandler() = default;
 
-            virtual void processClientInput(
-                std::string &input, zappy::game::ServerPlayer &player);
+            void processClientInput(
+                std::string &input, zappy::game::ServerPlayer &player) override;
 
-            virtual void initCommandMap();
+            void initCommandMap() override;
 
             int &getFreq() { return _freq; }
 
             void messageToGUI(const std::string &msg);
 
-           protected:
-            int &_freq;
-            int _widthMap;
-            int _heightMap;
-            int _clientNb;
-            MapServer &_map;
-            std::unordered_map<std::string,
-                std::function<void(ServerPlayer &, const std::string &)>>
-                _commandMap;
 
             void _executeCommand(zappy::game::ServerPlayer &player,
                 std::function<void(ServerPlayer &, const std::string &)>
                     function,
                 const std::string &args);
-            std::vector<std::shared_ptr<ITeams>> &_teamList;
 
            private:
             void handleForward(zappy::game::ServerPlayer &player);

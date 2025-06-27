@@ -8,7 +8,6 @@
 #pragma once
 
 #include "Client.hpp"
-#include "ServerInventory.hpp"
 #include "ServerPlayer.hpp"
 #include <memory>
 #include <mutex>

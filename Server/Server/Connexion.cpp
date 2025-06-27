@@ -31,8 +31,11 @@ zappy::server::ClientState zappy::server::Server::_handleClientDisconnection(
     const std::string &content, struct pollfd &pfd)
 {
     if (content.compare("exit") == 0) {
-        this->_game->getCommandHandler().messageToGUI("pdi #"+
-                        std::to_string(this->getPlayerBySocket(pfd.fd).value()->getId()) + "\n");
+        auto optPlayer = this->getPlayerBySocket(pfd.fd);
+        if (optPlayer.has_value()) {
+            this->_game->getCommandHandler().messageToGUI("pdi #" +
+                std::to_string(optPlayer.value()->getId()) + "\n");
+        }
         this->_game->removeFromTeam(pfd.fd);
         ::close(pfd.fd);
         return ClientState::DISCONNECTED;

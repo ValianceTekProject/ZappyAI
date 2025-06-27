@@ -51,7 +51,6 @@ void zappy::game::Game::_addPlayerToTeam(
         team->addPlayer(newPlayer);
         this->_playerList.push_back(newPlayer);
     }
-    std::cout << "Egg List size: " << _map.getEggList().size() << std::endl;
 }
 
 bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
@@ -107,17 +106,24 @@ void zappy::game::Game::foodManager(std::shared_ptr<ITeams> &team)
 {
     constexpr int unitLose = 126;
     double secondsBetweenFoodLoss = static_cast<double>(unitLose) / this->_baseFreqMs;
-    auto loseFood = std::chrono::milliseconds(static_cast<int>(secondsBetweenFoodLoss * 10000));
+    auto loseFood = std::chrono::milliseconds(static_cast<int>(secondsBetweenFoodLoss * 1000));
+    std::chrono::duration<double> loseFoodSeconds = std::chrono::duration<double>(loseFood.count() / 1000.0);
 
     auto itPlayerTeam = std::dynamic_pointer_cast<TeamsPlayer>(team);
 
     if (itPlayerTeam) {
         for (auto &player : itPlayerTeam->getPlayerList()) {
-            if (player->getLifeChrono() >= loseFood) {
-                player->resetLifeChrono();
-                if (player->getInventory().getResourceQuantity(zappy::game::Resource::FOOD) > 0)
+            if (player->getLifeChrono() >= loseFoodSeconds) {
+                if (player->getInventory().getResourceQuantity(zappy::game::Resource::FOOD) > 0) {
                     player->dropRessource(zappy::game::Resource::FOOD);
-                else {
+                    for (auto &teams : _teamList) {
+                        if (teams->getName() == "GRAPHIC") {
+                            for (auto players : teams->getPlayerList())
+                                this->getCommandHandlerGui().handlePin(*players, std::to_string(player->getId()));
+                        }
+                    }
+                player->resetLifeChrono();
+                } else {
                     player->getClient().sendMessage("dead\n");
                     this->_commandHandler.messageToGUI("pdi #" +
                         std::to_string(player->getId()) + "\n");

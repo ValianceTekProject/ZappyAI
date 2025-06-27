@@ -22,12 +22,14 @@ void zappy::game::MapServer::setEggsonMap(
     std::vector<std::shared_ptr<ITeams>> &teamList, int clientNb)
 {
     std::srand(std::time(nullptr));
-    for (int i = 0; i < static_cast<int>(clientNb * (teamList.size() - 1)); i += 1) {
-        size_t x = std::rand() % this->getWidth();
-        size_t y = std::rand() % this->getHeight();
-        zappy::game::Egg newEgg(this->_idEggTot, SERVER_FATHER_ID, x, y);
-        this->_idEggTot += 1;
-        this->addNewEgg(SERVER_FATHER_ID, x, y);
+    for (auto &team : teamList) {
+        for (int i = 0;  team->getName() != "GRAPHIC" && i < clientNb; i += 1) {
+            size_t x = std::rand() % this->getWidth();
+            size_t y = std::rand() % this->getHeight();
+            zappy::game::Egg newEgg(this->_idEggTot, SERVER_FATHER_ID, x, y);
+            this->_idEggTot += 1;
+            this->addNewEgg(SERVER_FATHER_ID, x, y);
+        }
     }
 }
 

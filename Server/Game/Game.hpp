@@ -27,8 +27,8 @@ namespace zappy {
            public:
             Game(int mapWidth, int mapHeight, std::vector<std::shared_ptr<ITeams>> teamList, int &freq, int clientNb)
                 : _map(mapWidth, mapHeight),
-                _commandHandler(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
                 _commandHandlerGui(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
+                _commandHandler(freq, _map.getWidth(), _map.getHeight(), clientNb, _map, _teamList),
                 _teamList(teamList),
                 _baseFreqMs(freq),
                 _clientNb(clientNb)
@@ -63,8 +63,8 @@ namespace zappy {
            private:
             int _idPlayerTot = 0;
             MapServer _map;
-            zappy::game::CommandHandler _commandHandler;
             zappy::game::CommandHandlerGui _commandHandlerGui;
+            zappy::game::CommandHandler _commandHandler;
             std::vector<std::shared_ptr<zappy::game::ITeams>> _teamList;
             std::vector<std::weak_ptr<zappy::game::Player>> _playerList;
             int &_baseFreqMs;

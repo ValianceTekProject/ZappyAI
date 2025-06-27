@@ -96,6 +96,11 @@ void zappy::game::CommandHandler::handleForward(
     player.stepForward(this->_widthMap, this->_heightMap);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
+    std::string msg = "ppo #" + std::to_string(player.getId()) + " " + 
+        std::to_string(player.x) + " " + 
+        std::to_string(player.y) + " " + 
+        std::to_string(static_cast<int>(player.orientation + 1)) + "\n";
+    this->messageToGUI(msg);
 }
 
 void zappy::game::CommandHandler::handleRight(
@@ -105,6 +110,11 @@ void zappy::game::CommandHandler::handleRight(
     player.lookRight();
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
+    std::string msg = "ppo #" + std::to_string(player.getId()) + " " + 
+        std::to_string(player.x) + " " + 
+        std::to_string(player.y) + " " + 
+        std::to_string(static_cast<int>(player.orientation + 1)) + "\n";
+    this->messageToGUI(msg);
 }
 
 void zappy::game::CommandHandler::handleLeft(zappy::game::ServerPlayer &player)
@@ -113,6 +123,11 @@ void zappy::game::CommandHandler::handleLeft(zappy::game::ServerPlayer &player)
     player.lookLeft();
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
+    std::string msg = "ppo #" + std::to_string(player.getId()) + " " + 
+        std::to_string(player.x) + " " + 
+        std::to_string(player.y) + " " + 
+        std::to_string(static_cast<int>(player.orientation + 1)) + "\n";
+    this->messageToGUI(msg);
 }
 
 std::pair<size_t, size_t> zappy::game::CommandHandler::_normalizeCoords(
@@ -399,13 +414,13 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
     if (playerTeam) {
         playerTeam->allowNewPlayer();
         this->_map.addNewEgg(playerTeam->getTeamId(), player.x, player.y);
+        this->messageToGUI("pfk #" + std::to_string(player.getId()) + "\n");
         player.setInAction(false);
         player.getClient().sendMessage("ok\n");
         this->messageToGUI("enw #" + std::to_string(player.getTeam().getTeamId()) + " #" +
             std::to_string(player.getId()) + " " +
             std::to_string(player.x) + " " +
             std::to_string(player.y) + "\n");
-        this->messageToGUI("pfk #" + std::to_string(player.getId()) + "\n");
     }
 }
 
@@ -434,6 +449,15 @@ void zappy::game::CommandHandler::handleTake(
         std::to_string(player.getId()) +
         " " + std::to_string(castResource(resource)) +
         "\n");
+    for (auto &team : this->_teamList) {
+        if (team->getName() == "GRAPHIC") {
+            for (auto &players : team->getPlayerList()) {
+                handlePin(*players, std::to_string(player.getId()));
+                handleBct(*players, std::string(std::to_string(player.x)) +
+                    " " + std::string(std::to_string(player.x)));
+            }
+        }
+    }
 }
 
 void zappy::game::CommandHandler::handleDrop(
@@ -457,7 +481,17 @@ void zappy::game::CommandHandler::handleDrop(
     player.dropRessource(resource);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    this->messageToGUI("pdr #" + std::to_string(player.getId()) + " " + std::to_string(castResource(resource)) + "\n");
+    this->messageToGUI("pdr #" + std::to_string(player.getId()) + " " +
+        std::to_string(castResource(resource)) + "\n");
+    for (auto &team : this->_teamList) {
+        if (team->getName() == "GRAPHIC") {
+            for (auto &players : team->getPlayerList()) {
+                handlePin(*players, std::to_string(player.getId()));
+                handleBct(*players, std::string(std::to_string(player.x)) +
+                    " " + std::string(std::to_string(player.x)));
+            }
+        }
+    }
 }
 
 std::vector<std::weak_ptr<zappy::game::ServerPlayer>>

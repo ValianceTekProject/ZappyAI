@@ -12,7 +12,6 @@
 #include "Client.hpp"
 #include "Player.hpp"
 #include "ITeams.hpp"
-#include "ServerInventory.hpp"
 
 namespace zappy {
     namespace game {
@@ -33,7 +32,10 @@ namespace zappy {
                 _user(std::move(user)),
                 _startTime(std::chrono::steady_clock::now()),
                 _lifeTime(std::chrono::steady_clock::now()),
-                _team(team) {}
+                _team(team) {
+                    constexpr int startFood = 10;
+                    this->collectRessource(zappy::game::Resource::FOOD, startFood);
+                }
 
             ~ServerPlayer() = default;
 

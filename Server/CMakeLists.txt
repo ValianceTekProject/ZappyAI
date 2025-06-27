@@ -12,7 +12,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-gnu-unique -Wl,--export-dynamic"
 set(CLIENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Client)
 set(ERROR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Error)
 set(GAME_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Game)
-set(IVENTORY ${CMAKE_CURRENT_SOURCE_DIR}/Inventory)
 set(NETWORK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Network)
 set(SERVER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Server)
 
@@ -45,7 +44,6 @@ include_directories(
     ${TEAMS_DIR}
     ${UTILS_DIR}
 
-    ${IVENTORY}
     ${NETWORK_DIR}
     ${SERVER_DIR}
 )
@@ -68,7 +66,6 @@ set(SOURCES
     ${MAP_DIR}/Base.cpp
     ${TEAMS_DIR}/Base.cpp
     ${TEAMS_DIR}/ATeams.cpp
-    ${IVENTORY}/ServerInventory.cpp
     ${NETWORK_DIR}/SocketServer.cpp
     ${SERVER_DIR}/Base.cpp
     ${SERVER_DIR}/Commands.cpp
