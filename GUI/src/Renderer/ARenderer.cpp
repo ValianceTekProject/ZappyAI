@@ -45,6 +45,33 @@ void zappy::gui::ARenderer::updatePlayerInventory(const int &id, const game::Inv
     _gameState->updatePlayerInventory(id, inventory);
 }
 
+void zappy::gui::ARenderer::playerExpulsion(const int &id)
+{
+    _checkGameState();
+    _gameState->playerExpulsion(id);
+}
+
+void zappy::gui::ARenderer::playerBroadcast(const int &id, const std::string &message)
+{
+    _checkGameState();
+    _gameState->playerBroadcast(id, message);
+}
+
+void zappy::gui::ARenderer::startIncantation(
+    const int &x, const int &y,
+    const int &level,
+    const std::vector<int> &playerIds
+) {
+    _checkGameState();
+    _gameState->startIncantation(x, y, level, playerIds);
+}
+
+void zappy::gui::ARenderer::endIncantation(const int &x, const int &y, const bool &result)
+{
+    _checkGameState();
+    _gameState->endIncantation(x, y, result);
+}
+
 void zappy::gui::ARenderer::hatchEgg(const int &eggId)
 {
     _checkGameState();

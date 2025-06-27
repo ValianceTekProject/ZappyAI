@@ -14,6 +14,12 @@ zappy::gui::raylib::BasicScene::BasicScene(const std::shared_ptr<game::GameState
 void zappy::gui::raylib::BasicScene::init()
 {
     AScene::init();
+
+    for (size_t i = 0; i < zappy::game::RESOURCE_QUANTITY; ++i) {
+        auto type = static_cast<zappy::game::Resource>(i);
+        auto model = std::make_unique<zappy::gui::raylib::BasicResourceModel>(-1, type); // ou AResourceModel si tu préfères
+        _mapRenderer->addResourceModel(type, std::move(model));
+    }
 }
 
 void zappy::gui::raylib::BasicScene::handleInput(InputManager &inputManager)
@@ -42,15 +48,23 @@ bool zappy::gui::raylib::BasicScene::shouldClose() const
 
 void zappy::gui::raylib::BasicScene::addEgg(const int &id)
 {
+    auto egg = std::make_unique<BasicEggModel>(id);
+
+    _mapRenderer->addEgg(std::move(egg));
+
     AScene::addEgg(id);
 }
 
 void zappy::gui::raylib::BasicScene::addPlayer(const int &id)
 {
+    auto player = std::make_unique<BasicPlayerModel>(id);
+
+    _mapRenderer->addPlayer(std::move(player));
+
     AScene::addPlayer(id);
 }
 
-void zappy::gui::raylib::BasicScene::updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation)
+void zappy::gui::raylib::BasicScene::updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation)
 {
     AScene::updatePlayerPosition(id, x, y, orientation);
 }
@@ -63,6 +77,16 @@ void zappy::gui::raylib::BasicScene::updatePlayerLevel(const int &id, const size
 void zappy::gui::raylib::BasicScene::updatePlayerInventory(const int &id, const game::Inventory &inventory)
 {
     AScene::updatePlayerInventory(id, inventory);
+}
+
+void zappy::gui::raylib::BasicScene::startIncantation(const int &x, const int &y, const int &level, const std::vector<int> &playerIds)
+{
+    AScene::startIncantation(x, y, level, playerIds);
+}
+
+void zappy::gui::raylib::BasicScene::endIncantation(const int &x, const int &y, const bool &result)
+{
+    AScene::endIncantation(x, y, result);
 }
 
 void zappy::gui::raylib::BasicScene::hatchEgg(const int &id)

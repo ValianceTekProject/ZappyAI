@@ -76,8 +76,6 @@ void zappy::gui::Gui::init()
 
     while(!_isMapCreated())
         _protocol->update();
-
-    _renderer->init();
 }
 
 void zappy::gui::Gui::_initNetwork()
@@ -90,6 +88,8 @@ void zappy::gui::Gui::_initNetwork()
 void zappy::gui::Gui::run()
 {
     init();
+
+    _protocol->setTimeUnit(50);
 
     bool running = true;
     while (running) {

@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "IPlayerModel.hpp"
 #include "IFloor.hpp"
 #include "InputManager.hpp"
 
@@ -38,9 +37,20 @@ namespace zappy {
                     virtual void addEgg(const int &eggId) = 0;
                     virtual void addPlayer(const int &id) = 0;
 
-                    virtual void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) = 0;
+                    virtual void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) = 0;
                     virtual void updatePlayerLevel(const int &id, const size_t &level) = 0;
                     virtual void updatePlayerInventory(const int &id, const game::Inventory &inventory) = 0;
+
+                    virtual void playerExpulsion(const int &id) = 0;
+
+                    virtual void playerBroadcast(const int &id, const std::string &message) = 0;
+
+                    virtual void startIncantation(
+                        const int &x, const int &y,
+                        const int &level,
+                        const std::vector<int> &playerIds
+                    ) = 0;
+                    virtual void endIncantation(const int &x, const int &y, const bool &result) = 0;
 
                     virtual void hatchEgg(const int &eggId) = 0;
 

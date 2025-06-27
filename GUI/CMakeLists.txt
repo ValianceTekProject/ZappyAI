@@ -14,15 +14,19 @@ set(NETWORK_DIR ${SRC_DIR}/Network)
 set(GAME_DIR ${SRC_DIR}/Game)
 set(RENDERER_DIR ${SRC_DIR}/Renderer)
 set(RAYLIB_DIR ${RENDERER_DIR}/Raylib)
+
 set(RAYLIB_SCENE_DIR ${RAYLIB_DIR}/Scene)
+set(RAYLIB_BROADCAST_DIR ${RAYLIB_SCENE_DIR}/Broadcast)
 
 set(RAYLIB_MAP_DIR ${RAYLIB_DIR}/Map)
+set(RAYLIB_PLAYER_ACTIONS_DIR ${RAYLIB_MAP_DIR}/PlayerActions)
 
 set(RAYLIB_FLOOR_DIR ${RAYLIB_MAP_DIR}/Floor)
 set(RAYLIB_FLATFLOOR_DIR ${RAYLIB_FLOOR_DIR}/FlatFloor)
 set(RAYLIB_GLOBEFLOOR_DIR ${RAYLIB_FLOOR_DIR}/GlobeFloor)
 
 set(RAYLIB_MODEL_DIR ${RAYLIB_DIR}/Model)
+set(RAYLIB_MODEL_BASIC_DIR ${RAYLIB_MODEL_DIR}/Basic)
 
 set(DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Data)
 set(DATA_ERRORS_DIR ${DATA_DIR}/Errors)
@@ -42,13 +46,17 @@ include_directories(
     ${RENDERER_DIR}
     ${RAYLIB_DIR}
     ${RAYLIB_SCENE_DIR}
+    ${RAYLIB_BROADCAST_DIR}
+
     ${RAYLIB_MAP_DIR}
+    ${RAYLIB_PLAYER_ACTIONS_DIR}
 
     ${RAYLIB_FLOOR_DIR}
     ${RAYLIB_FLATFLOOR_DIR}
     ${RAYLIB_GLOBEFLOOR_DIR}
 
     ${RAYLIB_MODEL_DIR}
+    ${RAYLIB_MODEL_BASIC_DIR}
 )
 
 # === Fichiers sources ===
@@ -80,14 +88,35 @@ set(SOURCES
 
     ${RAYLIB_DIR}/RaylibRenderer.cpp
     ${RAYLIB_SCENE_DIR}/InputManager.cpp
+
     ${RAYLIB_SCENE_DIR}/AScene.cpp
-    ${RAYLIB_SCENE_DIR}/BasicScene.cpp
+
+    ${RAYLIB_BROADCAST_DIR}/ABroadcastEffect.cpp
+    ${RAYLIB_BROADCAST_DIR}/WaveBroadcastEffect.cpp
+    ${RAYLIB_BROADCAST_DIR}/BroadcastEffectFactory.cpp
 
     ${RAYLIB_MAP_DIR}/MapRenderer.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/APlayerAction.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerTranslation.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerRotation.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerBroadcast.cpp
+    ${RAYLIB_PLAYER_ACTIONS_DIR}/PlayerActionFactory.cpp
+
+    ${RAYLIB_MAP_DIR}/Incantation.cpp
     ${RAYLIB_FLOOR_DIR}/AFloor.cpp
 
     ${RAYLIB_FLATFLOOR_DIR}/FlatFloor.cpp
     ${RAYLIB_GLOBEFLOOR_DIR}/GlobeFloor.cpp
+
+    ${RAYLIB_MODEL_DIR}/AModel.cpp
+    ${RAYLIB_MODEL_DIR}/APlayerModel.cpp
+    ${RAYLIB_MODEL_DIR}/AEggModel.cpp
+    ${RAYLIB_MODEL_DIR}/AResourceModel.cpp
+
+    ${RAYLIB_SCENE_DIR}/BasicScene.cpp
+    ${RAYLIB_MODEL_BASIC_DIR}/BasicPlayerModel.cpp
+    ${RAYLIB_MODEL_BASIC_DIR}/BasicEggModel.cpp
+    ${RAYLIB_MODEL_BASIC_DIR}/BasicResourceModel.cpp
 )
 
 # === Exécutable principal ===

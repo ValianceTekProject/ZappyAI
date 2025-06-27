@@ -30,16 +30,27 @@ namespace zappy {
                     virtual void handleInput(InputManager &inputManager) override;
                     virtual void update() override;
 
-                    virtual void addEgg(const int &eggId) override;
+                    virtual void addEgg(const int &id) override;
                     virtual void addPlayer(const int &id) override;
 
-                    virtual void updatePlayerPosition(const int &id, const size_t &x, const size_t &y, const game::Orientation &orientation) override;
+                    virtual void updatePlayerPosition(const int &id, const int &x, const int &y, const game::Orientation &orientation) override;
                     virtual void updatePlayerLevel(const int &id, const size_t &level) override;
                     virtual void updatePlayerInventory(const int &id, const game::Inventory &inventory) override;
 
-                    virtual void hatchEgg(const int &eggId) override;
+                    virtual void playerExpulsion(const int &id) override;
 
-                    virtual void removeEgg(const int &eggId) override;
+                    virtual void playerBroadcast(const int &id, const std::string &message) override;
+
+                    virtual void startIncantation(
+                        const int &x, const int &y,
+                        const int &level,
+                        const std::vector<int> &playerIds
+                    ) override;
+                    virtual void endIncantation(const int &x, const int &y, const bool &result) override;
+
+                    virtual void hatchEgg(const int &id) override;
+
+                    virtual void removeEgg(const int &id) override;
                     virtual void removePlayer(const int &id) override;
 
                 protected:

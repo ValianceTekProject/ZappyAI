@@ -144,7 +144,7 @@ zappy::network::ServerMessage zappy::network::NetworkManager::parseMessage(const
         msg.params.clear();
     } else {
         msg.command = raw.substr(0, pos);
-        msg.params  = raw.substr(pos + 1);
+        msg.params = raw.substr(pos + 1);
     }
 
     return msg;

@@ -6,19 +6,34 @@
 */
 
 #pragma once
-#include "../AFloor.hpp"
+#include "AFloor.hpp"
 
 namespace zappy {
     namespace gui {
         namespace raylib {
             class FlatFloor : public AFloor {
                 public:
-                    FlatFloor(size_t width, size_t height, size_t tileSize = 10);
+                    FlatFloor(const size_t &width, const size_t &height, const float &tileSize = 10);
                     ~FlatFloor() = default;
 
                     void init() override;
-
+                    void update() const override;
                     void render() const override;
+
+                    Vector3 getGapFromOrientation(const game::Orientation &orientation) override;
+                    Vector3 getNorthVector(const game::Orientation &orientation) override;
+
+                    Vector3 get3DCoords(const int &x, const int &y) const override;
+
+                    virtual Translation createTranslation(const APlayerModel &player, const int &x, const int &y, const int &timeUnit) override;
+
+                    void translate(const float &deltaUnits, const Vector3 &translationVector, Vector3 &destination, APlayerModel &player) override;
+
+                private:
+                    void _checkOverlap(APlayerModel &player, Vector3 &destination);
+
+                    Texture2D _texture;
+                    Model _model;
             };
         }
     } // namespace gui
