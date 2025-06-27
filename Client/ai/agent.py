@@ -22,7 +22,7 @@ class Agent:
 
     _next_id = 0
 
-    def __init__(self, connection: Connection, freq: int, team_id: str, agent_thread):
+    def __init__(self, connection: Connection, freq: int, team_id: str, agent_thread, model: str):
         self.conn = connection
         self.freq = freq
         self.agent_thread = agent_thread
@@ -36,7 +36,7 @@ class Agent:
         self.commands = CommandManager(self.conn, self.timing, self.state)
         self.msg_bus = MessageBus(self.state.level, team_id)
         self.msg_manager = MessageManager(self.commands, self.msg_bus)
-        self.planner = Planner(self.commands, self.state, self.msg_bus)
+        self.planner = Planner(self.commands, self.state, self.msg_bus, model)
         self.initialized = False
         self.init_stage = 0
 
@@ -52,6 +52,9 @@ class Agent:
             responses = self.read_non_blocking()
             completed = self.msg_manager.process_responses(responses)
 
+            if responses:
+                print("----------------------------------")
+                print("Responses", responses)
             if self.msg_manager.is_dead:
                 self.planner.decide_next_action(responses)
                 self.agent_thread.agent_dead(self)
