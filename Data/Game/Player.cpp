@@ -38,9 +38,9 @@ void zappy::game::Player::stepForward(int width, int height)
     }
 
     if (x > width || x < 0)
-        x = x % width;
+        x = (x + width) % width;
     if (y > height || y < 0)
-        y = y % height;
+        y = (y + height) % height;
 }
 
 void zappy::game::Player::ejectFrom(Orientation playerOrientation, int width, int height)
@@ -62,9 +62,9 @@ void zappy::game::Player::ejectFrom(Orientation playerOrientation, int width, in
     }
 
     if (x > width || x < 0)
-        x = x % width;
+        x = (x + width) % width;
     if (y > height || y < 0)
-        y = y % height;
+        y = (y + height) % height;
 }
 
 void zappy::game::Player::collectRessource(Resource resource, std::size_t quantity)
