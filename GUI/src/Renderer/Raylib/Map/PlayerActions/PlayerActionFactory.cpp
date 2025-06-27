@@ -16,9 +16,11 @@ std::shared_ptr<zappy::gui::raylib::IPlayerAction> zappy::gui::raylib::PlayerAct
     const float &timeUnit,
     const float &elapsedTime
 ) {
+    ActionType type = timeUnit == FORWARD_TIME ? ActionType::FORWARD : ActionType::EXPULSION;
+
     return std::make_unique<zappy::gui::raylib::PlayerTranslation>(
         playerId,
-        ActionType::TRANSLATION,
+        type,
         translation,
         floor,
         timeUnit,

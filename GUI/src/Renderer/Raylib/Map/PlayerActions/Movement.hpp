@@ -13,7 +13,8 @@ namespace zappy {
     namespace gui {
         namespace raylib {
             enum class ActionType {
-                TRANSLATION,
+                FORWARD,
+                EXPULSION,
                 ROTATION,
                 BROADCAST,
                 INCANTATION

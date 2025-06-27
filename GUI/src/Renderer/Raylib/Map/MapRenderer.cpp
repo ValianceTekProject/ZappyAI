@@ -35,18 +35,6 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
     // Mettre à jour la carte
     this->_floor->update();
 
-    // Mettre à jour les players
-    if (!this->_players.empty()) {
-        for (auto &player : this->_players)
-            player->update();
-    }
-
-    // Mettre à jour les oeufs
-    if (!_eggs.empty()) {
-        for (auto &egg : _eggs)
-            egg->update();
-    }
-
     auto now = std::chrono::steady_clock::now();
     float deltaSec = std::chrono::duration<float>(now - _lastTime).count();
     _lastTime = now;
@@ -54,6 +42,7 @@ void zappy::gui::raylib::MapRenderer::update(const int &frequency)
     // Convertit en “unités d’action” : (secondes écoulées) * fréquence
     float deltaUnits = deltaSec * frequency;
 
+    _updatePlayersAndEggs(deltaUnits);
     _updateActions(deltaUnits);
 }
 
@@ -366,6 +355,15 @@ void zappy::gui::raylib::MapRenderer::_addRotation(const APlayerModel &player, c
     this->_playerActionQueues[player.getId()].push(std::move(action));
 }
 
+void zappy::gui::raylib::MapRenderer::_updatePlayersAndEggs(const float &deltaUnits)
+{
+    for (auto &player : this->_players)
+        player->update(deltaUnits);
+
+    for (auto &egg : _eggs)
+        egg->update(deltaUnits);
+}
+
 void zappy::gui::raylib::MapRenderer::_updateActions(const float &deltaUnits)
 {
     for (auto it = this->_playerActionQueues.begin(); it != this->_playerActionQueues.end(); ) {
@@ -384,12 +382,26 @@ void zappy::gui::raylib::MapRenderer::_updateActions(const float &deltaUnits)
         if (action->ActionWillEnd(deltaUnits)) {
             action->finishAction(deltaUnits, player);
             queue.pop();
+            _updatePlayerAfterAction(player, queue);
         } else
             action->update(deltaUnits, player);
         ++it;
     }
 
     this->_updateAnimActions(deltaUnits);
+}
+
+void zappy::gui::raylib::MapRenderer::_updatePlayerAfterAction(APlayerModel &player, const std::queue<std::shared_ptr<IPlayerAction>> &actions)
+{
+    if (actions.empty()) {
+        player.idle();
+        return;
+    }
+
+    std::shared_ptr<IPlayerAction> nextAction = actions.front();
+
+    if (!std::dynamic_pointer_cast<PlayerTranslation>(nextAction))
+        player.idle();
 }
 
 void zappy::gui::raylib::MapRenderer::_updateAnimActions(const float &deltaUnits)

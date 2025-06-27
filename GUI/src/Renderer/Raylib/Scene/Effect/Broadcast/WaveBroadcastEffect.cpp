@@ -14,7 +14,8 @@ zappy::gui::raylib::WaveBroadcastEffect::WaveBroadcastEffect(const int &playerId
 
 void zappy::gui::raylib::WaveBroadcastEffect::update(const float &deltaUnits)
 {
-    _elapsedTime += deltaUnits;
+    AEffect::update(deltaUnits);
+
     _pulseTimer += deltaUnits;
 
     if (_elapsedTime <= _duration && _pulseTimer >= PULSE_INTERVAL) {

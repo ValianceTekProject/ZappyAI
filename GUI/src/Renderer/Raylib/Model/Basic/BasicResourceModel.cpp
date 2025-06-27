@@ -56,8 +56,3 @@ void zappy::gui::raylib::BasicResourceModel::init()
         setScale(_scale);
     }
 }
-
-void zappy::gui::raylib::BasicResourceModel::update()
-{
-    AResourceModel::update();
-}

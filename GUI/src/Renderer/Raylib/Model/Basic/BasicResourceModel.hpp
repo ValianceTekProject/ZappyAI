@@ -18,8 +18,6 @@ namespace zappy {
                     ~BasicResourceModel() override = default;
 
                     void init() override;
-
-                    void update() override;
             };
         }
     }

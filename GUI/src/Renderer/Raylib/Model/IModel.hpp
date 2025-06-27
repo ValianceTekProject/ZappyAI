@@ -38,7 +38,7 @@ namespace zappy {
 
                     virtual Color getColor() const = 0;
 
-                    virtual void update() = 0;
+                    virtual void update(const float &deltaUnits) = 0;
 
                     virtual void scale(const float &scale) = 0;
                     virtual void translate(const Vector3 &translation) = 0;

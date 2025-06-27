@@ -20,6 +20,9 @@ zappy::gui::raylib::PlayerRotation::PlayerRotation(
 
 void zappy::gui::raylib::PlayerRotation::update(const float &deltaUnits, APlayerModel &player)
 {
+    if (player.getState() != APlayerModel::State::IDLE)
+        player.idle();
+
     player.rotate(Vector3Scale(this->_movement.movementVector, deltaUnits));
     APlayerAction::update(deltaUnits, player);
 }

@@ -62,6 +62,6 @@ void zappy::gui::raylib::AModel::_updateTransform()
 void zappy::gui::raylib::AModel::_initModel(const std::string &modelPath)
 {
     this->_model = LoadModel(modelPath.c_str());
-    if (_model.meshCount == 0)
+    if (!IsModelValid(this->_model) || _model.meshCount == 0)
         std::cerr << modelPath.c_str() << "Model not load" << std::endl;
 }

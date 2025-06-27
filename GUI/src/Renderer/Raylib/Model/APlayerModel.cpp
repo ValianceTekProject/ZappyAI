@@ -21,6 +21,10 @@ zappy::gui::raylib::APlayerModel::APlayerModel(const int &id) :
     this->_animationIndexMap[State::IDLE] = 0;
     this->_animationIndexMap[State::WALK] = 0;
     this->_animationIndexMap[State::EJECT] = 0;
+
+    this->_animationIndexMap[State::IDLE] = 0;
+    this->_animationIndexMap[State::WALK] = 0;
+    this->_animationIndexMap[State::EJECT] = 0;
 }
 
 void zappy::gui::raylib::APlayerModel::init()
@@ -62,11 +66,18 @@ void zappy::gui::raylib::APlayerModel::lookRight()
     this->_orientation++;
 }
 
-void zappy::gui::raylib::APlayerModel::update()
+void zappy::gui::raylib::APlayerModel::update(const float &deltaUnits)
 {
     ModelAnimation anim = this->_modelAnimations[this->_animationIndexMap[this->_state]];
+    float speed = (this->_animationFrameSpeedMap[this->_state]);
 
-    _animCurrentFrame = (this->_animCurrentFrame + 1) % anim.frameCount;
+    this->_frameAccumulator += deltaUnits * speed;
+
+    while (this->_frameAccumulator >= 1.0f) {
+        this->_animCurrentFrame = (this->_animCurrentFrame + 1) % anim.frameCount;
+        this->_frameAccumulator -= 1.0f;
+    }
+
     UpdateModelAnimation(this->_model, anim, this->_animCurrentFrame);
 }
 
@@ -79,13 +90,11 @@ void zappy::gui::raylib::APlayerModel::idle()
 void zappy::gui::raylib::APlayerModel::walk()
 {
     this->_state = State::WALK;
-    this->_animCurrentFrame = 0;
 }
 
 void zappy::gui::raylib::APlayerModel::eject()
 {
     this->_state = State::EJECT;
-    this->_animCurrentFrame = 0;
 }
 
 void zappy::gui::raylib::APlayerModel::_initModel(const std::string &modelPath)

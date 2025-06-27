@@ -22,8 +22,14 @@ zappy::gui::raylib::PlayerTranslation::PlayerTranslation(
 
 void zappy::gui::raylib::PlayerTranslation::update(const float &deltaUnits, APlayerModel &player)
 {
-    if (player.getState() != APlayerModel::State::WALK)
-        player.walk();
+    APlayerModel::State actionType = player.getState();
+
+    if (actionType != APlayerModel::State::WALK &&
+        this->_actionType == ActionType::FORWARD)
+            player.walk();
+    else if (actionType != APlayerModel::State::EJECT ||
+        this->_actionType == ActionType::EXPULSION)
+        player.eject();
 
     _floor->translate(
         deltaUnits,

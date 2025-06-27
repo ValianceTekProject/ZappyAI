@@ -9,6 +9,8 @@
 
 #include "AModel.hpp"
 
+#include <map>
+
 namespace zappy {
     namespace gui {
         namespace raylib {
@@ -33,10 +35,10 @@ namespace zappy {
 
                     Vector2 getGamePosition() const { return this->_gamePosition; }
 
-                    virtual void update() override;
+                    virtual void update(const float &deltaUnits) override;
 
-                    virtual void idle() { _state = State::IDLE; }
-                    virtual void open() { _state = State::OPEN; }
+                    void idle();
+                    void open();
 
                 protected:
                     virtual void _initModel(const std::string &modelPath) override;
@@ -47,10 +49,14 @@ namespace zappy {
 
                     Vector2 _gamePosition;
 
-                    int _animsCount;
-                    unsigned int _animIndex;
-                    unsigned int _animCurrentFrame;
                     ModelAnimation *_modelAnimations;
+
+                    int _animsCount;
+                    unsigned int _animCurrentFrame;
+                    float _frameAccumulator;
+
+                    std::map<State, int> _animationIndexMap;
+                    std::map<State, float> _animationFrameSpeedMap;
             };
         } // namespace raylib
     } // namespace gui

@@ -34,13 +34,6 @@ namespace zappy {
         namespace raylib {
             class MapRenderer {
                 public:
-                    constexpr static int FORWARD_TIME = 7;
-                    constexpr static int ROTATION_TIME = 7;
-                    constexpr static int EXPULSION_TIME = 1;
-                    constexpr static int BROADCAST_TIME = 7;
-                    constexpr static int INCANTATION_TIME = 300;
-                    constexpr static int NO_ANIMATION = 0;
-
                     MapRenderer(const std::shared_ptr<game::Map> map);
                     ~MapRenderer() = default;
 
@@ -87,7 +80,9 @@ namespace zappy {
 
                     void _addRotation(const APlayerModel &player, const float &angle);
 
+                    void _updatePlayersAndEggs(const float &deltaUnits);
                     void _updateActions(const float &deltaUnits);
+                    void _updatePlayerAfterAction(APlayerModel &player, const std::queue<std::shared_ptr<IPlayerAction>> &actions);
                     void _updateAnimActions(const float &deltaUnits);
 
                     void _renderPlayersAndEggs();

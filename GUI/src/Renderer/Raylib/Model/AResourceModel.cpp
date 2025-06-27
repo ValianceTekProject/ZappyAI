@@ -19,11 +19,6 @@ void zappy::gui::raylib::AResourceModel::init()
     AModel::init();
 }
 
-void zappy::gui::raylib::AResourceModel::update()
-{
-    // Update resource
-}
-
 void zappy::gui::raylib::AResourceModel::_initModel(const std::string &modelPath)
 {
     AModel::_initModel(modelPath);

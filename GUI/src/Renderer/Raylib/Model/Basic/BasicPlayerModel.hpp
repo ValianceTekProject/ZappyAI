@@ -18,8 +18,6 @@ namespace zappy {
                     ~BasicPlayerModel() override = default;
 
                     void init() override;
-
-                    void update() override;
             };
         } // namespace raylib
     } // namespace gui

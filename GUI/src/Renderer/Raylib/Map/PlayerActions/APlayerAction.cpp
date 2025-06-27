@@ -34,7 +34,4 @@ bool zappy::gui::raylib::APlayerAction::ActionWillEnd(const float &deltaUnits) c
 void zappy::gui::raylib::APlayerAction::finishAction(const float &deltaUnits, APlayerModel &player)
 {
     update(deltaUnits, player);
-
-    if (player.getState() != APlayerModel::State::IDLE)
-        player.idle();
 }

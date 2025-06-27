@@ -46,7 +46,7 @@ namespace zappy {
                     void lookLeft();
                     void lookRight();
 
-                    virtual void update() override;
+                    virtual void update(const float &deltaUnits) override;
 
                     void idle();
                     void walk();
@@ -68,7 +68,10 @@ namespace zappy {
 
                     int _animsCount;
                     unsigned int _animCurrentFrame;
+                    float _frameAccumulator;
+
                     std::map<State, int> _animationIndexMap;
+                    std::map<State, float> _animationFrameSpeedMap;
             };
         } // namespace raylib
     } // namespace gui

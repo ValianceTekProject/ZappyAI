@@ -29,7 +29,7 @@ namespace zappy {
 
                     Vector2 getGamePosition() const { return this->_gamePosition; }
 
-                    virtual void update() override;
+                    virtual void update(const float &deltaUnits) override { (void)deltaUnits; }
 
                 protected:
                     virtual void _initModel(const std::string &modelPath) override;
