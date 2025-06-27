@@ -13,6 +13,24 @@ void zappy::game::CommandHandlerGui::handleMsz(zappy::game::ServerPlayer &player
     player.getClient().sendMessage(msg);
 }
 
+void zappy::game::CommandHandlerGui::handlePnw(zappy::game::ServerPlayer &gui)
+{
+    for (auto &team : this->_teamList) {
+        auto teamsPlayer = std::dynamic_pointer_cast<zappy::game::TeamsPlayer>(team);
+
+        if (teamsPlayer && !teamsPlayer->getPlayerList().empty()) {
+            for (auto &player : teamsPlayer->getPlayerList()) {
+                std::ostringstream orientationStream;
+                orientationStream << player->orientation;
+
+                gui.getClient().sendMessage("pnw #" + std::to_string(player->getId()) + " " +
+                    std::to_string(player->x) + " " + std::to_string(player->y) + " " + orientationStream.str() +
+                    " " + std::to_string(player->level) + " " + player->teamName + "\n");
+            }
+        }
+    }
+}
+
 void zappy::game::CommandHandlerGui::handleBct(zappy::game::ServerPlayer &player, const std::string &arg)
 {
     std::istringstream iss(arg);
@@ -42,15 +60,17 @@ void zappy::game::CommandHandlerGui::handleMct(zappy::game::ServerPlayer &player
 
 void zappy::game::CommandHandlerGui::handleTna(zappy::game::ServerPlayer &player)
 {
-    for (auto &team : this->_teamList)
-        player.getClient().sendMessage(std::string("tna " + team->getName() + "\n"));
+    for (auto &team : this->_teamList) {
+        if (team->getName() != "GRAPHIC")
+            player.getClient().sendMessage(std::string("tna " + team->getName() + "\n"));
+    }
 }
 
 void zappy::game::CommandHandlerGui::handlePpo(zappy::game::ServerPlayer &player, const std::string &arg)
 {
     std::stringstream stream;
     int playerId;
-    std::string msg = "ppo ";
+    std::string msg = "ppo #";
 
     stream << arg;
     stream >> playerId;
@@ -77,7 +97,7 @@ void zappy::game::CommandHandlerGui::handlePlv(zappy::game::ServerPlayer &player
 {
     std::stringstream stream;
     int playerId;
-    std::string msg = "plv ";
+    std::string msg = "plv #";
 
     stream << arg;
     stream >> playerId;
@@ -98,7 +118,7 @@ void zappy::game::CommandHandlerGui::handlePin(zappy::game::ServerPlayer &player
 {
     std::stringstream stream;
     int playerId;
-    std::string msg = "pin ";
+    std::string msg = "pin #";
 
     stream << arg;
     stream >> playerId;
@@ -154,10 +174,17 @@ void zappy::game::CommandHandlerGui::initCommandMap()
     };
 }
 
-void zappy::game::CommandHandlerGui::processClientInput(const std::string &input, zappy::game::ServerPlayer &player)
+void zappy::game::CommandHandlerGui::processClientInput(std::string &input, zappy::game::ServerPlayer &player)
 {
     if (this->_commandMapGui.empty())
         this->initCommandMap();
+
+    size_t pos = input.find('#');
+
+    while (pos != std::string::npos) {
+        input.erase(pos, 1);
+        pos = input.find('#');
+    }
 
     auto spacePos = input.find(' ');
     std::string cmd = input.substr(0, spacePos);

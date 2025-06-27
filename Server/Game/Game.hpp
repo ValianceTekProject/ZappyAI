@@ -40,7 +40,6 @@ namespace zappy {
                 }
                 std::srand(std::time(nullptr));
                 this->_map.setEggsonMap(teamList, clientNb);
-            
             }
 
             ~Game() = default;
@@ -57,6 +56,9 @@ namespace zappy {
             std::vector<std::shared_ptr<zappy::game::ITeams>> &getTeamList() { return this->_teamList; };
 
             void foodManager(std::shared_ptr<ITeams> &team);
+
+            zappy::game::CommandHandler &getCommandHandler() { return _commandHandler; }
+            zappy::game::CommandHandlerGui &getCommandHandlerGui() { return _commandHandlerGui; }
 
            private:
             int _idPlayerTot = 0;

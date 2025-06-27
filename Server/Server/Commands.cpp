@@ -34,6 +34,28 @@ void zappy::server::Server::_handleClientCommand(const std::string &command, str
                     this->_socket->sendMessage(pfd.fd, msg);
                     return;
                 }
+                auto teamsGui = std::dynamic_pointer_cast<zappy::game::TeamsGui>(team);
+                if (teamsGui) {
+                    this->_game->getCommandHandlerGui().handleMsz(*teamsGui->getPlayerList().back());
+                    this->_game->getCommandHandlerGui().handleSgt(*teamsGui->getPlayerList().back());
+                    this->_game->getCommandHandlerGui().handleMct(*teamsGui->getPlayerList().back());
+                    this->_game->getCommandHandlerGui().handleTna(*teamsGui->getPlayerList().back());
+                    this->_game->getCommandHandlerGui().handlePnw(*teamsGui->getPlayerList().back());
+                    for (auto &teams : this->_game->getTeamList()) {
+                        if (teams->getName() != "GRAPHIC") {
+                            for (auto &players : teams->getPlayerList()) {
+                                this->_game->getCommandHandlerGui().handlePin(*teamsGui->getPlayerList().back(),
+                                    std::to_string(players->getId()));
+                                this->_game->getCommandHandlerGui().handlePlv(*teamsGui->getPlayerList().back(),
+                                    std::to_string(players->getId()));
+                            }
+                        }
+                    }
+                    for (auto &eggs : this->_game->getMap().getEggList())
+                        this->_game->getCommandHandler().messageToGUI("enw #" + std::to_string(eggs.getId()) + " -1 " + std::to_string(eggs.x) + " " +
+                            std::to_string(eggs.y) + "\n");
+                    return;
+                }
                 return;
             }
             this->_socket->sendMessage(pfd.fd, "Invalid team");

@@ -10,8 +10,9 @@
 #include "Egg.hpp"
 #include "Map.hpp"
 #include "ITeams.hpp"
-#include <queue>
+#include <list>
 #include <chrono>
+#include "TeamsGui.hpp"
 
 namespace zappy {
     namespace game {
@@ -28,12 +29,14 @@ namespace zappy {
             zappy::game::Egg popEgg();
             void replaceResources();
 
+            std::list<Egg> &getEggList() { return _eggList; }
+
             std::chrono::steady_clock::time_point _lastResourceRespawn = std::chrono::steady_clock::now();
 
            private:
             int _idEggTot = 0;
             void _placeResources();
-            std::queue<Egg> _eggList;
+            std::list<Egg> _eggList;
 
         };
 

@@ -374,7 +374,7 @@ void zappy::game::CommandHandler::handleBroadcast(
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
     this->messageToGUI(std::string(
-        "pbc " + std::to_string(player.getId()) + " " + arg + "\n"));
+        "pbc #" + std::to_string(player.getId()) + " " + arg + "\n"));
 }
 
 void zappy::game::CommandHandler::handleConnectNbr(
@@ -401,11 +401,11 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
         this->_map.addNewEgg(playerTeam->getTeamId(), player.x, player.y);
         player.setInAction(false);
         player.getClient().sendMessage("ok\n");
-        this->messageToGUI("enw " + std::to_string(player.getTeam().getTeamId()) + " " +
+        this->messageToGUI("enw #" + std::to_string(player.getTeam().getTeamId()) + " #" +
             std::to_string(player.getId()) + " " +
             std::to_string(player.x) + " " +
             std::to_string(player.y) + "\n");
-        this->messageToGUI("pfk " + std::to_string(player.getId()) + "\n");
+        this->messageToGUI("pfk #" + std::to_string(player.getId()) + "\n");
     }
 }
 
@@ -430,7 +430,7 @@ void zappy::game::CommandHandler::handleTake(
     tile.removeResource(resource);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    this->messageToGUI("pgt " +
+    this->messageToGUI("pgt #" +
         std::to_string(player.getId()) +
         " " + std::to_string(castResource(resource)) +
         "\n");
@@ -457,7 +457,7 @@ void zappy::game::CommandHandler::handleDrop(
     player.dropRessource(resource);
     player.setInAction(false);
     player.getClient().sendMessage("ok\n");
-    this->messageToGUI("pdr " + std::to_string(player.getId()) + " " + std::to_string(castResource(resource)) + "\n");
+    this->messageToGUI("pdr #" + std::to_string(player.getId()) + " " + std::to_string(castResource(resource)) + "\n");
 }
 
 std::vector<std::weak_ptr<zappy::game::ServerPlayer>>
@@ -595,7 +595,7 @@ void zappy::game::CommandHandler::handleIncantation(
             auto sharedPlayer = player.lock();
             if (!sharedPlayer->isPraying())
                 return;
-            guiMsg += " ";
+            guiMsg += " #";
             guiMsg += sharedPlayer->getId();
         });
     guiMsg += "\n";
@@ -633,7 +633,7 @@ void zappy::game::CommandHandler::_executeCommand(
 }
 
 void zappy::game::CommandHandler::processClientInput(
-    const std::string &input, zappy::game::ServerPlayer &player)
+    std::string &input, zappy::game::ServerPlayer &player)
 {
     if (this->_commandMap.empty())
         this->initCommandMap();

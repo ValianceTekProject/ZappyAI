@@ -72,7 +72,7 @@ namespace zappy {
             ~CommandHandler() = default;
 
             virtual void processClientInput(
-                const std::string &input, zappy::game::ServerPlayer &player);
+                std::string &input, zappy::game::ServerPlayer &player);
 
             virtual void initCommandMap();
 

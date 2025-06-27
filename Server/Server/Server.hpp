@@ -17,6 +17,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <optional>
 
 #include "Client/Client.hpp"
 #include "SocketServer.hpp"
@@ -24,6 +25,7 @@
 #include "Game.hpp"
 #include "my_macros.hpp"
 #include "Utils.hpp"
+#include "TeamsGui.hpp"
 
 namespace zappy {
 
@@ -51,6 +53,8 @@ namespace zappy {
             void clearTeams() { _teamList.clear(); }
 
             void sendMessage(const std::string &buf, int socket) { send(socket, buf.c_str(), buf.size(), 0); }
+
+            std::optional<std::shared_ptr<zappy::game::ServerPlayer>> getPlayerBySocket(const int &socket);
 
            private:
             std::vector<std::shared_ptr<zappy::observer::IObserver>> _observers;

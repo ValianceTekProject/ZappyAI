@@ -21,29 +21,37 @@ void zappy::game::Game::_addPlayerToTeam(
     zappy::game::Orientation orientation =
         static_cast<zappy::game::Orientation>(randVal);
     zappy::server::Client user(clientSocket);
-    zappy::game::Egg egg = this->_map.popEgg();
-    this->_commandHandler.messageToGUI("ebo " + std::to_string(egg.getId()) + "\n");
-    user.setState(zappy::server::ClientState::CONNECTED);
-    auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
-        std::move(user), _idPlayerTot, egg.x, egg.y, orientation, *team, 1);
-    newPlayer->teamName = team->getName();
-    this->_idPlayerTot += 1;
-    this->_commandHandler.messageToGUI("enw " + std::to_string(egg.getId()) + " " +
-        std::to_string(newPlayer->getId()) + " " + std::to_string(newPlayer->x) + " " +
-        std::to_string(newPlayer->y) + "\n");
-    team->addPlayer(newPlayer);
-    this->_playerList.push_back(newPlayer);
-    if (auto lastPlayer = this->_playerList.back().lock(); lastPlayer) {
-        std::cout << "Team name = '" << lastPlayer->teamName << "'" << std::endl;
-        if (lastPlayer->teamName != "GRAPHIC") {
-            std::ostringstream orientationStream;
-            orientationStream << lastPlayer->orientation;
-            this->_commandHandler.messageToGUI(std::string("pnw " + std::to_string(this->_idPlayerTot) + " "
-                + std::to_string(lastPlayer->x) + " " + std::to_string(lastPlayer->y) + " "
-                + orientationStream.str() + " " + std::to_string(lastPlayer->level) + " "
-                + lastPlayer->teamName + "\n"));
+    auto itPlayerTeam = std::dynamic_pointer_cast<TeamsPlayer>(team);
+    if (itPlayerTeam) {
+        zappy::game::Egg egg = this->_map.popEgg();
+        this->_commandHandler.messageToGUI("ebo #" + std::to_string(egg.getId()) + "\n");
+        this->_commandHandler.messageToGUI("edi #" + std::to_string(egg.getId()) + "\n");
+        user.setState(zappy::server::ClientState::CONNECTED);
+        auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
+            std::move(user), _idPlayerTot, egg.x, egg.y, orientation, *team, 1);
+        newPlayer->teamName = team->getName();
+        this->_idPlayerTot += 1;
+        team->addPlayer(newPlayer);
+        this->_playerList.push_back(newPlayer);
+        if (auto lastPlayer = this->_playerList.back().lock(); lastPlayer) {
+            std::cout << "Team name = '" << lastPlayer->teamName << "'" << std::endl;
+            if (lastPlayer->teamName != "GRAPHIC") {
+                std::ostringstream orientationStream;
+                orientationStream << lastPlayer->orientation;
+                this->_commandHandler.messageToGUI(std::string("pnw #" + std::to_string(newPlayer->getId()) + " "
+                    + std::to_string(lastPlayer->x) + " " + std::to_string(lastPlayer->y) + " "
+                    + orientationStream.str() + " " + std::to_string(lastPlayer->level) + " "
+                    + lastPlayer->teamName + "\n"));
+            }
         }
+    } else {
+        auto newPlayer = std::make_shared<zappy::game::ServerPlayer>(
+            std::move(user), _idPlayerTot, -1, -1, orientation, *team, 1);
+        newPlayer->teamName = team->getName();
+        team->addPlayer(newPlayer);
+        this->_playerList.push_back(newPlayer);
     }
+    std::cout << "Egg List size: " << _map.getEggList().size() << std::endl;
 }
 
 bool zappy::game::Game::_checkAlreadyInTeam(int clientSocket)
@@ -74,11 +82,11 @@ bool zappy::game::Game::handleTeamJoin(
             return false;
         }
     }
-
     if (this->_checkAlreadyInTeam(clientSocket) == true)
         return false;
 
     this->_addPlayerToTeam(*it, clientSocket);
+
     return true;
 }
 
@@ -98,22 +106,21 @@ void zappy::game::Game::removeFromTeam(int clientSocket)
 void zappy::game::Game::foodManager(std::shared_ptr<ITeams> &team)
 {
     constexpr int unitLose = 126;
-
-    std::chrono::seconds loseFood =
-        std::chrono::seconds(unitLose / this->_baseFreqMs);
+    double secondsBetweenFoodLoss = static_cast<double>(unitLose) / this->_baseFreqMs;
+    auto loseFood = std::chrono::milliseconds(static_cast<int>(secondsBetweenFoodLoss * 10000));
 
     auto itPlayerTeam = std::dynamic_pointer_cast<TeamsPlayer>(team);
 
     if (itPlayerTeam) {
         for (auto &player : itPlayerTeam->getPlayerList()) {
             if (player->getLifeChrono() >= loseFood) {
-                zappy::game::Inventory plyInv = player->getInventory();
-                if (plyInv.getResourceQuantity(zappy::game::Resource::FOOD) > 0)
-                    plyInv.removeResource(zappy::game::Resource::FOOD);
+                player->resetLifeChrono();
+                if (player->getInventory().getResourceQuantity(zappy::game::Resource::FOOD) > 0)
+                    player->dropRessource(zappy::game::Resource::FOOD);
                 else {
                     player->getClient().sendMessage("dead\n");
-                    this->_commandHandler.messageToGUI("pdi "+
-                        std::to_string(player->getClient().getSocket()) + "\n");
+                    this->_commandHandler.messageToGUI("pdi #" +
+                        std::to_string(player->getId()) + "\n");
                     itPlayerTeam->removePlayer(player->getClient().getSocket());
                 }
             }
