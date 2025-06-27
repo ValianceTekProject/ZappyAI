@@ -6,8 +6,6 @@
 */
 
 #include "MapRenderer.hpp"
-#include "PlayerActions/APlayerAnimAction.hpp"
-#include "PlayerActions/IPlayerAction.hpp"
 
 zappy::gui::raylib::MapRenderer::MapRenderer(const std::shared_ptr<game::Map> map) :
     _map(map),
@@ -71,6 +69,16 @@ void zappy::gui::raylib::MapRenderer::render()
 void zappy::gui::raylib::MapRenderer::setBroadcastType(const zappy::gui::raylib::EffectType &type)
 {
     this->_broadcastType = type;
+}
+
+void zappy::gui::raylib::MapRenderer::setIncantationType(const zappy::gui::raylib::EffectType &type)
+{
+    this->_incantationType = type;
+}
+
+void zappy::gui::raylib::MapRenderer::setIncantationColor(const Color &color)
+{
+    this->_incantationColor = color;
 }
 
 void zappy::gui::raylib::MapRenderer::addEgg(std::unique_ptr<AEggModel> egg)
