@@ -270,7 +270,7 @@ class EventDetector:
         return False
 
     def get_detection_status(self) -> Dict[str, Any]:
-        """Retourne le statut de détection pour debug - ENHANCED."""
+        """Retourne le statut de détection pour debug"""
         current_time = time.time()
         current_food = self.state.get_food_count()
 

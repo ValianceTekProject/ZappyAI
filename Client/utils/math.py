@@ -24,7 +24,7 @@ class MathUtils:
 
     @staticmethod
     def compute_relative_positions(vision_range: int, orientation: int) -> List[Tuple[int, int]]:
-        """Génère les positions relatives dans l'ordre de la commande Look du serveur Zappy."""
+        """Génère les positions relatives dans l'ordre de la commande Look du serveur."""
         positions = []
         positions.append((0, 0))
 

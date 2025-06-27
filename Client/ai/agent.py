@@ -147,7 +147,6 @@ class Agent:
             self._last_decision_time = now
             self._last_command_time = now
         else:
-            # fallback minimal : si bloqué, on regarde
             if self.state.get_food_count() <= 8:
                 self.commands.look()
                 self._last_decision_time = now

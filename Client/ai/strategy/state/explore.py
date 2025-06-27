@@ -17,7 +17,6 @@ class ExploreState(State):
     """
     État d'exploration intelligente.
     """
-    
     def __init__(self, planner):
         super().__init__(planner)
         self.pathfinder = Pathfinder()

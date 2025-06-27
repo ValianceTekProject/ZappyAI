@@ -51,7 +51,7 @@ class GameState:
         logger.info(f"[GameState] Agent {agent_id} initialisé - Team: {team_id}, Food: {self.get_food_count()}")
 
     def _calculate_food_thresholds(self) -> Dict[str, int]:
-        """Calcule les seuils de nourriture RÉALISTES selon le niveau."""
+        """Calcule les seuils de nourriture selon le niveau."""
         base_critical = 5
         base_safe = 15
         base_abundant = 25
