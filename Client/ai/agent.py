@@ -25,7 +25,7 @@ class Agent:
 
     _next_id = 0
 
-    def __init__(self, connection: Connection, team_id: str, agent_thread, use_dqn: bool = False):
+    def __init__(self, connection: Connection, team_id: str, agent_thread, model: str):
         self.conn = connection
         self.agent_thread = agent_thread
         self.dimension_map = self.conn.get_map_size()
@@ -44,7 +44,7 @@ class Agent:
             command_manager=self.commands,
             game_state=self.state,
             message_bus=self.msg_bus,
-            use_dqn=use_dqn
+            model=model,
         )
 
         self._last_decision_time = time.time()
@@ -70,6 +70,7 @@ class Agent:
 
                 # Mort de l'agent
                 if self.msg_manager.is_dead:
+                    self.planner.decide_next_action(responses=responses)
                     self._handle_agent_death()
                     return
 

@@ -7,21 +7,25 @@
 
 from ai.strategy.Basic_ai.fsm_planner import FSMPlanner
 from ai.strategy.DQN.dqn_planner import DQNPlanner
+from ai.strategy.PPO.ppo_planner import ppo_planner
 
 class Planner:
-    def __init__(self, command_manager, game_state, message_bus, use_dqn=False):
-        self.use_dqn = use_dqn
+    def __init__(self, command_manager, game_state, message_bus, model: str):
+        self.model = model
         self.use_fsm = False
 
         self.state = game_state
         self.dqn_planner = DQNPlanner(game_state, command_manager)
         self.fsm_planner = FSMPlanner(command_manager, game_state, message_bus)
+        self.ppo_planner = ppo_planner(command_manager)
 
         self.new_agent = False
 
     def decide_next_action(self, responses=None):
-        if self.use_dqn:
-            return self.dqn_planner.dqn_decision(responses)
+        if self.model == "PPO":
+            return self.ppo_planner.decide_action(game_state=self.state, responses=responses)
+        elif self.model == "DQN":
+            return self.dqn_planner.dqn_decision(responses=responses)
         else:
             self.use_fsm = True
             return self.fsm_planner.decide_next_action()
