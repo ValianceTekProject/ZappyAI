@@ -235,12 +235,29 @@ void zappy::gui::raylib::MapRenderer::startIncantation(const int &x, const int &
 
 void zappy::gui::raylib::MapRenderer::endIncantation(const int &x, const int &y, const bool &result)
 {
-    // (void)x;
-    // (void)y;
-    // (void)result;
-    // for (auto id : this->_incantationMap) {
-        
-    // }
+    Vector2 targetPos = Vector2{static_cast<float>(x), static_cast<float>(y)};
+    ssize_t animationIdToRemove = -1;
+    (void)result;
+
+    for (const auto &[animationId, pos] : _incantationMap) {
+        if (pos.x == targetPos.x && pos.y == targetPos.y) {
+            animationIdToRemove = animationId;
+            break;
+        }
+    }
+
+    if (animationIdToRemove == -1)
+        return;
+
+    _playerAnimAction.erase(
+        std::remove_if(_playerAnimAction.begin(), _playerAnimAction.end(),
+            [animationIdToRemove](const std::shared_ptr<APlayerAnimAction> &action) {
+                return action && action->getAnimationId() == animationIdToRemove;
+            }),
+        _playerAnimAction.end()
+    );
+
+    _incantationMap.erase(animationIdToRemove);
 }
 
 void zappy::gui::raylib::MapRenderer::removeEgg(const int &id)

@@ -38,13 +38,7 @@ void zappy::gui::raylib::SpiralIncantationEffect::_renderSpiralParticles(const V
         particlePos.z += sin(angle) * radius;
         particlePos.y += height;
 
-        unsigned char alpha = static_cast<unsigned char>(255 * (1.0f - particleProgress));
-        Color particleColor = {
-            150,
-            200,
-            255,
-            alpha
-        };
+        Color particleColor = _color;
 
         float particleSize = 0.025f;
         DrawSphere(particlePos, particleSize, particleColor);
