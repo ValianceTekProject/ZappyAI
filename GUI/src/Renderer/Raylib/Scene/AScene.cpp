@@ -68,17 +68,17 @@ void zappy::gui::raylib::AScene::updatePlayerPosition(const int &id, const int &
         if (player.x == x && player.y == y)
             return;
 
-        int mapWidth = static_cast<int>(_gameState->getMap()->getWidth());
-        int mapHeight = static_cast<int>(_gameState->getMap()->getHeight());
+        int mapWidth = (_gameState->getMap()->getWidth());
+        int mapHeight = (_gameState->getMap()->getHeight());
 
         if (player.x == x) {
-            if ((y == (player.y - 1) % mapHeight && player.orientation == game::Orientation::NORTH) ||
+            if ((y == (player.y - 1 + mapHeight) % mapHeight && player.orientation == game::Orientation::NORTH) ||
                 (y == (player.y + 1) % mapHeight && player.orientation == game::Orientation::SOUTH)) {
                     _mapRenderer->playerForward(player.getId(), x, y);
             }
         } else if (player.y == y) {
             if ((x == (player.x + 1) % mapWidth && player.orientation == game::Orientation::EAST) ||
-                (x == (player.x - 1) % mapWidth && player.orientation == game::Orientation::WEST)) {
+                (x == (player.x - 1 + mapWidth) % mapWidth && player.orientation == game::Orientation::WEST)) {
                     _mapRenderer->playerForward(player.getId(), x, y);
             }
         } else {

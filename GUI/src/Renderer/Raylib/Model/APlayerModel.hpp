@@ -10,6 +10,8 @@
 #include "AModel.hpp"
 #include "Player.hpp"
 
+#include <map>
+
 namespace zappy {
     namespace gui {
         namespace raylib {
@@ -46,9 +48,9 @@ namespace zappy {
 
                     virtual void update() override;
 
-                    virtual void idle() { _state = State::IDLE; }
-                    virtual void walk() { _state = State::WALK; }
-                    virtual void eject() { _state = State::EJECT; }
+                    void idle();
+                    void walk();
+                    void eject();
 
                 protected:
                     virtual void _initModel(const std::string &modelPath) override;
@@ -62,10 +64,11 @@ namespace zappy {
 
                     Vector3 _headOrigin;
 
-                    int _animsCount;
-                    unsigned int _animIndex;
-                    unsigned int _animCurrentFrame;
                     ModelAnimation *_modelAnimations;
+
+                    int _animsCount;
+                    unsigned int _animCurrentFrame;
+                    std::map<State, int> _animationIndexMap;
             };
         } // namespace raylib
     } // namespace gui

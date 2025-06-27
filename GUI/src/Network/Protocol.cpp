@@ -83,7 +83,7 @@ bool zappy::network::Protocol::connectToServer(const std::string &host, int port
 
         std::vector<ServerMessage> messages;
         int attempts = 0;
-        const int maxAttempts = 200;
+        constexpr int maxAttempts = 200;
 
         while (attempts < maxAttempts && messages.empty()) {
             messages = _network->receiveMessages();

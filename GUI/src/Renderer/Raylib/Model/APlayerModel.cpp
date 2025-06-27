@@ -14,12 +14,13 @@ zappy::gui::raylib::APlayerModel::APlayerModel(const int &id) :
     _gamePosition(Vector2{0, 0}),
     _orientation(game::Orientation::NORTH),
     _headOrigin(Vector3{0, 1, 0}),
+    _modelAnimations(nullptr),
     _animsCount(0),
-    _animIndex(0),
-    _animCurrentFrame(0),
-    _modelAnimations(nullptr)
+    _animCurrentFrame(0)
 {
-    look(game::Orientation::NORTH);
+    this->_animationIndexMap[State::IDLE] = 0;
+    this->_animationIndexMap[State::WALK] = 0;
+    this->_animationIndexMap[State::EJECT] = 0;
 }
 
 void zappy::gui::raylib::APlayerModel::init()
@@ -63,15 +64,32 @@ void zappy::gui::raylib::APlayerModel::lookRight()
 
 void zappy::gui::raylib::APlayerModel::update()
 {
-    ModelAnimation anim = _modelAnimations[_animIndex];
+    ModelAnimation anim = this->_modelAnimations[this->_animationIndexMap[this->_state]];
 
-    _animCurrentFrame = (_animCurrentFrame + 1) % anim.frameCount;
-    UpdateModelAnimation(_model, anim, _animCurrentFrame);
+    _animCurrentFrame = (this->_animCurrentFrame + 1) % anim.frameCount;
+    UpdateModelAnimation(this->_model, anim, this->_animCurrentFrame);
+}
+
+void zappy::gui::raylib::APlayerModel::idle()
+{
+    this->_state = State::IDLE;
+    this->_animCurrentFrame = 0;
+}
+
+void zappy::gui::raylib::APlayerModel::walk()
+{
+    this->_state = State::WALK;
+    this->_animCurrentFrame = 0;
+}
+
+void zappy::gui::raylib::APlayerModel::eject()
+{
+    this->_state = State::EJECT;
+    this->_animCurrentFrame = 0;
 }
 
 void zappy::gui::raylib::APlayerModel::_initModel(const std::string &modelPath)
 {
     AModel::_initModel(modelPath);
-    _modelAnimations = LoadModelAnimations(modelPath.c_str(), &_animsCount);
-
+    this->_modelAnimations = LoadModelAnimations(modelPath.c_str(), &this->_animsCount);
 }
