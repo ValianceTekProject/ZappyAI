@@ -73,7 +73,6 @@ class AgentThreads:
                 idx = self._agents.index(agent)
                 self._agents.pop(idx)
                 self._threads.pop(idx)
-        logger.info(f"Agent {agent.agent_id} retiré (dead).")
 
     def close_client(self):
         """

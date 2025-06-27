@@ -189,9 +189,8 @@ class FSMPlanner:
                 
             self._update_food_thresholds()
             
-            # 🔧 CORRECTION PRINCIPALE : Vérifier si reproduction terminée AVANT les événements
             if self._should_transition_from_reproduction():
-                return None  # L'action de transition sera gérée
+                return None
             
             events = self.event_detector.detect_events()
             self._handle_events(events)
