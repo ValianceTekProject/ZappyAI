@@ -407,6 +407,7 @@ void zappy::game::CommandHandler::handleConnectNbr(
 
 void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
 {
+    this->messageToGUI("pfk #" + std::to_string(player.getId()) + "\n");
     this->_waitCommand(timeLimit::FORK);
 
     auto playerTeam =
@@ -414,7 +415,6 @@ void zappy::game::CommandHandler::handleFork(zappy::game::ServerPlayer &player)
     if (playerTeam) {
         playerTeam->allowNewPlayer();
         this->_map.addNewEgg(playerTeam->getTeamId(), player.x, player.y);
-        this->messageToGUI("pfk #" + std::to_string(player.getId()) + "\n");
         player.setInAction(false);
         player.getClient().sendMessage("ok\n");
         this->messageToGUI("enw #" + std::to_string(player.getTeam().getTeamId()) + " #" +
