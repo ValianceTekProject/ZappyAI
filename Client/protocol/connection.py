@@ -72,6 +72,9 @@ class Connection:
         logger.info(f"Sent team name: {team_name}")
 
         client_num_msg = self.recv_line()
+        while client_num_msg.strip() == "":
+            time.sleep(0.01)
+            client_num_msg = self.recv_line()
         if self._parser.is_error_response(client_num_msg):
             raise ValueError("error response from server because team is full or unknown")
         self._nb_clients = int(client_num_msg)
@@ -108,17 +111,35 @@ class Connection:
         return self.send_raw(command)
 
     def recv_line(self) -> str:
-        """Lit une ligne terminée par '\n'"""
+        """Lit une ligne terminée par '\n' et log les étapes pour debug."""
         if not self._connected or not self._sock:
             raise ConnectionError("Not connected")
 
+        logger.debug("[recv_line] Start waiting for '\\n' in buffer...")
+        logger.debug(f"[recv_line] Initial buffer: {repr(self._receive_buffer)}")
+
         while '\n' not in self._receive_buffer:
-            data = self._sock.recv(1024)
-            if not data:
-                raise ConnectionError("Connection closed by server")
-            self._receive_buffer += data.decode('utf-8')
+            try:
+                data = self._sock.recv(1024)
+                if not data:
+                    logger.warning("[recv_line] Socket closed by server")
+                    raise ConnectionError("Connection closed by server")
+                logger.debug(f"[recv_line] Received raw: {repr(data)}")
+                decoded = data.decode('utf-8')
+                logger.debug(f"[recv_line] Decoded string: {repr(decoded)}")
+                self._receive_buffer += decoded
+                logger.debug(f"[recv_line] Updated buffer: {repr(self._receive_buffer)}")
+            except socket.timeout:
+                logger.warning("[recv_line] Timeout while waiting for data")
+                time.sleep(0.01)
+            except socket.error as e:
+                logger.error(f"[recv_line] Socket error: {e}")
+                raise ConnectionError(f"Socket error: {e}")
 
         line, self._receive_buffer = self._receive_buffer.split('\n', 1)
+        logger.debug(f"[recv_line] Final line: {repr(line.strip())}")
+        logger.debug(f"[recv_line] Remaining buffer: {repr(self._receive_buffer)}")
+
         return line.strip()
 
     def receive(self) -> List[str]:
