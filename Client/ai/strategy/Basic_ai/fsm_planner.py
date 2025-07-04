@@ -142,7 +142,7 @@ class FSMPlanner:
             return False
 
         # Priorité absolue pour la reproduction après level up
-        if getattr(self.state, 'needs_repro', False):
+        if self.state.needs_repro:
             return True
 
         # Reproduction automatique pour niveau 2

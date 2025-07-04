@@ -13,7 +13,7 @@ class FoodThresholds:
     # Seuils de base considérablement réduits pour accélérer la progression
     BASE_CRITICAL = 10
     BASE_SAFE = 20
-    BASE_ABUNDANT = 35  # Réduit de 35 à 20
+    BASE_ABUNDANT = 35
     BASE_EXPLORATION_THRESHOLD = 32  # Réduit de 32 à 15
     BASE_COORDINATION_THRESHOLD = 18  # Nouveau : seuil pour débuter la coordination
 

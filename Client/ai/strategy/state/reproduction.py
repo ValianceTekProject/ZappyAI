@@ -196,3 +196,4 @@ class ReproductionState(State):
             logger.info(f"[ReproductionState] ❌ SORTIE sans succès - "
                        f"Durée: {duration:.1f}s")
         self.state.needs_repro = False
+        self.context['should_reproduce'] = False

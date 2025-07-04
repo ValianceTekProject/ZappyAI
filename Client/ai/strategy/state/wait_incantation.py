@@ -12,7 +12,6 @@ from config import CommandType
 from constant import AgentRoles, TimingConstants
 from utils.logger import logger
 
-
 class WaitIncantationState(State):
     """
     État d'attente d'incantation pour les helpers.
@@ -25,7 +24,7 @@ class WaitIncantationState(State):
         super().__init__(planner)
         self.wait_start_time = time.time()
         self.last_check_time = time.time()
-        self.check_interval = 2.0  # Vérifier toutes les 2 secondes
+        self.check_interval = 2.0
         self.max_wait_time = TimingConstants.COORDINATION_TIMEOUT
         
         # S'assurer qu'on a le bon rôle
