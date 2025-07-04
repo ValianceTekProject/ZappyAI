@@ -2,21 +2,24 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## game_state - GameState avec rôles et coordination
+## game_state - GameState nettoyé avec constantes centralisées
 ##
 
 import time
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, Any
 from config import CommandType, CommandStatus, Orientation, Constants
 from protocol.commands import Command
 from protocol.parser import Parser
 from utils.logger import logger
 from utils.vision import Vision
-from constant import FoodThresholds, IncantationRequirements, AgentRoles
+from constant import (
+    FoodThresholds, IncantationRequirements, AgentRoles, 
+    ReproductionRules, GameplayConstants
+)
 
 
 class GameState:
-    """Gère l'état du jeu pour un agent avec support de coordination."""
+    """Gère l'état du jeu pour un agent avec constantes centralisées."""
 
     def __init__(self, team_id: str, dimension_map: Tuple[int, int], agent_id: int = 0):
         """
@@ -49,38 +52,18 @@ class GameState:
 
         self.command_already_send = False
         self.needs_look = False
-        self.needs_repro = False
+        
+        # Reproduction : état strict selon ReproductionRules
+        self.reproduction_triggered = False
+        self.reproduction_completed = False
 
         self.role = AgentRoles.SURVIVOR
         self.agent_thread = None
 
-        self.food_thresholds = self._calculate_food_thresholds()
-
         self.last_food_update = time.time()
-        self.food_consumption_history = []
         self.command_history = []
 
         logger.info(f"[GameState] Agent {agent_id} initialisé - Team: {team_id}, Food: {self.get_food_count()}")
-
-    def _calculate_food_thresholds(self) -> Dict[str, int]:
-        """
-        Calcule les seuils de nourriture selon le niveau.
-        
-        Returns:
-            Dictionnaire des seuils de nourriture
-        """
-        if self.level >= 7:
-            multiplier = FoodThresholds.MULTIPLIER_HIGH_LEVEL
-        elif self.level >= 4:
-            multiplier = FoodThresholds.MULTIPLIER_MID_LEVEL
-        else:
-            multiplier = FoodThresholds.MULTIPLIER_LOW_LEVEL
-
-        return {
-            'critical': int(FoodThresholds.BASE_CRITICAL * multiplier),
-            'safe': int(FoodThresholds.BASE_SAFE * multiplier),
-            'abundant': int(FoodThresholds.BASE_ABUNDANT * multiplier)
-        }
 
     def update(self, command: Command):
         """
@@ -116,7 +99,6 @@ class GameState:
             old_food = self.inventory.get('food', 0)
             self.inventory = self.parser.parse_inventory_response(command.response)
             new_food = self.inventory.get('food', 0)
-
             if new_food != old_food:
                 self._update_food_history(old_food, new_food)
 
@@ -129,10 +111,9 @@ class GameState:
             self.needs_look = False
 
         elif command.type == CommandType.INCANTATION:
-            logger.info(f"[GameState] ✅ Élévation réussie! Niveau: {self.level}")
+            # Le niveau est déjà géré par CommandManager
             self.needs_look = True
-            self.needs_repro = True
-            self._recalculate_thresholds()
+            self._handle_level_up()
 
         elif command.type == CommandType.FORWARD:
             self.update_position_after_forward()
@@ -148,13 +129,22 @@ class GameState:
             resource = command.args[0]
             self.vision.remove_resource_at((0, 0), resource)
             self._update_inventory_after_take(resource)
-            self.needs_look = False
 
         elif command.type == CommandType.SET and command.args:
             resource = command.args[0]
             self.vision.add_resource_at((0, 0), resource)
             self._update_inventory_after_set(resource)
-            self.needs_look = False
+
+        elif command.type == CommandType.FORK:
+            self.reproduction_completed = True
+            logger.info("[GameState] Reproduction terminée avec succès")
+
+    def _handle_level_up(self):
+        """Gère les actions après un level up selon les règles strictes."""
+        # RÈGLE CRITIQUE: Activer la reproduction UNIQUEMENT au niveau 2
+        if self.level == ReproductionRules.TRIGGER_LEVEL and not self.reproduction_triggered:
+            self.reproduction_triggered = True
+            logger.info(f"[GameState] 👶 Reproduction activée (niveau {ReproductionRules.TRIGGER_LEVEL} atteint)")
 
     def _handle_incantation_failure(self, command: Command):
         """
@@ -167,22 +157,10 @@ class GameState:
         requirements = self.get_incantation_requirements()
         needed_players = self.get_required_player_count()
         players_here = self._players_on_current_tile()
-        ground = self._get_resources_at_current_position()
-
-        missing_resources = {}
-        for res, qty in requirements.items():
-            on_ground = ground.get(res, 0)
-            if on_ground < qty:
-                missing_resources[res] = (qty, on_ground)
-
-        players_missing = max(0, needed_players - players_here)
 
         logger.error(f"[GameState] 💥 INCANTATION ÉCHEC {self.level} → {next_level}: "
-                    f"Joueurs: {players_here}/{needed_players}, "
-                    f"Manque: {missing_resources}")
-
+                    f"Joueurs: {players_here}/{needed_players}")
         self.needs_look = True
-        self.needs_repro = False
 
     def _update_food_history(self, old_food: int, new_food: int):
         """
@@ -192,20 +170,8 @@ class GameState:
             old_food: Ancienne quantité de nourriture
             new_food: Nouvelle quantité de nourriture
         """
-        now = time.time()
+        self.last_food_update = time.time()
         change = new_food - old_food
-
-        self.food_consumption_history.append({
-            'timestamp': now,
-            'old_food': old_food,
-            'new_food': new_food,
-            'change': change
-        })
-
-        if len(self.food_consumption_history) > 20:
-            self.food_consumption_history.pop(0)
-
-        self.last_food_update = now
 
         if change < 0:
             logger.debug(f"[GameState] Consommation: {change} (reste: {new_food})")
@@ -219,8 +185,6 @@ class GameState:
         """
         if resource in self.inventory:
             self.inventory[resource] += 1
-        else:
-            self.inventory[resource] = 1
 
     def _update_inventory_after_set(self, resource: str):
         """
@@ -231,13 +195,6 @@ class GameState:
         """
         if resource in self.inventory and self.inventory[resource] > 0:
             self.inventory[resource] -= 1
-
-    def _recalculate_thresholds(self):
-        """Recalcule les seuils après changement de niveau."""
-        old_thresholds = self.food_thresholds.copy()
-        self.food_thresholds = self._calculate_food_thresholds()
-
-        logger.info(f"[GameState] Seuils niveau {self.level}: {old_thresholds} → {self.food_thresholds}")
 
     def force_unlock(self):
         """Force le déblocage en cas d'agent bloqué."""
@@ -340,6 +297,60 @@ class GameState:
         """
         return IncantationRequirements.REQUIRED_PLAYERS.get(self.level, 1)
 
+    def should_reproduce(self) -> bool:
+        """
+        Vérifie si l'agent devrait se reproduire selon les règles strictes.
+        
+        Returns:
+            True si reproduction requise
+        """
+        return (
+            self.reproduction_triggered and 
+            not self.reproduction_completed and
+            self.level == ReproductionRules.TRIGGER_LEVEL and
+            self.get_food_count() >= ReproductionRules.MIN_FOOD_REQUIRED
+        )
+
+    def is_food_critical(self) -> bool:
+        """
+        Vérifie si la nourriture est en état critique.
+        
+        Returns:
+            True si nourriture critique
+        """
+        return self.get_food_count() <= FoodThresholds.CRITICAL
+
+    def is_food_sufficient(self) -> bool:
+        """
+        Vérifie si la nourriture est suffisante.
+        
+        Returns:
+            True si nourriture suffisante
+        """
+        return self.get_food_count() >= FoodThresholds.SUFFICIENT
+
+    def is_food_abundant(self) -> bool:
+        """
+        Vérifie si la nourriture est abondante.
+        
+        Returns:
+            True si nourriture abondante
+        """
+        return self.get_food_count() >= FoodThresholds.ABUNDANT
+
+    def can_coordinate(self) -> bool:
+        """
+        Vérifie si l'agent peut participer à la coordination.
+        
+        Returns:
+            True si coordination possible
+        """
+        return (
+            self.level > 1 and 
+            self.get_food_count() >= FoodThresholds.COORDINATION_MIN and
+            not self.has_missing_resources()
+        )
+
     def update_position_after_forward(self):
         """Met à jour la position après un mouvement forward."""
         x, y = self.position
@@ -370,21 +381,6 @@ class GameState:
         elif turn_cmd == CommandType.RIGHT:
             self.direction = (self.direction + 1) % 4
 
-    def _get_resources_at_current_position(self) -> Dict[str, int]:
-        """
-        Retourne les ressources sur la tuile actuelle selon la vision.
-        
-        Returns:
-            Dictionnaire des ressources sur la tuile
-        """
-        if not self.vision.last_vision_data:
-            return {}
-
-        for data in self.vision.last_vision_data:
-            if data.rel_pos == (0, 0):
-                return dict(data.resources)
-        return {}
-
     def _players_on_current_tile(self) -> int:
         """
         Retourne le nombre de joueurs sur la tuile actuelle.
@@ -396,28 +392,6 @@ class GameState:
             if data.rel_pos == (0, 0):
                 return data.players
         return 1
-
-    def get_food_consumption_rate(self) -> float:
-        """
-        Estime le taux de consommation de nourriture.
-        
-        Returns:
-            Taux de consommation estimé en secondes
-        """
-        if len(self.food_consumption_history) < 2:
-            return 126.0
-
-        intervals = []
-        for i in range(1, len(self.food_consumption_history)):
-            prev = self.food_consumption_history[i-1]
-            curr = self.food_consumption_history[i]
-
-            if curr['change'] < 0 and prev['change'] < 0:
-                interval = curr['timestamp'] - prev['timestamp']
-                if 100 < interval < 200:
-                    intervals.append(interval)
-
-        return sum(intervals) / len(intervals) if intervals else 126.0
 
     def set_role(self, role: str):
         """
@@ -431,8 +405,6 @@ class GameState:
             self.role = role
             if old_role != role:
                 logger.info(f"[GameState] Changement de rôle: {old_role} → {role}")
-        else:
-            logger.warning(f"[GameState] Rôle invalide: {role}")
 
     def get_role(self) -> str:
         """
@@ -443,18 +415,7 @@ class GameState:
         """
         return getattr(self, 'role', AgentRoles.SURVIVOR)
 
-    def is_coordination_capable(self) -> bool:
-        """
-        Vérifie si l'agent peut participer à la coordination.
-        
-        Returns:
-            True si coordination possible
-        """
-        return (self.level > 1 and 
-                self.get_food_count() >= 20 and
-                not self.has_missing_resources())
-
-    def get_state_summary(self) -> Dict[str, any]:
+    def get_state_summary(self) -> Dict[str, Any]:
         """
         Retourne un résumé de l'état pour debug.
         
@@ -465,16 +426,24 @@ class GameState:
             'agent_id': self.agent_id,
             'level': self.level,
             'food': self.get_food_count(),
-            'food_thresholds': self.food_thresholds,
+            'food_status': {
+                'critical': self.is_food_critical(),
+                'sufficient': self.is_food_sufficient(),
+                'abundant': self.is_food_abundant()
+            },
             'position': self.position,
             'orientation': self.direction,
             'role': self.get_role(),
             'inventory': self.inventory,
             'missing_resources': self.has_missing_resources(),
             'can_incant': self.can_incant(),
+            'can_coordinate': self.can_coordinate(),
+            'should_reproduce': self.should_reproduce(),
+            'reproduction_status': {
+                'triggered': self.reproduction_triggered,
+                'completed': self.reproduction_completed
+            },
             'needs_look': self.needs_look,
             'command_pending': self.command_already_send,
-            'coordination_capable': self.is_coordination_capable(),
-            'required_players': self.get_required_player_count(),
-            'last_commands': [cmd['command'].value for cmd in self.command_history[-3:]]
+            'required_players': self.get_required_player_count()
         }

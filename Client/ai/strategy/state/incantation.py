@@ -2,31 +2,36 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## incantation - État d'incantation avec respect strict du protocole
+## incantation - État d'incantation avec respect strict du protocole Zappy
 ##
 
 import time
 from typing import Optional, Any
 from ai.strategy.fsm import State, Event
-from config import Constants, CommandType
+from config import CommandType
 from constant import (
-    IncantationRequirements, TimingConstants, AgentRoles,
-    StateTransitionThresholds, GameplayConstants
+    IncantationRequirements, StateTransitionThresholds, 
+    GameplayConstants, FoodThresholds
 )
 from utils.logger import logger
 
 
 class IncantationState(State):
     """
-    État d'incantation avec respect strict du protocole de coordination.
+    État d'incantation avec respect strict du protocole Zappy.
     
     RÈGLES CRITIQUES:
     - Niveau 1: Solo autorisé UNIQUEMENT
-    - Niveau 2+: Coordination OBLIGATOIRE
-    - Vérification stricte du nombre de joueurs
+    - Niveau 2+: Coordination OBLIGATOIRE (cet état ne doit PAS être utilisé)
     """
 
     def __init__(self, planner):
+        """
+        Initialise l'état d'incantation.
+        
+        Args:
+            planner: Planificateur FSM
+        """
         super().__init__(planner)
         
         # VÉRIFICATION CRITIQUE: Application stricte du protocole
@@ -39,58 +44,48 @@ class IncantationState(State):
         self.incant_stage = 0
         self.resources_to_drop = []
         self.incant_start_time = time.time()
-        self.incant_timeout = TimingConstants.INCANTATION_TIMEOUT
-        self.min_food_for_incant = self._calculate_min_food()
         self.waiting_for_command = False
         self.last_command_time = time.time()
-        self.command_timeout = TimingConstants.COMMAND_TIMEOUT
         self.resources_dropped = 0
         self.attempts = 0
-        self.max_attempts = TimingConstants.MAX_INCANTATION_ATTEMPTS
         
         target_level = self.state.level + 1
         logger.info(f"[IncantationState] 🔮 Incantation {self.state.level} → {target_level} initiée")
 
     def _verify_protocol_compliance(self) -> bool:
         """
-        Vérification stricte du respect du protocole de coordination.
+        Vérification stricte du respect du protocole Zappy.
         
         Returns:
             True si le protocole est respecté, False sinon
         """
         current_level = self.state.level
         required_players = IncantationRequirements.REQUIRED_PLAYERS.get(current_level, 1)
-        current_players = self._count_players_on_tile()
         
-        # RÈGLE 1: Niveau 1 = Solo autorisé
+        # RÈGLE 1: Niveau 1 = Solo autorisé UNIQUEMENT
         if current_level == 1:
             if required_players == 1:
                 logger.info("[IncantationState] ✅ Niveau 1: Solo autorisé")
                 return True
             else:
-                logger.error(f"[IncantationState] ❌ Erreur config niveau 1: {required_players} joueurs requis")
+                logger.error(f"[IncantationState] ❌ Config invalide niveau 1: {required_players} joueurs requis")
                 return False
         
         # RÈGLE 2: Niveau 2+ = Coordination OBLIGATOIRE
         if current_level >= 2:
-            if required_players <= 1:
-                logger.error(f"[IncantationState] ❌ Configuration invalide niveau {current_level}: {required_players} joueurs")
-                return False
-                
-            if current_players < required_players:
-                logger.error(f"[IncantationState] ❌ PROTOCOLE VIOLATION: Niveau {current_level} "
-                           f"nécessite {required_players} joueurs, seulement {current_players} présents")
-                logger.error("[IncantationState] 🚫 COORDINATION OBLIGATOIRE POUR NIVEAU 2+")
-                return False
-            else:
-                logger.info(f"[IncantationState] ✅ Coordination respectée: {current_players}/{required_players} joueurs")
-                return True
+            logger.error(f"[IncantationState] ❌ PROTOCOLE VIOLATION: Niveau {current_level} "
+                        f"nécessite coordination obligatoire ({required_players} joueurs)")
+            logger.error("[IncantationState] 🚫 CET ÉTAT NE DOIT PAS ÊTRE UTILISÉ POUR NIVEAU 2+")
+            return False
         
         return True
 
     def execute(self) -> Optional[Any]:
         """
-        Logique d'incantation avec vérifications de sécurité renforcées.
+        Logique d'incantation avec vérifications de sécurité strictes.
+        
+        Returns:
+            Commande à exécuter ou None
         """
         # Vérification critique de violation de protocole
         if self.protocol_violation:
@@ -99,7 +94,6 @@ class IncantationState(State):
 
         # Vérification si incantation déjà terminée
         if hasattr(self, 'incantation_completed') and self.incantation_completed:
-            self.incantation_completed = False
             return None
 
         current_time = time.time()
@@ -110,12 +104,12 @@ class IncantationState(State):
             return self._handle_safety_failure()
 
         # Vérification timeout global
-        if current_time - self.incant_start_time > self.incant_timeout:
+        if current_time - self.incant_start_time > 60.0:
             logger.error("[IncantationState] ⏰ Timeout incantation")
             return self._handle_timeout()
 
         # Vérification timeout commande
-        if self.waiting_for_command and (current_time - self.last_command_time > self.command_timeout):
+        if self.waiting_for_command and (current_time - self.last_command_time > 5.0):
             logger.warning("[IncantationState] ⏰ Timeout commande")
             self.waiting_for_command = False
             return self.cmd_mgr.look()
@@ -126,7 +120,6 @@ class IncantationState(State):
 
         # Mise à jour vision si nécessaire
         if not self.state.get_vision().last_vision_data or getattr(self.state, 'needs_look', False):
-            logger.debug("[IncantationState] 👁️ Mise à jour vision")
             return self.cmd_mgr.look()
 
         # Exécution selon la phase
@@ -142,29 +135,37 @@ class IncantationState(State):
         return None
 
     def _verify_continuous_safety(self) -> bool:
-        """Vérifications de sécurité continues."""
+        """
+        Vérifications de sécurité continues.
+        
+        Returns:
+            True si conditions sûres
+        """
         current_food = self.state.get_food_count()
         
-        # Vérification nourriture
-        if current_food < self.min_food_for_incant:
-            logger.warning(f"[IncantationState] Nourriture insuffisante: {current_food} < {self.min_food_for_incant}")
+        # Vérification nourriture selon le niveau
+        if self.state.level == 1:
+            min_food_required = StateTransitionThresholds.MIN_FOOD_FOR_LEVEL_1_INCANTATION
+        else:
+            min_food_required = StateTransitionThresholds.MIN_FOOD_FOR_COORDINATION
+            
+        if current_food < min_food_required:
+            logger.warning(f"[IncantationState] Nourriture insuffisante: {current_food} < {min_food_required}")
             return False
         
-        # Vérification STRICTE du protocole de coordination
+        # Vérification STRICTE du protocole
         if not self._verify_protocol_compliance():
             return False
         
         return True
 
-    def _calculate_min_food(self) -> int:
-        """Calcule la nourriture minimale selon le niveau."""
-        if self.state.level == 1:
-            return StateTransitionThresholds.MIN_FOOD_FOR_LEVEL_1_INCANTATION
-        else:
-            return StateTransitionThresholds.MIN_FOOD_FOR_COORDINATION
-
     def _prepare_incantation(self) -> Optional[Any]:
-        """Phase 0: Préparation avec vérifications strictes."""
+        """
+        Phase 0: Préparation avec vérifications strictes.
+        
+        Returns:
+            Commande de préparation ou None
+        """
         logger.info("[IncantationState] 📋 Phase 0: Préparation")
 
         # Vérification STRICTE du protocole une dernière fois
@@ -207,7 +208,12 @@ class IncantationState(State):
         return self._drop_resources()
 
     def _drop_resources(self) -> Optional[Any]:
-        """Phase 1: Dépôt des ressources."""
+        """
+        Phase 1: Dépôt des ressources.
+        
+        Returns:
+            Commande de dépôt ou None
+        """
         if self.resources_to_drop:
             resource = self.resources_to_drop.pop(0)
             logger.info(f"[IncantationState] 📦 Dépôt {resource} ({len(self.resources_to_drop)} restants)")
@@ -222,7 +228,12 @@ class IncantationState(State):
             return self.cmd_mgr.look()
 
     def _verify_before_incant(self) -> Optional[Any]:
-        """Phase 2: Vérification finale avant lancement."""
+        """
+        Phase 2: Vérification finale avant lancement.
+        
+        Returns:
+            Commande de vérification ou None
+        """
         logger.info("[IncantationState] 🔍 Phase 2: Vérification finale")
 
         if self._verify_incantation_conditions():
@@ -233,7 +244,7 @@ class IncantationState(State):
             logger.warning("[IncantationState] ❌ Conditions non remplies")
             self.attempts += 1
 
-            if self.attempts >= self.max_attempts:
+            if self.attempts >= 2:
                 logger.error("[IncantationState] 🔄 Trop de tentatives échouées")
                 return self._handle_max_attempts()
 
@@ -242,7 +253,12 @@ class IncantationState(State):
             return self.cmd_mgr.look()
 
     def _launch_incantation(self) -> Optional[Any]:
-        """Phase 3: Lancement avec vérifications finales STRICTES."""
+        """
+        Phase 3: Lancement avec vérifications finales STRICTES.
+        
+        Returns:
+            Commande d'incantation
+        """
         logger.info("[IncantationState] 🚀 Phase 3: Lancement")
 
         # Vérification FINALE et STRICTE du protocole
@@ -254,7 +270,7 @@ class IncantationState(State):
         if not self._verify_incantation_conditions():
             logger.error("[IncantationState] ❌ Conditions perdues au lancement")
             self.attempts += 1
-            if self.attempts >= self.max_attempts:
+            if self.attempts >= 2:
                 return self._handle_max_attempts()
             self.incant_stage = 0
             return self.cmd_mgr.look()
@@ -271,7 +287,12 @@ class IncantationState(State):
         return self.cmd_mgr.incantation()
 
     def _verify_incantation_conditions(self) -> bool:
-        """Vérification complète des conditions d'incantation."""
+        """
+        Vérification complète des conditions d'incantation.
+        
+        Returns:
+            True si toutes les conditions sont remplies
+        """
         # Vérification protocole
         if not self._verify_protocol_compliance():
             return False
@@ -289,7 +310,12 @@ class IncantationState(State):
         return True
 
     def _get_resources_at_current_position(self) -> dict:
-        """Retourne les ressources sur la tuile actuelle."""
+        """
+        Retourne les ressources sur la tuile actuelle.
+        
+        Returns:
+            Dictionnaire des ressources au sol
+        """
         vision = self.state.get_vision()
         for data in vision.last_vision_data:
             if data.rel_pos == (0, 0):
@@ -297,20 +323,30 @@ class IncantationState(State):
         return {}
 
     def _count_players_on_tile(self) -> int:
-        """Compte les joueurs sur la tuile actuelle."""
+        """
+        Compte les joueurs sur la tuile actuelle.
+        
+        Returns:
+            Nombre de joueurs sur la tuile
+        """
         vision = self.state.get_vision()
         for data in vision.last_vision_data:
             if data.rel_pos == (0, 0):
                 return data.players
-        return 1  # Au minimum nous-mêmes
+        return 1
 
     def _handle_protocol_violation(self) -> Optional[Any]:
-        """Gère une violation du protocole de coordination."""
+        """
+        Gère une violation du protocole de coordination.
+        
+        Returns:
+            Transition appropriée
+        """
         logger.error("[IncantationState] 🚫 GESTION VIOLATION PROTOCOLE")
         
-        # Pour niveau 2+, transition vers coordination
+        # Pour niveau 2+, transition vers coordination OBLIGATOIRE
         if self.state.level >= 2:
-            logger.info("[IncantationState] → Transition coordination obligatoire")
+            logger.info("[IncantationState] → Transition coordination OBLIGATOIRE")
             from ai.strategy.state.coordination_incantation import CoordinateIncantationState
             new_state = CoordinateIncantationState(self.planner)
             self.planner.fsm.transition_to(new_state)
@@ -320,10 +356,15 @@ class IncantationState(State):
         return self._handle_generic_failure()
 
     def _handle_safety_failure(self) -> Optional[Any]:
-        """Gère un échec des conditions de sécurité."""
+        """
+        Gère un échec des conditions de sécurité.
+        
+        Returns:
+            Transition appropriée
+        """
         current_food = self.state.get_food_count()
         
-        if current_food < self.min_food_for_incant:
+        if current_food < StateTransitionThresholds.MIN_FOOD_FOR_LEVEL_1_INCANTATION:
             logger.info("[IncantationState] → Collecte nourriture")
             from ai.strategy.state.collect_food import CollectFoodState
             new_state = CollectFoodState(self.planner)
@@ -333,7 +374,12 @@ class IncantationState(State):
         return self._handle_generic_failure()
 
     def _handle_missing_resources(self) -> Optional[Any]:
-        """Gère le cas de ressources manquantes."""
+        """
+        Gère le cas de ressources manquantes.
+        
+        Returns:
+            Transition vers collecte ressources
+        """
         logger.info("[IncantationState] → Collecte ressources manquantes")
         from ai.strategy.state.collect_resources import CollectResourcesState
         new_state = CollectResourcesState(self.planner)
@@ -341,17 +387,32 @@ class IncantationState(State):
         return new_state.execute()
 
     def _handle_timeout(self) -> Optional[Any]:
-        """Gère le timeout d'incantation."""
+        """
+        Gère le timeout d'incantation.
+        
+        Returns:
+            Fallback générique
+        """
         logger.error("[IncantationState] Timeout d'incantation")
         return self._handle_generic_failure()
 
     def _handle_max_attempts(self) -> Optional[Any]:
-        """Gère le dépassement du nombre maximum de tentatives."""
+        """
+        Gère le dépassement du nombre maximum de tentatives.
+        
+        Returns:
+            Fallback générique
+        """
         logger.error("[IncantationState] Nombre maximum de tentatives atteint")
         return self._handle_generic_failure()
 
     def _handle_generic_failure(self) -> Optional[Any]:
-        """Gestion générique d'échec avec fallback intelligent."""
+        """
+        Gestion générique d'échec avec fallback intelligent.
+        
+        Returns:
+            Transition appropriée
+        """
         current_food = self.state.get_food_count()
         
         # Priorité 1: Urgence alimentaire
@@ -375,7 +436,13 @@ class IncantationState(State):
         return new_state.execute()
 
     def on_command_success(self, command_type, response=None):
-        """Gestion du succès des commandes."""
+        """
+        Gestion du succès des commandes.
+        
+        Args:
+            command_type: Type de commande
+            response: Réponse du serveur
+        """
         self.waiting_for_command = False
 
         if command_type == CommandType.SET:
@@ -386,14 +453,18 @@ class IncantationState(State):
                 vision.add_resource_at((0, 0), self._last_set_resource)
 
         elif command_type == CommandType.INCANTATION:
-            logger.info(f"[IncantationState] 🎉✨ INCANTATION RÉUSSIE! Niveau {self.state.level}")
+            logger.info(f"[IncantationState] 🎉✨ INCANTATION RÉUSSIE! Nouveau niveau: {self.state.level}")
             self.incantation_completed = True
-
-        elif command_type == CommandType.LOOK:
-            logger.debug("[IncantationState] 👁️ Vision mise à jour")
+            # Le level up déclenchera les actions appropriées dans FSMPlanner
 
     def on_command_failed(self, command_type, response=None):
-        """Gestion des échecs de commandes."""
+        """
+        Gestion des échecs de commandes.
+        
+        Args:
+            command_type: Type de commande
+            response: Réponse du serveur
+        """
         self.waiting_for_command = False
 
         if command_type == CommandType.SET:
@@ -405,14 +476,22 @@ class IncantationState(State):
             self.attempts += 1
             self.context['needs_vision_update'] = True
 
-            if self.attempts >= self.max_attempts:
+            if self.attempts >= 2:
                 logger.error("[IncantationState] 🔄 Abandon après échecs répétés")
             else:
                 self.incant_stage = 0
                 logger.info("[IncantationState] 🔄 Préparation nouvel essai")
 
     def on_event(self, event: Event) -> Optional[State]:
-        """Gestion des événements pendant incantation."""
+        """
+        Gestion des événements pendant incantation.
+        
+        Args:
+            event: Événement reçu
+            
+        Returns:
+            Nouvel état ou None
+        """
         if event == Event.FOOD_EMERGENCY:
             logger.error("[IncantationState] 🚨 URGENCE! Abandon incantation")
             from ai.strategy.state.emergency import EmergencyState

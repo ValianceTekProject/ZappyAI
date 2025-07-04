@@ -16,6 +16,8 @@ from utils.game_state import GameState
 from utils.logger import logger
 from config import CommandStatus
 from ai.strategy.planner import Planner
+from constant import FoodThresholds, GameplayConstants
+
 
 class Agent:
     """
@@ -26,6 +28,15 @@ class Agent:
     _next_id = 0
 
     def __init__(self, connection: Connection, team_id: str, agent_thread, model: str):
+        """
+        Initialise un nouvel agent.
+        
+        Args:
+            connection: Connexion au serveur
+            team_id: Nom de l'équipe
+            agent_thread: Gestionnaire des threads d'agents
+            model: Type de modèle IA (basic, DQN, PPO)
+        """
         self.conn = connection
         self.agent_thread = agent_thread
         self.dimension_map = self.conn.get_map_size()
@@ -60,6 +71,7 @@ class Agent:
         logger.info(f"[Agent] Agent {self.agent_id} initialisé - Team: {team_id}")
 
     def run_loop(self):
+        """Boucle principale de l'agent."""
         while True:
             try:
                 now = time.time()
@@ -82,6 +94,9 @@ class Agent:
                     if self._handle_initialization():
                         continue
 
+                # Mise à jour du timing selon la nourriture
+                self.timing.update_from_food_level(self.state.get_food_count())
+
                 # Délégation de la décision au Planner (FSM ou DQN)
                 self._make_ia_decision(now)
 
@@ -94,14 +109,19 @@ class Agent:
 
     def _handle_agent_death(self):
         """Gère la mort de l'agent."""
-
         self.agent_thread.agent_dead(self)
         survival = time.time() - getattr(self, '_start_time', time.time())
-        logger.info(f"[Agent {self.agent_id}] MORT niveau {self.state.level} - Décisions: {self.decisions_count}, Survie: {survival:.1f}s")
+        logger.info(f"[Agent {self.agent_id}] MORT niveau {self.state.level} - "
+                   f"Décisions: {self.decisions_count}, Survie: {survival:.1f}s")
 
     def _process_completed_commands(self, completed: list, now: float):
-        """Traite les commandes terminées."""
-
+        """
+        Traite les commandes terminées.
+        
+        Args:
+            completed: Liste des commandes terminées
+            now: Temps actuel
+        """
         for cmd in completed:
             self.state.update(cmd)
             self._last_command_time = now
@@ -109,14 +129,17 @@ class Agent:
             if cmd.status.value == CommandStatus.SUCCESS.value:
                 self.successful_actions += 1
                 self.planner.on_command_success(cmd.type, cmd.response)
-
             elif cmd.status.value == CommandStatus.FAILED.value:
                 self.failed_actions += 1
                 self.planner.on_command_failed(cmd.type, cmd.response)
 
     def _handle_initialization(self) -> bool:
-        """Initialisation en plusieurs étapes"""
-
+        """
+        Initialisation en plusieurs étapes.
+        
+        Returns:
+            True si initialisation en cours, False si terminée
+        """
         if self.init_stage == 0:
             if not self.commands.has_pending():
                 self.commands.look()
@@ -135,9 +158,13 @@ class Agent:
         return False
 
     def _make_ia_decision(self, now: float):
-        """Délégation de la décision au Planner (FSM ou DQN)."""
-
-        if self.state.command_already_send or self.commands.get_pending_count() >= 8:
+        """
+        Délégation de la décision au Planner (FSM ou DQN).
+        
+        Args:
+            now: Temps actuel
+        """
+        if self.state.command_already_send or self.commands.get_pending_count() >= GameplayConstants.MAX_PENDING_COMMANDS:
             return
         if not self.timing.can_execute_action():
             return
@@ -148,7 +175,8 @@ class Agent:
             self._last_decision_time = now
             self._last_command_time = now
         else:
-            if self.state.get_food_count() <= 8:
+            # Force un look si nourriture critique et pas de commande
+            if self.state.get_food_count() <= FoodThresholds.CRITICAL:
                 self.commands.look()
                 self._last_decision_time = now
 
@@ -157,16 +185,21 @@ class Agent:
         sleep_time = self.timing.get_sleep_time()
 
         current_food = self.state.get_food_count()
-        if current_food <= 5:
+        if current_food <= FoodThresholds.CRITICAL:
             sleep_time = min(sleep_time, 0.005)
-        elif current_food <= 10:
+        elif current_food <= FoodThresholds.SUFFICIENT:
             sleep_time = min(sleep_time, 0.01)
 
         if sleep_time > 0:
             time.sleep(sleep_time)
 
     def _handle_critical_error(self, error: Exception):
-        """Gère les erreurs critiques avec récupération."""
+        """
+        Gère les erreurs critiques avec récupération.
+        
+        Args:
+            error: Exception capturée
+        """
         logger.error(f"[Agent {self.agent_id}] 🚨 ERREUR CRITIQUE: {error}")
 
         try:
@@ -178,6 +211,9 @@ class Agent:
     def read_non_blocking(self) -> list:
         """
         Lecture réseau non-bloquante optimisée.
+        
+        Returns:
+            Liste des réponses reçues
         """
         sock = self.conn.get_socket()
         if not sock:

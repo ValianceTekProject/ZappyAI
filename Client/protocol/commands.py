@@ -74,7 +74,7 @@ class CommandManager:
         success = self.conn.send_command(cmd.type, *cmd.args)
         if not success:
             cmd.status = CommandStatus.FAILED
-            logger.error(f"Échec de l’envoi de la commande: {cmd.type}")
+            logger.error(f"Échec de l'envoi de la commande: {cmd.type}")
             return cmd
         self.pending_responses.append(cmd)
         self.state.command_already_send = True
@@ -176,8 +176,13 @@ class CommandManager:
         """
         if Parser.is_current_level_response(response):
             new_level = Parser.parse_current_level(response)
-            logger.info(f"response: {response}, player new level: {new_level}, player last level: {self.state.level}")
+            old_level = self.state.level
+            
+            # CORRECTION CRITIQUE: Mise à jour du niveau dans GameState
             self.state.level = new_level
+            
+            logger.info(f"[CommandManager] Level up détecté: {old_level} → {new_level}")
+            
             for idx, cmd in enumerate(self.pending_responses):
                 if cmd.type == CommandType.INCANTATION:
                     picked = self.pending_responses.pop(idx)
@@ -194,7 +199,7 @@ class CommandManager:
         Marque une commande d'eject comme réussie suite à 'eject: OK'.
         """
         if Parser.is_eject_response(response):
-            self.state.need_look = True
+            self.state.needs_look = True
         return False
 
     def _handle_general_response(self, response: str, completed: List[Command]) -> bool:
