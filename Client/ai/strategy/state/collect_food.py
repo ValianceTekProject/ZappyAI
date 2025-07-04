@@ -10,6 +10,7 @@ from typing import Optional, Any
 from ai.strategy.fsm import State, Event
 from ai.strategy.pathfinding import Pathfinder
 from config import Constants, CommandType
+from constant import StateTransitionThresholds, GameplayConstants, TimingConstants
 from utils.logger import logger
 
 class CollectFoodState(State):
@@ -29,10 +30,10 @@ class CollectFoodState(State):
         self.food_target = None
         self.movement_commands = []
         self.collection_attempts = 0
-        self.max_collection_attempts = 3
+        self.max_collection_attempts = TimingConstants.MAX_COLLECTION_ATTEMPTS
         self.last_inventory_check = time.time()
         self.last_vision_update = time.time()
-        self.inventory_check_interval = 8.0
+        self.inventory_check_interval = GameplayConstants.INVENTORY_CHECK_INTERVAL
         self.food_collected = 0
         self.successful_collections = 0
         logger.info("[CollectFoodState] 🍖 Mode collecte de nourriture activé")
@@ -43,6 +44,16 @@ class CollectFoodState(State):
         Balance entre efficacité et sécurité.
         """
         current_time = time.time()
+        current_food = self.state.get_food_count()
+
+        # Vérification si on a assez de nourriture pour sortir
+        sufficient_threshold = self._get_sufficient_threshold()
+        if current_food >= sufficient_threshold:
+            logger.info(f"[CollectFoodState] ✅ Nourriture suffisante ({current_food} >= {sufficient_threshold})")
+            from ai.strategy.state.explore import ExploreState
+            new_state = ExploreState(self.planner)
+            self.planner.fsm.transition_to(new_state)
+            return new_state.execute()
 
         if self._should_check_inventory(current_time):
             logger.debug("[CollectFoodState] Vérification inventaire périodique")
@@ -78,6 +89,16 @@ class CollectFoodState(State):
 
         return self._explore_for_food()
 
+    def _get_sufficient_threshold(self) -> int:
+        """Calcule le seuil de nourriture suffisante selon le niveau."""
+        # Utilise un seuil plus élevé que celui de l'exploration pour éviter la boucle
+        base = StateTransitionThresholds.FOOD_SUFFICIENT_THRESHOLD
+        if self.state.level >= 7:
+            return int(base * 1.4)
+        elif self.state.level >= 4:
+            return int(base * 1.2)
+        return base
+
     def _should_check_inventory(self, current_time: float) -> bool:
         """Détermine si un check d'inventaire est nécessaire."""
         if self.context.get('needs_inventory_check', False):
@@ -111,14 +132,18 @@ class CollectFoodState(State):
         food_resources = vision.get_visible_resources().get(Constants.FOOD.value, [])
         if not food_resources:
             return None
+        
         valid_targets = [pos for pos in food_resources if pos != (0, 0)]
         if not valid_targets:
             return None
+            
         closest_pos = min(valid_targets, key=lambda pos: abs(pos[0]) + abs(pos[1]))
+        
         class FoodTarget:
             def __init__(self, pos):
                 self.rel_position = pos
                 self.resource_type = Constants.FOOD.value
+                
         return FoodTarget(closest_pos)
 
     def _plan_food_collection_path(self, target):
@@ -126,11 +151,13 @@ class CollectFoodState(State):
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return []
+            
         commands = self.pathfinder.get_commands_to_target(
             target,
             self.state.get_orientation(),
             vision_data
         )
+        
         max_commands = 8
         return commands[:max_commands] if commands else []
 
@@ -151,21 +178,14 @@ class CollectFoodState(State):
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return self.cmd_mgr.look()
+            
         exploration_cmd = self.pathfinder.get_exploration_direction(
             self.state.get_orientation(),
             vision_data
         )
+        
         logger.debug(f"[CollectFoodState] 🔍 Exploration pour nourriture: {exploration_cmd}")
         return self._execute_movement_command(exploration_cmd)
-
-    def _get_safe_threshold(self) -> int:
-        """Calcule le seuil de sécurité selon le niveau."""
-        base = 20
-        if self.state.level >= 7:
-            return int(base * 2.0)
-        elif self.state.level >= 4:
-            return int(base * 1.5)
-        return base
 
     def on_command_success(self, command_type, response=None):
         """Gestion du succès des commandes."""
@@ -174,15 +194,19 @@ class CollectFoodState(State):
             self.food_collected += 1
             self.successful_collections += 1
             logger.info(f"[CollectFoodState] ✅ Nourriture collectée! Total collecté: {self.food_collected}")
+            
             vision = self.state.get_vision()
             vision.remove_resource_at((0, 0), Constants.FOOD.value)
             self.food_target = None
             self.movement_commands.clear()
             self.collection_attempts = 0
+            
         elif command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
             self.context['needs_vision_update'] = True
+            
         elif command_type == CommandType.LOOK:
             self.last_vision_update = time.time()
+            
         elif command_type == CommandType.INVENTORY:
             self.last_inventory_check = time.time()
 
@@ -194,12 +218,14 @@ class CollectFoodState(State):
             self.food_target = None
             self.movement_commands.clear()
             self.context['needs_vision_update'] = True
+            
             if self.collection_attempts >= self.max_collection_attempts:
                 logger.warning("[CollectFoodState] Trop d'échecs de collecte, transition exploration")
+                
         elif command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
             stuck_counter = self.context.get('stuck_counter', 0) + 1
             self.context['stuck_counter'] = stuck_counter
-            if stuck_counter >= 2:
+            if stuck_counter >= GameplayConstants.MAX_STUCK_ATTEMPTS:
                 logger.warning("[CollectFoodState] Mouvements bloqués, reset cible")
                 self.food_target = None
                 self.movement_commands.clear()
@@ -212,9 +238,9 @@ class CollectFoodState(State):
             return EmergencyState(self.planner)
         elif event == Event.FOOD_SUFFICIENT:
             current_food = self.state.get_food_count()
-            safe_threshold = self._get_safe_threshold()
-            if current_food >= safe_threshold:
-                logger.info(f"[CollectFoodState] ✅ Nourriture suffisante ({current_food} >= {safe_threshold}), transition exploration")
+            sufficient_threshold = self._get_sufficient_threshold()
+            if current_food >= sufficient_threshold:
+                logger.info(f"[CollectFoodState] ✅ Nourriture suffisante ({current_food} >= {sufficient_threshold}), transition exploration")
                 from ai.strategy.state.explore import ExploreState
                 return ExploreState(self.planner)
         return None
@@ -223,8 +249,9 @@ class CollectFoodState(State):
         """Actions à l'entrée de l'état."""
         super().on_enter()
         current_food = self.state.get_food_count()
-        safe_threshold = self._get_safe_threshold()
-        logger.info(f"[CollectFoodState] 🍖 ENTRÉE mode collecte - Food: {current_food}/{safe_threshold}")
+        sufficient_threshold = self._get_sufficient_threshold()
+        logger.info(f"[CollectFoodState] 🍖 ENTRÉE mode collecte - Food: {current_food}/{sufficient_threshold}")
+        
         self.food_target = None
         self.movement_commands.clear()
         self.collection_attempts = 0

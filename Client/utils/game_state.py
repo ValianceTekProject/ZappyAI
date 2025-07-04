@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## game_state
+## game_state - GameState avec rôles et coordination
 ##
 
 import time
@@ -12,11 +12,21 @@ from protocol.commands import Command
 from protocol.parser import Parser
 from utils.logger import logger
 from utils.vision import Vision
+from constant import FoodThresholds, IncantationRequirements, AgentRoles
+
 
 class GameState:
-    """Gère l'état du jeu pour un agent avec seuils de survie réalistes."""
+    """Gère l'état du jeu pour un agent avec support de coordination."""
 
     def __init__(self, team_id: str, dimension_map: Tuple[int, int], agent_id: int = 0):
+        """
+        Initialise l'état du jeu.
+        
+        Args:
+            team_id: Identifiant de l'équipe
+            dimension_map: Dimensions de la carte (largeur, hauteur)
+            agent_id: Identifiant unique de l'agent
+        """
         self.inventory = {
             "food": 10,
             "linemate": 0,
@@ -41,8 +51,10 @@ class GameState:
         self.needs_look = False
         self.needs_repro = False
 
+        self.role = AgentRoles.SURVIVOR
+        self.agent_thread = None
+
         self.food_thresholds = self._calculate_food_thresholds()
-        self.role = "survivor"
 
         self.last_food_update = time.time()
         self.food_consumption_history = []
@@ -51,26 +63,32 @@ class GameState:
         logger.info(f"[GameState] Agent {agent_id} initialisé - Team: {team_id}, Food: {self.get_food_count()}")
 
     def _calculate_food_thresholds(self) -> Dict[str, int]:
-        """Calcule les seuils de nourriture selon le niveau."""
-        base_critical = 5
-        base_safe = 15
-        base_abundant = 25
-
+        """
+        Calcule les seuils de nourriture selon le niveau.
+        
+        Returns:
+            Dictionnaire des seuils de nourriture
+        """
         if self.level >= 7:
-            multiplier = 1.6
+            multiplier = FoodThresholds.MULTIPLIER_HIGH_LEVEL
         elif self.level >= 4:
-            multiplier = 1.3
+            multiplier = FoodThresholds.MULTIPLIER_MID_LEVEL
         else:
-            multiplier = 1.0
+            multiplier = FoodThresholds.MULTIPLIER_LOW_LEVEL
 
         return {
-            'critical': int(base_critical * multiplier),
-            'safe': int(base_safe * multiplier),
-            'abundant': int(base_abundant * multiplier)
+            'critical': int(FoodThresholds.BASE_CRITICAL * multiplier),
+            'safe': int(FoodThresholds.BASE_SAFE * multiplier),
+            'abundant': int(FoodThresholds.BASE_ABUNDANT * multiplier)
         }
 
     def update(self, command: Command):
-        """Met à jour l'état du jeu après l'exécution d'une commande."""
+        """
+        Met à jour l'état du jeu après l'exécution d'une commande.
+        
+        Args:
+            command: Commande exécutée
+        """
         self.command_already_send = False
 
         self.command_history.append({
@@ -139,7 +157,12 @@ class GameState:
             self.needs_look = False
 
     def _handle_incantation_failure(self, command: Command):
-        """Gère l'échec d'incantation avec log détaillé."""
+        """
+        Gère l'échec d'incantation avec log détaillé.
+        
+        Args:
+            command: Commande d'incantation échouée
+        """
         next_level = self.level + 1
         requirements = self.get_incantation_requirements()
         needed_players = self.get_required_player_count()
@@ -162,7 +185,13 @@ class GameState:
         self.needs_repro = False
 
     def _update_food_history(self, old_food: int, new_food: int):
-        """Met à jour l'historique de consommation de nourriture."""
+        """
+        Met à jour l'historique de consommation de nourriture.
+        
+        Args:
+            old_food: Ancienne quantité de nourriture
+            new_food: Nouvelle quantité de nourriture
+        """
         now = time.time()
         change = new_food - old_food
 
@@ -182,14 +211,24 @@ class GameState:
             logger.debug(f"[GameState] Consommation: {change} (reste: {new_food})")
 
     def _update_inventory_after_take(self, resource: str):
-        """Met à jour l'inventaire après un TAKE réussi."""
+        """
+        Met à jour l'inventaire après un TAKE réussi.
+        
+        Args:
+            resource: Ressource ramassée
+        """
         if resource in self.inventory:
             self.inventory[resource] += 1
         else:
             self.inventory[resource] = 1
 
     def _update_inventory_after_set(self, resource: str):
-        """Met à jour l'inventaire après un SET réussi."""
+        """
+        Met à jour l'inventaire après un SET réussi.
+        
+        Args:
+            resource: Ressource déposée
+        """
         if resource in self.inventory and self.inventory[resource] > 0:
             self.inventory[resource] -= 1
 
@@ -207,36 +246,76 @@ class GameState:
         self.needs_look = True
 
     def get_food_count(self) -> int:
-        """Retourne la quantité de nourriture dans l'inventaire."""
+        """
+        Retourne la quantité de nourriture dans l'inventaire.
+        
+        Returns:
+            Quantité de nourriture
+        """
         return self.inventory.get(Constants.FOOD.value, 0)
 
     def get_inventory(self) -> Dict[str, int]:
-        """Retourne l'inventaire complet."""
+        """
+        Retourne l'inventaire complet.
+        
+        Returns:
+            Copie de l'inventaire
+        """
         return self.inventory.copy()
 
     def get_player_level(self) -> int:
-        """Retourne le niveau du joueur."""
+        """
+        Retourne le niveau du joueur.
+        
+        Returns:
+            Niveau du joueur
+        """
         return self.level
 
     def get_position(self) -> Tuple[int, int]:
-        """Retourne la position courante."""
+        """
+        Retourne la position courante.
+        
+        Returns:
+            Position (x, y)
+        """
         return self.position
 
     def get_orientation(self) -> int:
-        """Retourne l'orientation courante."""
+        """
+        Retourne l'orientation courante.
+        
+        Returns:
+            Orientation
+        """
         return self.direction
 
     def get_vision(self) -> Vision:
-        """Retourne l'objet Vision."""
+        """
+        Retourne l'objet Vision.
+        
+        Returns:
+            Objet Vision
+        """
         return self.vision
 
     def has_missing_resources(self) -> bool:
-        """Vérifie si des ressources manquent pour l'incantation."""
+        """
+        Vérifie si des ressources manquent pour l'incantation.
+        
+        Returns:
+            True si des ressources manquent
+        """
         requirements = self.get_incantation_requirements()
         return any(self.inventory.get(res, 0) < qty for res, qty in requirements.items())
 
     def can_incant(self) -> bool:
-        """Vérifie si l'agent peut lancer une incantation."""
+        """
+        Vérifie si l'agent peut lancer une incantation.
+        
+        Returns:
+            True si incantation possible
+        """
         requirements = self.get_incantation_requirements()
         if any(self.inventory.get(res, 0) < qty for res, qty in requirements.items()):
             return False
@@ -244,52 +323,22 @@ class GameState:
         return self._players_on_current_tile() >= self.get_required_player_count()
 
     def get_incantation_requirements(self) -> Dict[str, int]:
-        """Retourne les ressources nécessaires pour l'incantation actuelle."""
-        level_requirements = {
-            1: {Constants.LINEMATE.value: 1},
-            2: {
-                Constants.LINEMATE.value: 1,
-                Constants.DERAUMERE.value: 1,
-                Constants.SIBUR.value: 1
-            },
-            3: {
-                Constants.LINEMATE.value: 2,
-                Constants.SIBUR.value: 1,
-                Constants.PHIRAS.value: 2
-            },
-            4: {
-                Constants.LINEMATE.value: 1,
-                Constants.DERAUMERE.value: 1,
-                Constants.SIBUR.value: 2,
-                Constants.PHIRAS.value: 1
-            },
-            5: {
-                Constants.LINEMATE.value: 1,
-                Constants.DERAUMERE.value: 2,
-                Constants.SIBUR.value: 1,
-                Constants.MENDIANE.value: 3
-            },
-            6: {
-                Constants.LINEMATE.value: 1,
-                Constants.DERAUMERE.value: 2,
-                Constants.SIBUR.value: 3,
-                Constants.PHIRAS.value: 1
-            },
-            7: {
-                Constants.LINEMATE.value: 2,
-                Constants.DERAUMERE.value: 2,
-                Constants.SIBUR.value: 2,
-                Constants.MENDIANE.value: 2,
-                Constants.PHIRAS.value: 2,
-                Constants.THYSTAME.value: 1
-            }
-        }
-        return level_requirements.get(self.level, {})
+        """
+        Retourne les ressources nécessaires pour l'incantation actuelle.
+        
+        Returns:
+            Dictionnaire des ressources requises
+        """
+        return IncantationRequirements.REQUIRED_RESOURCES.get(self.level, {})
 
     def get_required_player_count(self) -> int:
-        """Retourne le nombre de joueurs requis pour l'incantation."""
-        player_requirements = {1: 1, 2: 2, 3: 2, 4: 4, 5: 4, 6: 6, 7: 6}
-        return player_requirements.get(self.level, 1)
+        """
+        Retourne le nombre de joueurs requis pour l'incantation.
+        
+        Returns:
+            Nombre de joueurs requis
+        """
+        return IncantationRequirements.REQUIRED_PLAYERS.get(self.level, 1)
 
     def update_position_after_forward(self):
         """Met à jour la position après un mouvement forward."""
@@ -310,14 +359,24 @@ class GameState:
         self.position = (x, y)
 
     def update_orientation_after_turn(self, turn_cmd: CommandType):
-        """Met à jour l'orientation après une rotation."""
+        """
+        Met à jour l'orientation après une rotation.
+        
+        Args:
+            turn_cmd: Commande de rotation
+        """
         if turn_cmd == CommandType.LEFT:
             self.direction = (self.direction - 1) % 4
         elif turn_cmd == CommandType.RIGHT:
             self.direction = (self.direction + 1) % 4
 
     def _get_resources_at_current_position(self) -> Dict[str, int]:
-        """Retourne les ressources sur la tuile actuelle selon la vision."""
+        """
+        Retourne les ressources sur la tuile actuelle selon la vision.
+        
+        Returns:
+            Dictionnaire des ressources sur la tuile
+        """
         if not self.vision.last_vision_data:
             return {}
 
@@ -327,14 +386,24 @@ class GameState:
         return {}
 
     def _players_on_current_tile(self) -> int:
-        """Retourne le nombre de joueurs sur la tuile actuelle."""
+        """
+        Retourne le nombre de joueurs sur la tuile actuelle.
+        
+        Returns:
+            Nombre de joueurs sur la tuile
+        """
         for data in self.vision.last_vision_data:
             if data.rel_pos == (0, 0):
                 return data.players
         return 1
 
     def get_food_consumption_rate(self) -> float:
-        """Estime le taux de consommation de nourriture."""
+        """
+        Estime le taux de consommation de nourriture.
+        
+        Returns:
+            Taux de consommation estimé en secondes
+        """
         if len(self.food_consumption_history) < 2:
             return 126.0
 
@@ -350,8 +419,48 @@ class GameState:
 
         return sum(intervals) / len(intervals) if intervals else 126.0
 
+    def set_role(self, role: str):
+        """
+        Définit le rôle de l'agent.
+        
+        Args:
+            role: Nouveau rôle (INCANTER, HELPER, SURVIVOR)
+        """
+        if role in [AgentRoles.INCANTER, AgentRoles.HELPER, AgentRoles.SURVIVOR]:
+            old_role = getattr(self, 'role', AgentRoles.SURVIVOR)
+            self.role = role
+            if old_role != role:
+                logger.info(f"[GameState] Changement de rôle: {old_role} → {role}")
+        else:
+            logger.warning(f"[GameState] Rôle invalide: {role}")
+
+    def get_role(self) -> str:
+        """
+        Retourne le rôle actuel de l'agent.
+        
+        Returns:
+            Rôle actuel
+        """
+        return getattr(self, 'role', AgentRoles.SURVIVOR)
+
+    def is_coordination_capable(self) -> bool:
+        """
+        Vérifie si l'agent peut participer à la coordination.
+        
+        Returns:
+            True si coordination possible
+        """
+        return (self.level > 1 and 
+                self.get_food_count() >= 20 and
+                not self.has_missing_resources())
+
     def get_state_summary(self) -> Dict[str, any]:
-        """Retourne un résumé de l'état pour debug."""
+        """
+        Retourne un résumé de l'état pour debug.
+        
+        Returns:
+            Dictionnaire du résumé d'état
+        """
         return {
             'agent_id': self.agent_id,
             'level': self.level,
@@ -359,11 +468,13 @@ class GameState:
             'food_thresholds': self.food_thresholds,
             'position': self.position,
             'orientation': self.direction,
-            'role': self.role,
+            'role': self.get_role(),
             'inventory': self.inventory,
             'missing_resources': self.has_missing_resources(),
             'can_incant': self.can_incant(),
             'needs_look': self.needs_look,
             'command_pending': self.command_already_send,
+            'coordination_capable': self.is_coordination_capable(),
+            'required_players': self.get_required_player_count(),
             'last_commands': [cmd['command'].value for cmd in self.command_history[-3:]]
         }

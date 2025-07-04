@@ -19,6 +19,8 @@ build
 .build
 
 assets/
+Client/env
+Client/log*
 zappy_ref-v3.0.0/
 __pycache__/
 .idea
