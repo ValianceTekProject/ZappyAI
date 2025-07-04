@@ -278,12 +278,7 @@ class EventDetector:
         if current_food < self.reproduction_food_threshold:
             return False
 
-        if getattr(self.state, 'needs_repro', False):
-            return True
-
-        if self.state.level == 2:
-            logger.info(f"Reproduction obligatoire niveau 2")
-            self.state.needs_repro = True
+        if self.state.needs_repro:
             return True
 
         return True

@@ -347,13 +347,6 @@ class FSMPlanner:
 
         logger.info(f"[FSMPlanner] 🆙 LEVEL UP! {old_level} → {new_level}")
         self.last_level_check = new_level
-
-        # Priorité reproduction pour niveau 2+
-        if new_level >= 2 and not getattr(self.state, 'needs_repro', False):
-            logger.info(f"[FSMPlanner] Déclenchement reproduction prioritaire niveau {new_level}")
-            self.state.needs_repro = True
-            self.context['should_reproduce'] = True
-
         # Reset des échecs de coordination précédents
         self.context['coordination_failures'] = 0
 

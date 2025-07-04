@@ -34,7 +34,7 @@ class ReproductionState(State):
         """
         current_time = time.time()
 
-        if self.fork_stage == 4:
+        if self.fork_stage == 4 or self.state.needs_repro == False:
             return None
 
         current_food = self.state.get_food_count()
@@ -183,7 +183,6 @@ class ReproductionState(State):
         self.should_create_agent = False
         self.fork_attempts = 0
         self.reproduction_start_time = time.time()
-        self.state.needs_repro = True
 
     def on_exit(self):
         """Actions à la sortie de l'état."""
