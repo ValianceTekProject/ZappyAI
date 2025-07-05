@@ -45,9 +45,9 @@ def train_offline():
         print("Not enought data to train")
         return False
     
-    ppo = PPO(state_dim=11, action_dim=6)
+    ppo = PPO(state_dim=10, action_dim=6)
     
-    dummy_input = tf.zeros((1, 11))
+    dummy_input = tf.zeros((1, 10))
     _ = ppo.actor(dummy_input)
     _ = ppo.critic(dummy_input)
 

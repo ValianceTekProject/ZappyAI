@@ -6,27 +6,29 @@
 ##
 
 from utils.game_state import GameState
+from Client.config import Constants, Angles
+
 
 class ppo_state():
     def __init__(self, game_state: GameState, actualize_vision: bool = False):
         self.game_state = game_state
-        self.food_inventory = game_state.inventory.get('food', 0) / 20.0
-        self.level = game_state.level / 8.0
-        self.linemate_inventory = game_state.inventory.get('linemate', 0) / 20.0
-        self.deraumere_inventory = game_state.inventory.get('deraumere', 0) / 20.0
-        self.sibur_inventory = game_state.inventory.get('sibur', 0) / 20.0
-        self.mediane_inventory = game_state.inventory.get('mendiane', 0) / 20.0
-        self.phiras_inventory = game_state.inventory.get('phiras', 0) / 20.0
-        self.thystame_inventory = game_state.inventory.get('thystame', 0) / 20.0
+        self.food_inventory = game_state.inventory.get('food', 0) / Constants.NORMALIZE_INVENTORY
+        self.level = game_state.level / Constants.MAX_LEVEL
+        self.linemate_inventory = game_state.inventory.get('linemate', 0) / Constants.NORMALIZE_INVENTORY
+        self.deraumere_inventory = game_state.inventory.get('deraumere', 0) / Constants.NORMALIZE_INVENTORY
+        self.sibur_inventory = game_state.inventory.get('sibur', 0) / Constants.NORMALIZE_INVENTORY
+        self.mediane_inventory = game_state.inventory.get('mendiane', 0) / Constants.NORMALIZE_INVENTORY
+        self.phiras_inventory = game_state.inventory.get('phiras', 0) / Constants.NORMALIZE_INVENTORY
+        self.thystame_inventory = game_state.inventory.get('thystame', 0) / Constants.NORMALIZE_INVENTORY
 
-        self.distance_closest_food = -1
-        self.angle_closest_food = -1
+        self.distance_closest_food = Constants.NO_FOOD
+        self.angle_closest_food = Constants.NO_FOOD
         if actualize_vision:
             result = self.get_closest_food(game_state)
             if result is not None:
                 self.distance_closest_food, self.angle_closest_food = result
             else:
-                self.distance_closest_food, self.angle_closest_food = -1, -1
+                self.distance_closest_food, self.angle_closest_food = Constants.NO_FOOD, Constants.NO_FOOD
 
     def get_closest_food(self, game_state: GameState):
         pos = game_state.vision.find_closest_resource("food")
@@ -60,7 +62,7 @@ class ppo_state():
             else:
                 angle = 270
 
-        angle_normalized = angle / 360.0
+        angle_normalized = angle / Angles.ANGLE_MAX
 
         distance_normalized = min(distance / 20.0, 1.0)
 

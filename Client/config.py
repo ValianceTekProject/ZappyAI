@@ -49,6 +49,9 @@ class Constants(Enum):
     REPRODUCTION_MIN_FOOD = 25
     REPRODUCTION_SAFE_FOOD = 35
 
+    NORMALIZE_INVENTORY = 20
+    NO_FOOD = -1
+
 class Item(Enum):
     FOOD = 1
     LINEMATE = 2
@@ -96,6 +99,7 @@ class Orientation(int):
     EAST = 1
     SOUTH = 2
     WEST = 3
+    NB_ORIENTATION = 4
 
 class ResponseType(Enum):
     OK = 'ok'
@@ -107,3 +111,7 @@ class ResponseType(Enum):
     INVENTORY = '['
     BROADCAST = 'message'
     EJECT = 'eject:'
+
+class Angles:
+    ANGLE_MAX = 360
+    ANGLE_MIN = 0

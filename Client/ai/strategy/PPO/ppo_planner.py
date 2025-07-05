@@ -7,7 +7,7 @@
 
 from ai.strategy.PPO.ppo import PPO
 from ai.strategy.PPO.ppo_state import ppo_state
-from config import Item, CommandType, Constants
+from config import Item, CommandType, Constants, Angles, Orientation
 import numpy as np
 import tensorflow as tf
 import pickle
@@ -15,11 +15,9 @@ from datetime import datetime
 import os
 from utils.game_state import GameState
 
-
 class ppo_planner():
     def __init__(self, command_manager):
-        self.rotation = 0
-        self.ppo = PPO(state_dim=11, action_dim=6)
+        self.ppo = PPO(state_dim=10, action_dim=6)
 
         self.cmd_manager = command_manager
 
@@ -48,7 +46,6 @@ class ppo_planner():
         self.angle_closest_food = None
 
     def transform_state_into_vector(self, state: ppo_state):
-        """Transforme un ppo_state en vecteur numpy"""
         vector = []
 
         vector.append(state.food_inventory)
@@ -61,8 +58,6 @@ class ppo_planner():
         vector.append(state.thystame_inventory)
         vector.append(state.distance_closest_food)
         vector.append(state.angle_closest_food)
-        vector.append(self.rotation / 4.0)
-
 
         return np.array(vector, dtype=np.float32)
 
@@ -70,10 +65,8 @@ class ppo_planner():
         if responses:
             self.last_result = responses[0]
 
-        #print("Responses", self.last_result)
         if self.actualize_vision:
             self.actualize_vision = False
-            self.rotation = 0
             state = ppo_state(game_state, actualize_vision=True)
             self.distance_closest_food = state.distance_closest_food
             self.angle_closest_food = state.angle_closest_food
@@ -82,12 +75,6 @@ class ppo_planner():
             state.distance_closest_food = self.distance_closest_food
             state.angle_closest_food = self.angle_closest_food
 
-        #print("State:")
-        #print("Food = ", state.food_inventory)
-        #print("Level = ", state.level)
-        #print("closest food = ", state.distance_closest_food)
-        #print("angle = ", state.angle_closest_food)
-        # Si on a une transition complète, la stocker
         if self.last_ppo_state is not None and self.last_state_vector is not None:
             reward = self.calculate_reward(
                 self.last_result,
@@ -96,7 +83,6 @@ class ppo_planner():
                 self.last_action
             )
 
-            # Stocker la transition
             self.store_transition(
                 self.last_state_vector,
                 self.last_action,
@@ -106,7 +92,6 @@ class ppo_planner():
             )
 
             if self.last_result == "dead":
-                print(f"Episode terminé - {len(self.ppo.states)} transitions")
                 if len(self.ppo.states) > 50:
                     self.save_experience_buffer()
                 self.reset_episode()
@@ -129,19 +114,14 @@ class ppo_planner():
 
     def send_command(self, action):
         if action == CommandType.FORWARD:
-            self.last_action_reward = 0
             return self.cmd_manager.forward()
         elif action == CommandType.LEFT:
-            self.last_action_reward = 1
             return self.cmd_manager.left()
         elif action == CommandType.RIGHT:
-            self.last_action_reward = 2
             return self.cmd_manager.right()
         elif action == CommandType.TAKE:
-            self.last_action_reward = 3
             return self.cmd_manager.take(Constants.FOOD.value)
         elif action == CommandType.LOOK:
-            print("Look")
             return self.cmd_manager.look()
         elif action == CommandType.INVENTORY:
             return self.cmd_manager.inventory()
@@ -152,7 +132,6 @@ class ppo_planner():
         self.last_state_vector = None
         self.last_action = None
         self.actualize_vision = True
-        self.rotation = 0
 
     def store_transition(self, state, action, reward, value, log_prob):
         self.ppo.states.append(state)
@@ -174,63 +153,55 @@ class ppo_planner():
     def update_angle_after_left(self):
         if self.angle_closest_food == -1:
             return
-        angle = self.angle_closest_food * 360
+        angle = self.angle_closest_food * Angles.ANGLE_MAX
 
         if angle == 0:
-            self.angle_closest_food = 90 / 360.0
+            self.angle_closest_food = 90 / Angles.ANGLE_MAX
         elif angle == 45:
-            self.angle_closest_food = 135 / 360.0
+            self.angle_closest_food = 135 / Angles.ANGLE_MAX
         elif angle == 90:
-            self.angle_closest_food = 180 / 360.0
+            self.angle_closest_food = 180 / Angles.ANGLE_MAX
         elif angle == 135:
-            self.angle_closest_food = 225 / 360.0
+            self.angle_closest_food = 225 / Angles.ANGLE_MAX
         elif angle == 180:
-            self.angle_closest_food = 270 / 360.0
+            self.angle_closest_food = 270 / Angles.ANGLE_MAX
         elif angle == 225:
-            self.angle_closest_food = 315 / 360.0
+            self.angle_closest_food = 315 / Angles.ANGLE_MAX
         elif angle == 270:
-            self.angle_closest_food = 0
+            self.angle_closest_food = Angles.ANGLE_MIN
         elif angle == 315:
-            self.angle_closest_food = 45 / 360.0
+            self.angle_closest_food = 45 / Angles.ANGLE_MAX
 
     def update_angle_after_right(self):
         if self.angle_closest_food == -1:
             return
-        angle = self.angle_closest_food * 360
+        angle = self.angle_closest_food * Angles.ANGLE_MAX
 
         if angle == 0:
-            self.angle_closest_food = 270 / 360.0
+            self.angle_closest_food = 270 / Angles.ANGLE_MAX
         elif angle == 45:
-            self.angle_closest_food = 315 / 360.0
+            self.angle_closest_food = 315 / Angles.ANGLE_MAX
         elif angle == 90:
-            self.angle_closest_food = 0
+            self.angle_closest_food = Angles.ANGLE_MIN
         elif angle == 135:
-            self.angle_closest_food = 45 / 360.0
+            self.angle_closest_food = 45 / Angles.ANGLE_MAX
         elif angle == 180:
-            self.angle_closest_food = 90 / 360.0
+            self.angle_closest_food = 90 / Angles.ANGLE_MAX
         elif angle == 225:
-            self.angle_closest_food = 135 / 360.0
+            self.angle_closest_food = 135 / Angles.ANGLE_MAX
         elif angle == 270:
-            self.angle_closest_food = 180 / 360.0
+            self.angle_closest_food = 180 / Angles.ANGLE_MAX
         elif angle == 315:
-            self.angle_closest_food = 225 / 360.0
+            self.angle_closest_food = 225 / Angles.ANGLE_MAX
 
     def update(self, action_index):
         if self.actions[action_index] == CommandType.RIGHT:
             self.update_angle_after_right()
-            #print("New angle next right = ", self.angle_closest_food * 360)
-            #print("----------------------------------")
-            self.rotation = (self.rotation + 1) % 4
         elif self.actions[action_index] == CommandType.LEFT:
             self.update_angle_after_left()
-            #print("New angle next left = ", self.angle_closest_food * 360)
-            #print("----------------------------------")
-            self.rotation = (self.rotation - 1) % 4
         elif self.actions[action_index] == CommandType.FORWARD:
             self.update_food_distance_after_forward()
         elif self.actions[action_index] == CommandType.LOOK:
-            #print("Forward distance = ", self.distance_closest_food * 20)
-            #print("----------------------------------")
             self.actualize_vision = True
 
     def get_action_from_index(self, index):
@@ -255,7 +226,7 @@ class ppo_planner():
             if old_state.distance_closest_food > new_state.distance_closest_food:
                 reward += 1.0
 
-            if abs(self.angle_closest_food * 360) < 45:
+            if abs(self.angle_closest_food * Angles.ANGLE_MAX) < 45:
                 reward += 0.2
 
         if new_state.food_inventory > old_state.food_inventory:
@@ -312,7 +283,7 @@ class ppo_planner():
             return False
 
         try:
-            dummy_input = tf.zeros((1, 11))
+            dummy_input = tf.zeros((1, 10))
             _ = self.ppo.actor(dummy_input)
             _ = self.ppo.critic(dummy_input)
 
