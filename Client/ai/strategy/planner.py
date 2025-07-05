@@ -24,11 +24,10 @@ class Planner:
     def decide_next_action(self, responses=None):
         if self.model == "PPO":
             return self.ppo_planner.decide_action(game_state=self.state, responses=responses)
-        elif self.model == "DQN":
+        if self.model == "DQN":
             return self.dqn_planner.dqn_decision(responses=responses)
-        else:
-            self.use_fsm = True
-            return self.fsm_planner.decide_next_action()
+        self.use_fsm = True
+        return self.fsm_planner.decide_next_action()
 
     def on_command_success(self, command_type, response=None):
         if self.use_fsm:
