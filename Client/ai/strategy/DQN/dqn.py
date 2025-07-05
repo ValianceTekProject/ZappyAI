@@ -141,9 +141,9 @@ class DeepQNetwork(nn.Module):
                 import pickle
                 experiences = pickle.load(f)
                 self.memory = deque(experiences, maxlen=10000)
-                print(f"Chargé {len(self.memory)} expériences")
+                print(f"{len(self.memory)} experiences loaded")
         except FileNotFoundError:
-            print("Pas d'expériences trouvées")
+            print("No experiences found")
 
     def save_model(self, filename):
         torch.save({
@@ -160,6 +160,6 @@ class DeepQNetwork(nn.Module):
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             self.epsilon = checkpoint['epsilon']
             self.memory = deque(checkpoint['memory'], maxlen=100000)
-            print(f"Modèle chargé avec {len(self.memory)} expériences, epsilon={self.epsilon}")
+            print(f"Model loaded with {len(self.memory)} experiences, epsilon={self.epsilon}")
         except FileNotFoundError:
-            print("Pas de modèle trouvé, démarrage avec un nouveau modèle")
+            print("No model load, creation of new model")

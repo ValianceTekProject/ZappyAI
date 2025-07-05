@@ -92,7 +92,7 @@ class DQNPlanner:
             self.dqn.save_model("dqn_model.pth")
 
         if len(self.dqn.memory) % 100 == 0:
-            print(f"Epsilon: {self.dqn.epsilon:.3f}, Expériences: {len(self.dqn.memory)}")
+            print(f"Epsilon: {self.dqn.epsilon:.3f}, Experiences: {len(self.dqn.memory)}")
 
         if self.save_counter % 1000 == 0:
             self.dqn.epsilon = min(0.3, self.dqn.epsilon + 0.1)

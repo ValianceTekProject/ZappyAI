@@ -7,7 +7,7 @@
 
 from ai.strategy.PPO.ppo import PPO
 from ai.strategy.PPO.ppo_state import ppo_state
-from config import Item, CommandType, Constants, Angles, Orientation
+from config import Item, CommandType, Constants
 import numpy as np
 import tensorflow as tf
 import pickle
@@ -120,7 +120,7 @@ class ppo_planner():
         elif action == CommandType.RIGHT:
             return self.cmd_manager.right()
         elif action == CommandType.TAKE:
-            return self.cmd_manager.take(Constants.FOOD.value)
+            return self.cmd_manager.take(Constants.FOOD)
         elif action == CommandType.LOOK:
             return self.cmd_manager.look()
         elif action == CommandType.INVENTORY:
@@ -153,46 +153,46 @@ class ppo_planner():
     def update_angle_after_left(self):
         if self.angle_closest_food == -1:
             return
-        angle = self.angle_closest_food * Angles.ANGLE_MAX
+        angle = self.angle_closest_food * 360
 
         if angle == 0:
-            self.angle_closest_food = 90 / Angles.ANGLE_MAX
+            self.angle_closest_food = 90 / 360
         elif angle == 45:
-            self.angle_closest_food = 135 / Angles.ANGLE_MAX
+            self.angle_closest_food = 135 / 360
         elif angle == 90:
-            self.angle_closest_food = 180 / Angles.ANGLE_MAX
+            self.angle_closest_food = 180 / 360
         elif angle == 135:
-            self.angle_closest_food = 225 / Angles.ANGLE_MAX
+            self.angle_closest_food = 225 / 360
         elif angle == 180:
-            self.angle_closest_food = 270 / Angles.ANGLE_MAX
+            self.angle_closest_food = 270 / 360
         elif angle == 225:
-            self.angle_closest_food = 315 / Angles.ANGLE_MAX
+            self.angle_closest_food = 315 / 360
         elif angle == 270:
-            self.angle_closest_food = Angles.ANGLE_MIN
+            self.angle_closest_food = 0
         elif angle == 315:
-            self.angle_closest_food = 45 / Angles.ANGLE_MAX
+            self.angle_closest_food = 45 / 360
 
     def update_angle_after_right(self):
         if self.angle_closest_food == -1:
             return
-        angle = self.angle_closest_food * Angles.ANGLE_MAX
+        angle = self.angle_closest_food * 360
 
         if angle == 0:
-            self.angle_closest_food = 270 / Angles.ANGLE_MAX
+            self.angle_closest_food = 270 / 360
         elif angle == 45:
-            self.angle_closest_food = 315 / Angles.ANGLE_MAX
+            self.angle_closest_food = 315 / 360
         elif angle == 90:
-            self.angle_closest_food = Angles.ANGLE_MIN
+            self.angle_closest_food = 0
         elif angle == 135:
-            self.angle_closest_food = 45 / Angles.ANGLE_MAX
+            self.angle_closest_food = 45 / 360
         elif angle == 180:
-            self.angle_closest_food = 90 / Angles.ANGLE_MAX
+            self.angle_closest_food = 90 / 360
         elif angle == 225:
-            self.angle_closest_food = 135 / Angles.ANGLE_MAX
+            self.angle_closest_food = 135 / 360
         elif angle == 270:
-            self.angle_closest_food = 180 / Angles.ANGLE_MAX
+            self.angle_closest_food = 180 / 360
         elif angle == 315:
-            self.angle_closest_food = 225 / Angles.ANGLE_MAX
+            self.angle_closest_food = 225 / 360
 
     def update(self, action_index):
         if self.actions[action_index] == CommandType.RIGHT:
@@ -226,7 +226,7 @@ class ppo_planner():
             if old_state.distance_closest_food > new_state.distance_closest_food:
                 reward += 1.0
 
-            if abs(self.angle_closest_food * Angles.ANGLE_MAX) < 45:
+            if abs(self.angle_closest_food * 360) < 45:
                 reward += 0.2
 
         if new_state.food_inventory > old_state.food_inventory:
@@ -253,7 +253,7 @@ class ppo_planner():
             'states': self.ppo.states,
             'actions': self.ppo.actions,
             'rewards': self.ppo.rewards,
-            'values': self.ppo.values,
+            'values': self.ppos,
             'log_probs': self.ppo.log_probs
         }
 
