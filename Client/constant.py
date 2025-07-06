@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## ZappyAI
 ## File description:
-## constant - Constantes centralisées sans magic numbers
+## constant - Constantes centralisées avec corrections pour la coordination
 ##
 
 from enum import Enum
@@ -41,13 +41,16 @@ class IncantationRequirements:
 
 
 class CoordinationProtocol:
-    """Protocole de coordination simplifié"""
+    """Protocole de coordination simplifié et optimisé"""
     RESPONSE_HERE = "here"
-    BROADCAST_INTERVAL = 3.0
+    INCANTER_BROADCAST_COOLDOWN = 1.0  # Spam continu mais contrôlé
     COORDINATION_TIMEOUT = 45.0
     MAX_COORDINATION_TIME = 60.0
-    INCANTER_BROADCAST_COOLDOWN = 2.0
     MIN_FOOD_TO_COORDINATE = FoodThresholds.COORDINATION_MIN
+    
+    # Nouveaux intervalles pour éviter les boucles infinies
+    VISION_CHECK_INTERVAL = 4.0  # Moins fréquent pour éviter la surcharge
+    INVENTORY_CHECK_INTERVAL = 6.0  # Check périodique d'inventaire
 
 
 class ReproductionRules:

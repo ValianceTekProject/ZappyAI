@@ -55,20 +55,20 @@ class ReproductionState(State):
     def _can_reproduce(self) -> bool:
         """Vérification stricte des conditions de reproduction"""
         if self.state.level != ReproductionRules.TRIGGER_LEVEL:
-            logger.debug(f"[ReproductionState] Niveau incorrect: {self.state.level} != {ReproductionRules.TRIGGER_LEVEL}")
+            logger.info(f"[ReproductionState] Niveau incorrect: {self.state.level} != {ReproductionRules.TRIGGER_LEVEL}")
             return False
 
         if self.state.reproduction_completed:
-            logger.debug("[ReproductionState] Reproduction déjà complétée")
+            logger.info("[ReproductionState] Reproduction déjà complétée")
             return False
 
         if not self.state.reproduction_triggered:
-            logger.debug("[ReproductionState] Reproduction non déclenchée")
+            logger.info("[ReproductionState] Reproduction non déclenchée")
             return False
 
         current_food = self.state.get_food_count()
         if current_food < ReproductionRules.MIN_FOOD_REQUIRED:
-            logger.debug(f"[ReproductionState] Nourriture insuffisante: {current_food} < {ReproductionRules.MIN_FOOD_REQUIRED}")
+            logger.info(f"[ReproductionState] Nourriture insuffisante: {current_food} < {ReproductionRules.MIN_FOOD_REQUIRED}")
             return False
 
         return True
@@ -270,6 +270,6 @@ class ReproductionState(State):
         logger.info(f"[ReproductionState] ✅ SORTIE reproduction - "
                    f"Durée: {duration:.1f}s, Succès: {self.state.reproduction_completed}")
         
-        if not self.state.reproduction_completed:
-            self.state.reproduction_completed = True
-            logger.info("[ReproductionState] Reproduction marquée comme terminée")
+        # if not self.state.reproduction_completed:
+        #     self.state.reproduction_completed = True
+        #     logger.info("[ReproductionState] Reproduction marquée comme terminée")

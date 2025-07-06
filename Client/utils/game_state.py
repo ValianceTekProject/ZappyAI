@@ -2,12 +2,12 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## game_state
+## game_state - État du jeu nettoyé sans doublons
 ##
 
 import time
 from typing import Tuple, Dict, Optional, Any
-from config import CommandType, CommandStatus, Orientation, Constants
+from config import CommandType, CommandStatus, Orientation
 from protocol.commands import Command
 from protocol.parser import Parser
 from utils.logger import logger
@@ -19,17 +19,18 @@ from constant import (
 
 
 class GameState:
-    """Gère l'état du jeu pour un agent avec constantes centralisées."""
+    """Gère l'état du jeu pour un agent avec constantes centralisées et sans doublons"""
 
     def __init__(self, team_id: str, dimension_map: Tuple[int, int], agent_id: int = 0):
         """
-        Initialise l'état du jeu.
+        Initialise l'état du jeu
         
         Args:
             team_id: Identifiant de l'équipe
             dimension_map: Dimensions de la carte (largeur, hauteur)
             agent_id: Identifiant unique de l'agent
         """
+        # ===== INVENTAIRE ET RESSOURCES =====
         self.inventory = {
             "food": 10,
             "linemate": 0,
@@ -40,6 +41,7 @@ class GameState:
             "thystame": 0
         }
 
+        # ===== IDENTITÉ ET POSITION =====
         self.level = 1
         self.team_id = team_id
         self.agent_id = agent_id
@@ -47,18 +49,25 @@ class GameState:
         self.position = (0, 0)
         self.direction = Orientation.SOUTH
 
+        # ===== VISION ET PERCEPTION =====
         self.vision = Vision()
         self.parser = Parser()
-
-        self.command_already_send = False
         self.needs_look = False
-        
+
+        # ===== ÉTAT DES COMMANDES =====
+        self.command_already_send = False
+
+        # ===== REPRODUCTION (niveau 2 uniquement) =====
         self.reproduction_triggered = False
         self.reproduction_completed = False
 
+        # ===== RÔLE DANS LA COORDINATION =====
         self.role = AgentRoles.SURVIVOR
+
+        # ===== RÉFÉRENCES EXTERNES =====
         self.agent_thread = None
 
+        # ===== HISTORIQUE ET STATISTIQUES =====
         self.last_food_update = time.time()
         self.command_history = []
 
@@ -66,22 +75,14 @@ class GameState:
 
     def update(self, command: Command):
         """
-        Met à jour l'état du jeu après l'exécution d'une commande.
+        Met à jour l'état du jeu après l'exécution d'une commande
         
         Args:
             command: Commande exécutée
         """
         self.command_already_send = False
 
-        self.command_history.append({
-            'command': command.type,
-            'status': command.status,
-            'timestamp': time.time(),
-            'response': command.response
-        })
-
-        if len(self.command_history) > 50:
-            self.command_history.pop(0)
+        self._update_command_history(command)
 
         if command.type == CommandType.INCANTATION and command.status == CommandStatus.FAILED:
             self._handle_incantation_failure(command)
@@ -94,262 +95,68 @@ class GameState:
         if command.status != CommandStatus.SUCCESS:
             return
 
+        # Traitement des commandes réussies
         if command.type == CommandType.INVENTORY:
-            old_food = self.inventory.get('food', 0)
-            self.inventory = self.parser.parse_inventory_response(command.response)
-            new_food = self.inventory.get('food', 0)
-            if new_food != old_food:
-                self._update_food_history(old_food, new_food)
+            self._update_inventory_from_response(command.response)
 
         elif command.type == CommandType.LOOK:
-            self.vision.process_vision(
-                command.response,
-                agent_pos=self.position,
-                agent_orientation=self.direction
-            )
-            self.needs_look = False
+            self._update_vision_from_response(command.response)
 
         elif command.type == CommandType.INCANTATION:
-            self.needs_look = True
-            self._handle_level_up()
+            self._handle_successful_incantation()
 
         elif command.type == CommandType.FORWARD:
-            self.update_position_after_forward()
-            self.vision.clear()
-            self.needs_look = True
+            self._update_position_after_forward()
 
         elif command.type in (CommandType.LEFT, CommandType.RIGHT):
-            self.update_orientation_after_turn(command.type)
-            self.vision.clear()
-            self.needs_look = True
+            self._update_orientation_after_turn(command.type)
 
         elif command.type == CommandType.TAKE and command.args:
-            resource = command.args[0]
-            self.vision.remove_resource_at((0, 0), resource)
-            self._update_inventory_after_take(resource)
+            self._handle_successful_take(command.args[0])
 
         elif command.type == CommandType.SET and command.args:
-            resource = command.args[0]
-            self.vision.add_resource_at((0, 0), resource)
-            self._update_inventory_after_set(resource)
+            self._handle_successful_set(command.args[0])
 
         elif command.type == CommandType.FORK:
-            self.reproduction_completed = True
-            logger.info("[GameState] Reproduction terminée avec succès")
+            self._handle_successful_reproduction()
 
-    def _handle_level_up(self):
-        """Gère les actions après un level up selon les règles strictes."""
-        if self.level == ReproductionRules.TRIGGER_LEVEL and not self.reproduction_triggered:
-            self.reproduction_triggered = True
-            logger.info(f"[GameState] 👶 Reproduction activée (niveau {ReproductionRules.TRIGGER_LEVEL} atteint)")
+    def _update_command_history(self, command: Command):
+        """Met à jour l'historique des commandes"""
+        self.command_history.append({
+            'command': command.type,
+            'status': command.status,
+            'timestamp': time.time(),
+            'response': command.response
+        })
 
-    def _handle_incantation_failure(self, command: Command):
-        """
-        Gère l'échec d'incantation avec log détaillé.
+        if len(self.command_history) > 50:
+            self.command_history.pop(0)
+
+    def _update_inventory_from_response(self, response: str):
+        """Met à jour l'inventaire à partir de la réponse du serveur"""
+        old_food = self.inventory.get('food', 0)
+        self.inventory = self.parser.parse_inventory_response(response)
+        new_food = self.inventory.get('food', 0)
         
-        Args:
-            command: Commande d'incantation échouée
-        """
-        next_level = self.level + 1
-        requirements = self.get_incantation_requirements()
-        needed_players = self.get_required_player_count()
-        players_here = self._players_on_current_tile()
+        if new_food != old_food:
+            self._update_food_history(old_food, new_food)
 
-        logger.error(f"[GameState] 💥 INCANTATION ÉCHEC {self.level} → {next_level}: "
-                    f"Joueurs: {players_here}/{needed_players}")
-        self.needs_look = True
-
-    def _update_food_history(self, old_food: int, new_food: int):
-        """
-        Met à jour l'historique de consommation de nourriture.
-        
-        Args:
-            old_food: Ancienne quantité de nourriture
-            new_food: Nouvelle quantité de nourriture
-        """
-        self.last_food_update = time.time()
-        change = new_food - old_food
-
-        if change < 0:
-            logger.debug(f"[GameState] Consommation: {change} (reste: {new_food})")
-
-    def _update_inventory_after_take(self, resource: str):
-        """
-        Met à jour l'inventaire après un TAKE réussi.
-        
-        Args:
-            resource: Ressource ramassée
-        """
-        if resource in self.inventory:
-            self.inventory[resource] += 1
-
-    def _update_inventory_after_set(self, resource: str):
-        """
-        Met à jour l'inventaire après un SET réussi.
-        
-        Args:
-            resource: Ressource déposée
-        """
-        if resource in self.inventory and self.inventory[resource] > 0:
-            self.inventory[resource] -= 1
-
-    def force_unlock(self):
-        """Force le déblocage en cas d'agent bloqué."""
-        logger.warning("[GameState] 🔓 FORCE UNLOCK")
-        self.command_already_send = False
-        self.needs_look = True
-
-    def get_food_count(self) -> int:
-        """
-        Retourne la quantité de nourriture dans l'inventaire.
-        
-        Returns:
-            Quantité de nourriture
-        """
-        return self.inventory.get(Constants.FOOD.value, 0)
-
-    def get_inventory(self) -> Dict[str, int]:
-        """
-        Retourne l'inventaire complet.
-        
-        Returns:
-            Copie de l'inventaire
-        """
-        return self.inventory.copy()
-
-    def get_player_level(self) -> int:
-        """
-        Retourne le niveau du joueur.
-        
-        Returns:
-            Niveau du joueur
-        """
-        return self.level
-
-    def get_position(self) -> Tuple[int, int]:
-        """
-        Retourne la position courante.
-        
-        Returns:
-            Position (x, y)
-        """
-        return self.position
-
-    def get_orientation(self) -> int:
-        """
-        Retourne l'orientation courante.
-        
-        Returns:
-            Orientation
-        """
-        return self.direction
-
-    def get_vision(self) -> Vision:
-        """
-        Retourne l'objet Vision.
-        
-        Returns:
-            Objet Vision
-        """
-        return self.vision
-
-    def has_missing_resources(self) -> bool:
-        """
-        Vérifie si des ressources manquent pour l'incantation.
-        
-        Returns:
-            True si des ressources manquent
-        """
-        requirements = self.get_incantation_requirements()
-        return any(self.inventory.get(res, 0) < qty for res, qty in requirements.items())
-
-    def can_incant(self) -> bool:
-        """
-        Vérifie si l'agent peut lancer une incantation.
-        
-        Returns:
-            True si incantation possible
-        """
-        requirements = self.get_incantation_requirements()
-        if any(self.inventory.get(res, 0) < qty for res, qty in requirements.items()):
-            return False
-
-        return self._players_on_current_tile() >= self.get_required_player_count()
-
-    def get_incantation_requirements(self) -> Dict[str, int]:
-        """
-        Retourne les ressources nécessaires pour l'incantation actuelle.
-        
-        Returns:
-            Dictionnaire des ressources requises
-        """
-        return IncantationRequirements.REQUIRED_RESOURCES.get(self.level, {})
-
-    def get_required_player_count(self) -> int:
-        """
-        Retourne le nombre de joueurs requis pour l'incantation.
-        
-        Returns:
-            Nombre de joueurs requis
-        """
-        return IncantationRequirements.REQUIRED_PLAYERS.get(self.level, 1)
-
-    def should_reproduce(self) -> bool:
-        """
-        Vérifie si l'agent devrait se reproduire selon les règles strictes.
-        
-        Returns:
-            True si reproduction requise
-        """
-        return (
-            self.reproduction_triggered and 
-            not self.reproduction_completed and
-            self.level == ReproductionRules.TRIGGER_LEVEL and
-            self.get_food_count() >= ReproductionRules.MIN_FOOD_REQUIRED
+    def _update_vision_from_response(self, response: str):
+        """Met à jour la vision à partir de la réponse du serveur"""
+        self.vision.process_vision(
+            response,
+            agent_pos=self.position,
+            agent_orientation=self.direction
         )
+        self.needs_look = False
 
-    def is_food_critical(self) -> bool:
-        """
-        Vérifie si la nourriture est en état critique.
-        
-        Returns:
-            True si nourriture critique
-        """
-        return self.get_food_count() <= FoodThresholds.CRITICAL
+    def _handle_successful_incantation(self):
+        """Gère une incantation réussie"""
+        self.needs_look = True
+        self._handle_level_up()
 
-    def is_food_sufficient(self) -> bool:
-        """
-        Vérifie si la nourriture est suffisante.
-        
-        Returns:
-            True si nourriture suffisante
-        """
-        return self.get_food_count() >= FoodThresholds.SUFFICIENT
-
-    def is_food_abundant(self) -> bool:
-        """
-        Vérifie si la nourriture est abondante.
-        
-        Returns:
-            True si nourriture abondante
-        """
-        return self.get_food_count() >= FoodThresholds.ABUNDANT
-
-    def can_coordinate(self) -> bool:
-        """
-        Vérifie si l'agent peut participer à la coordination.
-        
-        Returns:
-            True si coordination possible
-        """
-        return (
-            self.level > 1 and 
-            self.get_food_count() >= FoodThresholds.COORDINATION_MIN and
-            not self.has_missing_resources()
-        )
-
-    def update_position_after_forward(self):
-        """Met à jour la position après un mouvement forward."""
+    def _update_position_after_forward(self):
+        """Met à jour la position après un mouvement forward"""
         x, y = self.position
         if self.direction == Orientation.NORTH:
             y -= 1
@@ -365,38 +172,160 @@ class GameState:
         y = y % max_y
 
         self.position = (x, y)
+        self.vision.clear()
+        self.needs_look = True
 
-    def update_orientation_after_turn(self, turn_cmd: CommandType):
-        """
-        Met à jour l'orientation après une rotation.
-        
-        Args:
-            turn_cmd: Commande de rotation
-        """
+    def _update_orientation_after_turn(self, turn_cmd: CommandType):
+        """Met à jour l'orientation après une rotation"""
         if turn_cmd == CommandType.LEFT:
             self.direction = (self.direction - 1) % 4
         elif turn_cmd == CommandType.RIGHT:
             self.direction = (self.direction + 1) % 4
+            
+        self.vision.clear()
+        self.needs_look = True
+
+    def _handle_successful_take(self, resource: str):
+        """Gère un take réussi"""
+        if resource in self.inventory:
+            self.inventory[resource] += 1
+        self.vision.remove_resource_at((0, 0), resource)
+
+    def _handle_successful_set(self, resource: str):
+        """Gère un set réussi"""
+        if resource in self.inventory and self.inventory[resource] > 0:
+            self.inventory[resource] -= 1
+        self.vision.add_resource_at((0, 0), resource)
+
+    def _handle_successful_reproduction(self):
+        """Gère une reproduction réussie"""
+        self.reproduction_completed = True
+        logger.info("[GameState] Reproduction terminée avec succès")
+
+    def _handle_level_up(self):
+        """Gère les actions après un level up"""
+        if self.level == ReproductionRules.TRIGGER_LEVEL and not self.reproduction_triggered:
+            self.reproduction_triggered = True
+            logger.info(f"[GameState] 👶 Reproduction activée (niveau {ReproductionRules.TRIGGER_LEVEL} atteint)")
+
+    def _handle_incantation_failure(self, command: Command):
+        """Gère l'échec d'incantation avec log détaillé"""
+        next_level = self.level + 1
+        requirements = self.get_incantation_requirements()
+        needed_players = self.get_required_player_count()
+        players_here = self._players_on_current_tile()
+
+        logger.error(f"[GameState] 💥 INCANTATION ÉCHEC {self.level} → {next_level}: "
+                    f"Joueurs: {players_here}/{needed_players}")
+        self.needs_look = True
+
+    def _update_food_history(self, old_food: int, new_food: int):
+        """Met à jour l'historique de consommation de nourriture"""
+        self.last_food_update = time.time()
+        change = new_food - old_food
+
+        if change < 0:
+            logger.debug(f"[GameState] Consommation: {change} (reste: {new_food})")
 
     def _players_on_current_tile(self) -> int:
-        """
-        Retourne le nombre de joueurs sur la tuile actuelle.
-        
-        Returns:
-            Nombre de joueurs sur la tuile
-        """
+        """Retourne le nombre de joueurs sur la tuile actuelle"""
         for data in self.vision.last_vision_data:
             if data.rel_pos == (0, 0):
                 return data.players
         return 1
 
+    def force_unlock(self):
+        """Force le déblocage en cas d'agent bloqué"""
+        logger.warning("[GameState] 🔓 FORCE UNLOCK")
+        self.command_already_send = False
+        self.needs_look = True
+
+    # ===== GETTERS POUR L'INVENTAIRE ET L'ÉTAT =====
+    
+    def get_food_count(self) -> int:
+        """Retourne la quantité de nourriture dans l'inventaire"""
+        return self.inventory.get("food", 0)
+
+    def get_inventory(self) -> Dict[str, int]:
+        """Retourne l'inventaire complet"""
+        return self.inventory.copy()
+
+    def get_player_level(self) -> int:
+        """Retourne le niveau du joueur"""
+        return self.level
+
+    def get_position(self) -> Tuple[int, int]:
+        """Retourne la position courante"""
+        return self.position
+
+    def get_orientation(self) -> int:
+        """Retourne l'orientation courante"""
+        return self.direction
+
+    def get_vision(self) -> Vision:
+        """Retourne l'objet Vision"""
+        return self.vision
+
+    # ===== VÉRIFICATIONS D'ÉTAT =====
+
+    def has_missing_resources(self) -> bool:
+        """Vérifie si des ressources manquent pour l'incantation"""
+        requirements = self.get_incantation_requirements()
+        return any(self.inventory.get(res, 0) < qty for res, qty in requirements.items())
+
+    def can_incant(self) -> bool:
+        """Vérifie si l'agent peut lancer une incantation"""
+        requirements = self.get_incantation_requirements()
+        if any(self.inventory.get(res, 0) < qty for res, qty in requirements.items()):
+            return False
+
+        return self._players_on_current_tile() >= self.get_required_player_count()
+
+    def should_reproduce(self) -> bool:
+        """Vérifie si l'agent devrait se reproduire selon les règles strictes"""
+        return (
+            self.reproduction_triggered and 
+            not self.reproduction_completed and
+            self.level == ReproductionRules.TRIGGER_LEVEL and
+            self.get_food_count() >= ReproductionRules.MIN_FOOD_REQUIRED
+        )
+
+    # ===== VÉRIFICATIONS DE NOURRITURE =====
+
+    def is_food_critical(self) -> bool:
+        """Vérifie si la nourriture est en état critique"""
+        return self.get_food_count() <= FoodThresholds.CRITICAL
+
+    def is_food_sufficient(self) -> bool:
+        """Vérifie si la nourriture est suffisante"""
+        return self.get_food_count() >= FoodThresholds.SUFFICIENT
+
+    def is_food_abundant(self) -> bool:
+        """Vérifie si la nourriture est abondante"""
+        return self.get_food_count() >= FoodThresholds.ABUNDANT
+
+    def can_coordinate(self) -> bool:
+        """Vérifie si l'agent peut participer à la coordination"""
+        return (
+            self.level > 1 and 
+            self.get_food_count() >= FoodThresholds.COORDINATION_MIN and
+            not self.has_missing_resources()
+        )
+
+    # ===== INFORMATIONS D'INCANTATION =====
+
+    def get_incantation_requirements(self) -> Dict[str, int]:
+        """Retourne les ressources nécessaires pour l'incantation actuelle"""
+        return IncantationRequirements.REQUIRED_RESOURCES.get(self.level, {})
+
+    def get_required_player_count(self) -> int:
+        """Retourne le nombre de joueurs requis pour l'incantation"""
+        return IncantationRequirements.REQUIRED_PLAYERS.get(self.level, 1)
+
+    # ===== GESTION DU RÔLE =====
+
     def set_role(self, role: str):
-        """
-        Définit le rôle de l'agent.
-        
-        Args:
-            role: Nouveau rôle (INCANTER, HELPER, SURVIVOR)
-        """
+        """Définit le rôle de l'agent"""
         if role in [AgentRoles.INCANTER, AgentRoles.HELPER, AgentRoles.SURVIVOR]:
             old_role = getattr(self, 'role', AgentRoles.SURVIVOR)
             self.role = role
@@ -404,21 +333,13 @@ class GameState:
                 logger.info(f"[GameState] Changement de rôle: {old_role} → {role}")
 
     def get_role(self) -> str:
-        """
-        Retourne le rôle actuel de l'agent.
-        
-        Returns:
-            Rôle actuel
-        """
+        """Retourne le rôle actuel de l'agent"""
         return getattr(self, 'role', AgentRoles.SURVIVOR)
 
+    # ===== RÉSUMÉ D'ÉTAT POUR DEBUG =====
+
     def get_state_summary(self) -> Dict[str, Any]:
-        """
-        Retourne un résumé de l'état pour debug.
-        
-        Returns:
-            Dictionnaire du résumé d'état
-        """
+        """Retourne un résumé de l'état pour debug"""
         return {
             'agent_id': self.agent_id,
             'level': self.level,
