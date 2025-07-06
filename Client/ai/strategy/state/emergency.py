@@ -2,15 +2,18 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## emergency - État d'urgence avec priorité absolue
+## emergency - État d'urgence avec constantes centralisées
 ##
 
 import time
 from typing import Optional, Any
 from ai.strategy.fsm import State, Event
 from ai.strategy.pathfinding import Pathfinder, RelativeTarget
-from config import Constants, CommandType
-from constant import FoodThresholds, StateTransitionThresholds, GameplayConstants
+from config import CommandType
+from constant import (
+    FoodThresholds, StateTransitionThresholds, GameplayConstants,
+    ResourceNames, TimingConstants
+)
 from utils.logger import logger
 
 
@@ -33,8 +36,9 @@ class EmergencyState(State):
         self.failed_attempts = 0
         self.emergency_start_time = time.time()
         self.food_search_attempts = 0
+        self.max_emergency_time = TimingConstants.FALLBACK_TIMEOUT
         
-        logger.error("[EmergencyState] 🚨 MODE URGENCE ACTIVÉ - SURVIE CRITIQUE")
+        logger.error(f"[EmergencyState] 🚨 MODE URGENCE ACTIVÉ - Food: {self.state.get_food_count()}/{FoodThresholds.CRITICAL}")
 
     def execute(self) -> Optional[Any]:
         """
@@ -52,19 +56,24 @@ class EmergencyState(State):
             self.last_emergency_action = current_time
 
         # Vérification si on sort de l'urgence
-        if current_food > StateTransitionThresholds.FOOD_LOW_THRESHOLD:
+        if current_food > StateTransitionThresholds.EMERGENCY_EXIT_THRESHOLD:
             logger.info(f"[EmergencyState] ✅ Sortie d'urgence (food: {current_food})")
             return self._exit_emergency()
 
+        # Timeout de sécurité
+        if current_time - self.emergency_start_time > self.max_emergency_time:
+            logger.warning("[EmergencyState] ⏰ Timeout urgence")
+            return self._exit_emergency()
+
         # Mise à jour vision si nécessaire
-        if not self.state.get_vision().last_vision_data or self.context.get('needs_vision_update', False):
+        if self._needs_vision_update():
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
 
         # Priorité absolue : nourriture sur la tuile actuelle
         if self._food_on_current_tile():
             logger.info("[EmergencyState] 🍖 NOURRITURE TROUVÉE ICI!")
-            return self.cmd_mgr.take(Constants.FOOD.value)
+            return self.cmd_mgr.take(ResourceNames.FOOD)
 
         # Exécution des commandes de mouvement d'urgence
         if self.emergency_commands:
@@ -92,6 +101,19 @@ class EmergencyState(State):
         # Exploration désespérée
         return self._desperate_exploration()
 
+    def _needs_vision_update(self) -> bool:
+        """
+        Détermine si une mise à jour de vision est nécessaire.
+        
+        Returns:
+            True si mise à jour nécessaire
+        """
+        return (
+            not self.state.get_vision().last_vision_data or
+            self.context.get('needs_vision_update', False) or
+            getattr(self.state, 'needs_look', False)
+        )
+
     def _food_on_current_tile(self) -> bool:
         """
         Vérifie si de la nourriture est présente sur la tuile actuelle.
@@ -102,7 +124,7 @@ class EmergencyState(State):
         vision = self.state.get_vision()
         for data in vision.last_vision_data:
             if data.rel_pos == (0, 0):
-                return Constants.FOOD.value in data.resources and data.resources[Constants.FOOD.value] > 0
+                return ResourceNames.FOOD in data.resources and data.resources[ResourceNames.FOOD] > 0
         return False
 
     def _find_closest_food(self) -> Optional[RelativeTarget]:
@@ -113,10 +135,10 @@ class EmergencyState(State):
             Cible de nourriture ou None
         """
         vision = self.state.get_vision()
-        closest_food_pos = vision.find_closest_resource(Constants.FOOD.value)
+        closest_food_pos = vision.find_closest_resource(ResourceNames.FOOD)
         
         if closest_food_pos:
-            return RelativeTarget(closest_food_pos, Constants.FOOD.value)
+            return RelativeTarget(closest_food_pos, ResourceNames.FOOD)
         
         return None
 
@@ -141,7 +163,8 @@ class EmergencyState(State):
         )
         
         # Limiter à 4 commandes pour réaction rapide
-        return commands[:4] if commands else []
+        max_emergency_commands = 4
+        return commands[:max_emergency_commands] if commands else []
 
     def _execute_emergency_command(self, command_type: CommandType) -> Optional[Any]:
         """
@@ -201,9 +224,9 @@ class EmergencyState(State):
         
         logger.info(f"[EmergencyState] 🎉 SURVIE RÉUSSIE! Food: {current_food}, Durée: {emergency_duration:.1f}s")
         
-        # Transition selon le niveau de nourriture
+        # Transition selon le niveau de nourriture et les priorités
         if current_food >= FoodThresholds.SUFFICIENT:
-            # Assez de nourriture pour explorer ou progresser
+            # Assez de nourriture pour autres activités
             if self.state.should_reproduce():
                 from ai.strategy.state.reproduction import ReproductionState
                 new_state = ReproductionState(self.planner)
@@ -239,7 +262,7 @@ class EmergencyState(State):
         if command_type == CommandType.TAKE:
             logger.info("[EmergencyState] ✅🎉 NOURRITURE SAUVÉE!")
             vision = self.state.get_vision()
-            vision.remove_resource_at((0, 0), Constants.FOOD.value)
+            vision.remove_resource_at((0, 0), ResourceNames.FOOD)
             self.emergency_target = None
             self.emergency_commands.clear()
             self.desperate_mode = False
@@ -264,7 +287,7 @@ class EmergencyState(State):
             self.context['needs_vision_update'] = True
             
         elif command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
-            if self.failed_attempts >= 2:
+            if self.failed_attempts >= GameplayConstants.MAX_STUCK_ATTEMPTS:
                 self.emergency_target = None
                 self.emergency_commands.clear()
                 self.desperate_mode = True
@@ -281,7 +304,7 @@ class EmergencyState(State):
         """
         if event == Event.FOOD_SUFFICIENT:
             current_food = self.state.get_food_count()
-            if current_food > StateTransitionThresholds.FOOD_LOW_THRESHOLD:
+            if current_food > StateTransitionThresholds.EMERGENCY_EXIT_THRESHOLD:
                 return self._exit_emergency()
                 
         return None

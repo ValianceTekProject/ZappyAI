@@ -77,6 +77,7 @@ class Message:
     @staticmethod
     def decode_msg(token: str) -> Optional[Tuple[MessageType, int, Dict[str, Any]]]:
         try:
+            token = Message.fix_base64_padding(token)
             encrypted = base64.b64decode(token)
             compressed = Message._inv_xor_rotate(encrypted)
             raw = zlib.decompress(compressed).decode('utf-8')
@@ -86,8 +87,12 @@ class Message:
             payload = msg.get("payload", {})
             return msg_type, sender_id, payload
         except Exception as e:
-            logger.error(f"Failed to decode message: {e}")
+            logger.error(f"[Message] Échec décodage: {e}")
             return None
+
+    @staticmethod
+    def fix_base64_padding(token: str) -> str:
+        return token + '=' * ((4 - len(token) % 4) % 4)
 
     @staticmethod
     def create_incantation_request(sender_id: int, team_id: str, level: int, required_players: int, timestamp: Optional[float] = None) -> str:
