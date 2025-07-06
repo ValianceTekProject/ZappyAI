@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## collect_resources - État de collecte de ressources avec prévention de boucles
+## collect_resources
 ##
 
 import time
@@ -52,22 +52,18 @@ class CollectResourcesState(State):
         current_time = time.time()
         current_food = self.state.get_food_count()
         
-        # Timeout global pour éviter le blocage
         if current_time - self.collection_session_start > self.max_collection_time:
             logger.warning("[CollectResourcesState] Timeout collecte, transition forcée")
             return self._force_transition()
         
-        # Seuil de sécurité alimentaire strict
         if current_food <= StateTransitionThresholds.RESOURCES_TO_FOOD_THRESHOLD:
             logger.warning(f"[CollectResourcesState] Nourriture critique ({current_food} <= {StateTransitionThresholds.RESOURCES_TO_FOOD_THRESHOLD})")
             return self._transition_to_food_collection()
 
-        # Vérification critique : toutes les ressources collectées
         if self._all_resources_collected():
             logger.info("[CollectResourcesState] ✅ TOUTES RESSOURCES COLLECTÉES!")
             return self._transition_to_incantation()
 
-        # Vérifications périodiques
         if self._should_check_inventory(current_time):
             self.last_inventory_check = current_time
             return self.cmd_mgr.inventory()
@@ -76,13 +72,11 @@ class CollectResourcesState(State):
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
             
-        # Priorité absolue : collecter ressource sur la tuile actuelle
         needed_resource = self._get_needed_resource_on_tile()
         if needed_resource:
             logger.info(f"[CollectResourcesState] ⚒️ {needed_resource} trouvé ici")
             return self.cmd_mgr.take(needed_resource)
             
-        # Recherche de cible avec mouvement effectif
         if not self.movement_commands:
             priority_target = self._find_priority_resource_target()
             if priority_target:
@@ -96,7 +90,6 @@ class CollectResourcesState(State):
             next_cmd = self.movement_commands.pop(0)
             return self._execute_movement_command(next_cmd)
                 
-        # Protection contre le blocage
         self.stuck_prevention_counter += 1
         if self.stuck_prevention_counter >= GameplayConstants.MAX_STUCK_ATTEMPTS:
             logger.warning("[CollectResourcesState] Trop d'échecs, transition forcée")
@@ -303,15 +296,12 @@ class CollectResourcesState(State):
         """
         current_food = self.state.get_food_count()
         
-        # Priorité 1: Nourriture si faible
         if current_food <= StateTransitionThresholds.FOOD_LOW_THRESHOLD:
             return self._transition_to_food_collection()
         
-        # Priorité 2: Incantation si ressources suffisantes
         if self._all_resources_collected():
             return self._transition_to_incantation()
         
-        # Priorité 3: Exploration
         logger.info("[CollectResourcesState] → Exploration forcée")
         from ai.strategy.state.explore import ExploreState
         new_state = ExploreState(self.planner)
@@ -372,7 +362,6 @@ class CollectResourcesState(State):
                 self.resources_collected[resource] = self.resources_collected.get(resource, 0) + 1
                 logger.info(f"[CollectResourcesState] ✅ {resource} collecté! Total: {self.resources_collected}")
                 
-                # Mise à jour de la vision et reset des variables
                 vision = self.state.get_vision()
                 vision.remove_resource_at((0, 0), resource)
                 self.resource_target = None
@@ -382,7 +371,6 @@ class CollectResourcesState(State):
                 self.failed_resources.discard(resource)
                 self.stuck_prevention_counter = 0
                 
-                # Vérification immédiate si on peut passer à l'incantation
                 if self._all_resources_collected():
                     logger.info("[CollectResourcesState] 🎯 COMPLET après collecte!")
                     
@@ -452,7 +440,6 @@ class CollectResourcesState(State):
         missing = self._get_missing_resources()
         logger.info(f"[CollectResourcesState] ⚒️ ENTRÉE collecte - Manquants: {missing}")
         
-        # Reset de tous les compteurs
         self.resource_target = None
         self.movement_commands.clear()
         self.collection_attempts = 0
@@ -471,7 +458,6 @@ class CollectResourcesState(State):
         logger.info(f"[CollectResourcesState] ✅ SORTIE collecte - "
                    f"Durée: {session_time:.1f}s, Collecté: {total_collected} ressources")
         
-        # Nettoyage
         self.resource_target = None
         self.movement_commands.clear()
         self.failed_resources.clear()

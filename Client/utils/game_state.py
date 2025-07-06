@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## game_state - GameState nettoyé avec constantes centralisées
+## game_state
 ##
 
 import time
@@ -53,7 +53,6 @@ class GameState:
         self.command_already_send = False
         self.needs_look = False
         
-        # Reproduction : état strict selon ReproductionRules
         self.reproduction_triggered = False
         self.reproduction_completed = False
 
@@ -111,7 +110,6 @@ class GameState:
             self.needs_look = False
 
         elif command.type == CommandType.INCANTATION:
-            # Le niveau est déjà géré par CommandManager
             self.needs_look = True
             self._handle_level_up()
 
@@ -141,7 +139,6 @@ class GameState:
 
     def _handle_level_up(self):
         """Gère les actions après un level up selon les règles strictes."""
-        # RÈGLE CRITIQUE: Activer la reproduction UNIQUEMENT au niveau 2
         if self.level == ReproductionRules.TRIGGER_LEVEL and not self.reproduction_triggered:
             self.reproduction_triggered = True
             logger.info(f"[GameState] 👶 Reproduction activée (niveau {ReproductionRules.TRIGGER_LEVEL} atteint)")

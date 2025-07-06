@@ -76,31 +76,24 @@ class Agent:
             try:
                 now = time.time()
 
-                # Lecture réseau non-bloquante
                 responses = self.read_non_blocking()
                 completed = self.msg_manager.process_responses(responses)
 
-                # Mort de l'agent
                 if self.msg_manager.is_dead:
                     self.planner.decide_next_action(responses=responses)
                     self._handle_agent_death()
                     return
 
-                # Traitement des commandes terminées
                 self._process_completed_commands(completed, now)
 
-                # Initialisation en plusieurs étapes
                 if not self.initialized:
                     if self._handle_initialization():
                         continue
 
-                # Mise à jour du timing selon la nourriture
                 self.timing.update_from_food_level(self.state.get_food_count())
 
-                # Délégation de la décision au Planner (FSM ou DQN)
                 self._make_ia_decision(now)
 
-                # Sleep adaptatif
                 self._adaptive_sleep()
 
             except Exception as e:
@@ -175,7 +168,6 @@ class Agent:
             self._last_decision_time = now
             self._last_command_time = now
         else:
-            # Force un look si nourriture critique et pas de commande
             if self.state.get_food_count() <= FoodThresholds.CRITICAL:
                 self.commands.look()
                 self._last_decision_time = now

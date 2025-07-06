@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## fsm_planner - Planificateur FSM avec transitions de survie optimisées et anti-spam
+## fsm_planner - Planificateur FSM avec coordination CORRIGÉE
 ##
 
 import time
@@ -21,16 +21,16 @@ from utils.logger import logger
 from constant import (
     FoodThresholds, IncantationRequirements, AgentRoles, 
     StateTransitionThresholds, GameplayConstants, ReproductionRules,
-    SafetyLimits
+    SafetyLimits, CoordinationProtocol
 )
 
 
 class FSMPlanner:
-    """Planificateur FSM avec gestion intelligente de la survie et coordination CORRIGÉ."""
+    """Planificateur FSM avec coordination CORRIGÉE."""
 
     def __init__(self, command_manager, game_state, message_bus):
         """
-        Initialise le FSMPlanner avec gestion de survie optimisée.
+        Initialise le FSMPlanner avec coordination optimisée.
         
         Args:
             command_manager: Gestionnaire de commandes
@@ -51,7 +51,7 @@ class FSMPlanner:
             self.state
         )
 
-        # Contexte avec gestion de survie et anti-spam CORRIGÉ
+        # Contexte CORRIGÉ avec seuils appropriés
         self.context = {
             'last_state_type': None,
             'state_change_time': time.time(),
@@ -67,10 +67,13 @@ class FSMPlanner:
             'emergency_transitions': 0,
             'last_emergency_transition': 0.0,
             'coordination_food_threshold': FoodThresholds.COORDINATION_MIN,
-            'coordination_abandon_count': 0,  # NOUVEAU
-            'last_coordination_abandon': 0.0,  # NOUVEAU
-            'coordination_cooldown_until': 0.0,  # NOUVEAU
-            'successful_coordinations': 0,  # NOUVEAU
+            # CORRIGÉ: Seuils moins agressifs pour la coordination
+            'coordination_abandon_threshold': 5,  # Était 3, maintenant 5
+            'coordination_abandon_count': 0,
+            'last_coordination_abandon': 0.0,
+            'coordination_cooldown_until': 0.0,
+            'successful_coordinations': 0,
+            'coordination_state_time': 0.0,  # NOUVEAU: Temps passé en coordination
         }
 
         initial_state = self._determine_initial_state()
@@ -79,10 +82,9 @@ class FSMPlanner:
         self.decision_count = 0
         self.last_level = self.state.level
 
-        logger.info(f"[FSMPlanner] FSM initialisé avec état: {self.fsm.get_current_state_name()}")
-        logger.info(f"[FSMPlanner] Seuils: Critique={FoodThresholds.CRITICAL}, "
-                   f"Coordination={FoodThresholds.COORDINATION_MIN}, "
-                   f"Suffisant={FoodThresholds.SUFFICIENT}")
+        logger.info(f"[FSMPlanner] FSM CORRIGÉ initialisé avec état: {self.fsm.get_current_state_name()}")
+        logger.info(f"[FSMPlanner] Seuils coordination CORRIGÉS: Critical={FoodThresholds.CRITICAL}, "
+                   f"Coordination={FoodThresholds.COORDINATION_MIN}, Abandon={self.context['coordination_abandon_threshold']}")
 
     def _determine_initial_state(self):
         """
@@ -130,7 +132,7 @@ class FSMPlanner:
 
     def decide_next_action(self) -> Optional[Any]:
         """
-        Point d'entrée principal avec gestion de survie prioritaire.
+        Point d'entrée principal avec coordination CORRIGÉE.
         
         Returns:
             Action à exécuter ou None
@@ -157,11 +159,11 @@ class FSMPlanner:
             if self.state.level != self.last_level:
                 return self._handle_level_change_corrected()
 
-            # PRIORITÉ 3: Détection et gestion du spam CORRIGÉE
-            if self._detect_coordination_spam():
-                return self._handle_coordination_spam()
+            # PRIORITÉ 3: Détection spam coordination CORRIGÉE
+            if self._detect_coordination_spam_corrected():
+                return self._handle_coordination_spam_corrected()
 
-            # PRIORITÉ 4: Détection spam exploration (garde existante)
+            # PRIORITÉ 4: Détection spam exploration
             if self._detect_explore_food_spam():
                 return self._handle_explore_food_spam()
 
@@ -171,7 +173,7 @@ class FSMPlanner:
 
             # PRIORITÉ 6: Gestion des événements et opportunités
             self._handle_priority_events()
-            self._check_progression_opportunities()
+            self._check_progression_opportunities_corrected()
             self._check_and_prevent_infinite_loops()
 
             return self.fsm.run()
@@ -180,9 +182,9 @@ class FSMPlanner:
             logger.error(f"[FSMPlanner] Erreur lors de la décision: {e}")
             return self.cmd_mgr.look()
 
-    def _detect_coordination_spam(self) -> bool:
+    def _detect_coordination_spam_corrected(self) -> bool:
         """
-        Détecte le spam de coordination (coordination → abandon répétés).
+        Détection CORRIGÉE du spam de coordination moins agressive.
         
         Returns:
             True si spam détecté
@@ -190,21 +192,29 @@ class FSMPlanner:
         current_time = time.time()
         current_state_name = self.fsm.get_current_state_name()
         
-        # Détecter si on a abandonné récemment
-        if (current_state_name != 'CoordinateIncantationState' and
-            current_time - self.context['last_coordination_abandon'] < 5.0):
-            self.context['coordination_abandon_count'] += 1
-        else:
-            # Reset si pas d'abandon récent
-            if current_time - self.context['last_coordination_abandon'] > 10.0:
-                self.context['coordination_abandon_count'] = 0
+        # CORRIGÉ: Ne considérer comme abandon que si vraiment en échec
+        if current_state_name == 'CoordinateIncantationState':
+            # Temps passé en coordination
+            time_in_coordination = current_time - self.context['state_change_time']
+            self.context['coordination_state_time'] = time_in_coordination
+            
+            # CORRIGÉ: Seuil moins agressif - seulement après échec répétés ET temps suffisant
+            if (self.context['coordination_failures'] >= 3 and 
+                time_in_coordination > CoordinationProtocol.COORDINATION_TIMEOUT):
+                self.context['coordination_abandon_count'] += 1
+                self.context['last_coordination_abandon'] = current_time
+                logger.warning(f"[FSMPlanner] Abandon coordination compté (total: {self.context['coordination_abandon_count']})")
         
-        # Spam détecté si trop d'abandons récents
-        return self.context['coordination_abandon_count'] >= 3
+        # CORRIGÉ: Seuil plus élevé pour déclencher le spam
+        spam_threshold = self.context['coordination_abandon_threshold']  # 5 au lieu de 3
+        recent_abandons = (current_time - self.context['last_coordination_abandon'] < 30.0 and 
+                          self.context['coordination_abandon_count'] >= spam_threshold)
+        
+        return recent_abandons
 
-    def _handle_coordination_spam(self) -> Optional[Any]:
+    def _handle_coordination_spam_corrected(self) -> Optional[Any]:
         """
-        Gère le spam de coordination en imposant un cooldown.
+        Gestion CORRIGÉE du spam de coordination moins punitive.
         
         Returns:
             Action appropriée
@@ -212,22 +222,23 @@ class FSMPlanner:
         current_food = self.state.get_food_count()
         current_time = time.time()
         
-        logger.warning(f"[FSMPlanner] 🚫 SPAM COORDINATION détecté! Food: {current_food}")
+        logger.warning(f"[FSMPlanner] 🔄 COORDINATION DIFFICILE détectée (food: {current_food})")
         
-        # Imposer un cooldown de coordination de 30 secondes
-        self.context['coordination_cooldown_until'] = current_time + 30.0
-        self.context['coordination_abandon_count'] = 0
+        # CORRIGÉ: Cooldown plus court et plus flexible
+        self.context['coordination_cooldown_until'] = current_time + 15.0  # Était 30s, maintenant 15s
+        self.context['coordination_abandon_count'] = max(0, self.context['coordination_abandon_count'] - 1)  # Décrémente
         
-        # Forcer vers une activité productive
-        if current_food < FoodThresholds.SUFFICIENT:
-            logger.info("[FSMPlanner] → Collecte nourriture forcée (spam coordination)")
+        # CORRIGÉ: Transition plus intelligente selon la situation
+        if current_food < FoodThresholds.COORDINATION_MIN:
+            logger.info("[FSMPlanner] → Collecte nourriture (coordination difficile)")
             self._transition_to_state(CollectFoodState(self))
         elif self.state.has_missing_resources():
-            logger.info("[FSMPlanner] → Collecte ressources forcée (spam coordination)")
+            logger.info("[FSMPlanner] → Collecte ressources (coordination difficile)")
             self._transition_to_state(CollectResourcesState(self))
         else:
-            logger.info("[FSMPlanner] → Exploration forcée (spam coordination)")
-            self._force_exploration(20.0)
+            # CORRIGÉ: Exploration plus courte
+            logger.info("[FSMPlanner] → Exploration courte (coordination difficile)")
+            self._force_exploration(10.0)  # Était 20s, maintenant 10s
             
         return self.fsm.run()
 
@@ -242,7 +253,7 @@ class FSMPlanner:
 
     def _handle_critical_survival(self, current_food: int) -> Optional[Any]:
         """
-        Gestion critique de la survie avec transitions intelligentes.
+        Gestion critique de la survie avec coordination respectée.
         
         Args:
             current_food: Nourriture actuelle
@@ -262,12 +273,13 @@ class FSMPlanner:
                 self._transition_to_state(EmergencyState(self))
                 return self.fsm.run()
 
-        # FORCER ABANDON COORDINATION SI NOURRITURE FAIBLE
+        # CORRIGÉ: Abandon coordination plus strict mais pas trop agressif
         elif (current_state_name == 'CoordinateIncantationState' and 
               current_food <= SafetyLimits.ABANDON_COORDINATION_THRESHOLD):
             time_in_state = current_time - self.context['state_change_time']
-            if time_in_state > 5.0:
-                logger.warning(f"[FSMPlanner] 🚨 Force abandon coordination: Food critique ({current_food})")
+            # CORRIGÉ: Laisser plus de temps avant abandon
+            if time_in_state > 15.0:  # Était 5s, maintenant 15s
+                logger.warning(f"[FSMPlanner] ⚠️ Abandon coordination (food: {current_food}, temps: {time_in_state:.1f}s)")
                 self._record_coordination_abandon()
                 self._transition_to_state(CollectFoodState(self))
                 return self.fsm.run()
@@ -278,7 +290,7 @@ class FSMPlanner:
                                         'IncantationState', 'CoordinateIncantationState']):
             
             time_since_last_transition = current_time - self.context['state_change_time']
-            if time_since_last_transition > 3.0:  # Éviter les transitions trop fréquentes
+            if time_since_last_transition > 3.0:
                 logger.info(f"[FSMPlanner] 🍖 Transition collecte nourriture (food: {current_food})")
                 self._track_transition('to_food')
                 self._transition_to_state(CollectFoodState(self))
@@ -287,14 +299,19 @@ class FSMPlanner:
         return None
 
     def _record_coordination_abandon(self):
-        """Enregistre un abandon de coordination."""
-        self.context['coordination_abandon_count'] += 1
+        """Enregistre un abandon de coordination avec limite."""
+        # CORRIGÉ: Limite le compteur pour éviter l'accumulation
+        max_abandon_count = 3
+        self.context['coordination_abandon_count'] = min(
+            self.context['coordination_abandon_count'] + 1, 
+            max_abandon_count
+        )
         self.context['last_coordination_abandon'] = time.time()
-        logger.debug(f"[FSMPlanner] Abandon coordination enregistré ({self.context['coordination_abandon_count']})")
+        logger.debug(f"[FSMPlanner] Abandon coordination enregistré ({self.context['coordination_abandon_count']}/{max_abandon_count})")
 
     def _handle_level_change_corrected(self) -> Optional[Any]:
         """
-        Gestion CORRIGÉE du changement de niveau avec priorité à la survie.
+        Gestion CORRIGÉE du changement de niveau.
         
         Returns:
             Action appropriée ou None
@@ -306,10 +323,10 @@ class FSMPlanner:
         logger.info(f"[FSMPlanner] 🆙 LEVEL UP! {old_level} → {new_level} (food: {current_food})")
         self.last_level = new_level
         
-        # Reset des échecs de coordination après level up
+        # CORRIGÉ: Reset complet des échecs de coordination après level up
         self.context['coordination_failures'] = 0
         self.context['coordination_abandon_count'] = 0
-        self.context['coordination_cooldown_until'] = 0.0  # Reset cooldown
+        self.context['coordination_cooldown_until'] = 0.0
         self._reset_transition_counters()
         self.context['level_up_processed'] = True
 
@@ -349,7 +366,7 @@ class FSMPlanner:
 
     def _can_attempt_coordination(self) -> bool:
         """
-        Vérifie si on peut tenter une coordination avec vérifications anti-spam.
+        Vérifie si on peut tenter une coordination CORRIGÉE.
         
         Returns:
             True si coordination possible
@@ -357,16 +374,57 @@ class FSMPlanner:
         if self.state.level == 1:
             return self._can_attempt_incantation()
         
-        # Vérifier le cooldown anti-spam
+        # CORRIGÉ: Vérifier le cooldown mais de manière moins restrictive
         if self._is_coordination_in_cooldown():
-            logger.debug(f"[FSMPlanner] Coordination en cooldown: {self.context['coordination_cooldown_until'] - time.time():.1f}s")
-            return False
+            remaining_cooldown = self.context['coordination_cooldown_until'] - time.time()
+            if remaining_cooldown > 5.0:  # Seulement si cooldown significatif
+                logger.debug(f"[FSMPlanner] Coordination en cooldown: {remaining_cooldown:.1f}s")
+                return False
         
         return (
             self.state.level >= 2 and
             not self.state.has_missing_resources() and
-            self.context['coordination_failures'] < 3
+            self.context['coordination_failures'] < 4  # CORRIGÉ: Plus tolérant (était 3)
         )
+
+    def _check_progression_opportunities_corrected(self):
+        """Vérification CORRIGÉE des opportunités de progression."""
+        current_state_name = self.fsm.get_current_state_name()
+        current_time = time.time()
+        current_food = self.state.get_food_count()
+
+        if current_state_name in ['IncantationState', 'EmergencyState', 'ReproductionState']:
+            return
+
+        if (current_state_name == 'CoordinateIncantationState' and 
+            current_time - self.context['state_change_time'] < 20.0):  # Était 8s, maintenant 20s
+            return
+
+        if (self._can_attempt_incantation() and 
+            current_food >= self.context['coordination_food_threshold'] and
+            not self._is_coordination_in_cooldown()):
+            
+            time_since_last_attempt = current_time - self.context['last_coordination_attempt']
+            if (self.context['coordination_failures'] < 3 and
+                time_since_last_attempt > 20.0):
+                
+                if self.state.level == 1:
+                    logger.info("[FSMPlanner] 🔮 TRANSITION vers incantation solo (niveau 1)")
+                    self._transition_to_state(IncantationState(self))
+                else:
+                    logger.info(f"[FSMPlanner] 🤝 TRANSITION vers coordination (niveau {self.state.level})")
+                    self.context['last_coordination_attempt'] = current_time
+                    self._transition_to_state(CoordinateIncantationState(self))
+                return
+
+        if (current_food >= StateTransitionThresholds.FOOD_SUFFICIENT_THRESHOLD and 
+            self.state.has_missing_resources() and 
+            current_state_name not in ['CollectResourcesState', 'ExploreState'] and
+            self.context['resources_to_food_transitions'] < 3):
+            
+            logger.info("[FSMPlanner] ⚒️ TRANSITION vers collecte ressources")
+            self._track_transition('to_resources')
+            self._transition_to_state(CollectResourcesState(self))
 
     def _detect_explore_food_spam(self) -> bool:
         """
@@ -386,7 +444,7 @@ class FSMPlanner:
                 
             self.context['last_explore_food_spam'] = current_time
             
-            return self.context['explore_food_spam_count'] > 15  # Seuil réduit
+            return self.context['explore_food_spam_count'] > 15
             
         return False
 
@@ -403,13 +461,11 @@ class FSMPlanner:
         
         self.context['explore_food_spam_count'] = 0
         
-        # Priorité à la survie
         if current_food <= StateTransitionThresholds.FOOD_LOW_THRESHOLD:
             logger.info("[FSMPlanner] → Collecte nourriture forcée (spam)")
             self._transition_to_state(CollectFoodState(self))
             return self.fsm.run()
         
-        # Coordination si possible ET pas en cooldown
         if self._can_attempt_coordination():
             logger.info("[FSMPlanner] → Coordination forcée (spam)")
             if self.state.level == 1:
@@ -418,7 +474,6 @@ class FSMPlanner:
                 self._transition_to_state(CoordinateIncantationState(self))
             return self.fsm.run()
         
-        # Forcer exploration avec durée réduite
         self._force_exploration(10.0)
         return self.fsm.run()
 
@@ -448,55 +503,12 @@ class FSMPlanner:
         current_food = self.state.get_food_count()
         current_state_name = self.fsm.get_current_state_name()
 
-        # Priorité 1: Reproduction strictement au niveau 2
         if (self.state.should_reproduce() and 
             self.state.level == ReproductionRules.TRIGGER_LEVEL and 
             current_state_name != 'ReproductionState' and
             current_food >= ReproductionRules.MIN_FOOD_REQUIRED):
             logger.info("[FSMPlanner] 👶 PRIORITÉ: Transition reproduction (niveau 2)")
             self._force_transition_to_reproduction()
-
-    def _check_progression_opportunities(self):
-        """Vérification des opportunités de progression avec survie."""
-        current_state_name = self.fsm.get_current_state_name()
-        current_time = time.time()
-        current_food = self.state.get_food_count()
-
-        # Ne pas interrompre certains états critiques
-        if current_state_name in ['IncantationState', 'EmergencyState', 'ReproductionState']:
-            return
-
-        # Éviter le spam de coordination avec échecs
-        if (current_state_name == 'CoordinateIncantationState' and 
-            current_time - self.context['state_change_time'] < 8.0):
-            return
-
-        # Incantation/Coordination si possible avec seuil de survie ET anti-spam
-        if (self._can_attempt_incantation() and 
-            current_food >= self.context['coordination_food_threshold'] and
-            not self._is_coordination_in_cooldown()):
-            
-            if (self.context['coordination_failures'] < 2 and
-                current_time - self.context['last_coordination_attempt'] > 12.0):
-                
-                if self.state.level == 1:
-                    logger.info("[FSMPlanner] 🔮 TRANSITION vers incantation solo (niveau 1)")
-                    self._transition_to_state(IncantationState(self))
-                else:
-                    logger.info(f"[FSMPlanner] 🤝 TRANSITION vers coordination (niveau {self.state.level})")
-                    self.context['last_coordination_attempt'] = current_time
-                    self._transition_to_state(CoordinateIncantationState(self))
-                return
-
-        # Collecte de ressources avec vérification de survie
-        if (current_food >= StateTransitionThresholds.FOOD_SUFFICIENT_THRESHOLD and 
-            self.state.has_missing_resources() and 
-            current_state_name not in ['CollectResourcesState', 'ExploreState'] and
-            self.context['resources_to_food_transitions'] < 3):
-            
-            logger.info("[FSMPlanner] ⚒️ TRANSITION vers collecte ressources")
-            self._track_transition('to_resources')
-            self._transition_to_state(CollectResourcesState(self))
 
     def _check_and_prevent_infinite_loops(self):
         """Prévient les boucles infinies avec gestion de survie."""
@@ -505,7 +517,7 @@ class FSMPlanner:
         
         if food_transitions >= 3 or resource_transitions >= 3:
             logger.warning(f"[FSMPlanner] 🔄 Boucle détectée! Food→Res: {food_transitions}, Res→Food: {resource_transitions}")
-            self._force_exploration(20.0)  # Durée réduite
+            self._force_exploration(15.0)  # Durée réduite
 
     def _track_transition(self, transition_type: str):
         """
@@ -527,6 +539,9 @@ class FSMPlanner:
         self.context['emergency_transitions'] = 0
         self.context['last_transition_reset'] = time.time()
         self.context['level_up_processed'] = False
+        # CORRIGÉ: Reset partiel des échecs de coordination
+        if self.context['coordination_failures'] > 0:
+            self.context['coordination_failures'] = max(0, self.context['coordination_failures'] - 1)
         logger.debug("[FSMPlanner] Compteurs de transition reset")
 
     def _force_exploration(self, duration: float):
@@ -643,7 +658,6 @@ class FSMPlanner:
         if (current_state_name == 'CoordinateIncantationState' and 
             command_type.value == 'Incantation'):
             self.context['coordination_failures'] += 1
-            self._record_coordination_abandon()
             logger.warning(f"[FSMPlanner] Échec incantation coordonnée {self.context['coordination_failures']}")
 
         if hasattr(self.fsm.state, 'on_command_failed'):
@@ -679,6 +693,7 @@ class FSMPlanner:
             'coordination_abandon_count': self.context['coordination_abandon_count'],
             'coordination_cooldown': max(0, self.context['coordination_cooldown_until'] - time.time()),
             'successful_coordinations': self.context['successful_coordinations'],
+            'coordination_state_time': self.context.get('coordination_state_time', 0),
             'transition_counters': {
                 'food_to_resources': self.context['food_to_resources_transitions'],
                 'resources_to_food': self.context['resources_to_food_transitions']

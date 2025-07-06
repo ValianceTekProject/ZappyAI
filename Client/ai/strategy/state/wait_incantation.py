@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## wait_incantation - État d'attente d'incantation
+## wait_incantation
 ##
 
 import time
@@ -27,7 +27,6 @@ class WaitIncantationState(State):
         self.check_interval = 2.0
         self.max_wait_time = TimingConstants.COORDINATION_TIMEOUT
         
-        # S'assurer qu'on a le bon rôle
         self.state.role = AgentRoles.HELPER
         
         logger.info("[WaitIncantationState] ⏳ Attente d'incantation activée")
@@ -38,28 +37,23 @@ class WaitIncantationState(State):
         """
         current_time = time.time()
         
-        # Timeout de l'attente
         if self._is_wait_timeout():
             logger.warning("[WaitIncantationState] Timeout d'attente, abandon")
             return None
         
-        # Vérification périodique de l'inventaire
         if self._should_check_inventory(current_time):
             self.last_check_time = current_time
             return self.cmd_mgr.inventory()
         
-        # Vérification de la vision si nécessaire
         if self._needs_vision_update():
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
         
-        # Vérifier si on a assez de nourriture pour continuer à attendre
         current_food = self.state.get_food_count()
-        if current_food < 15:  # Seuil minimum pour continuer à aider
+        if current_food < 15:
             logger.warning(f"[WaitIncantationState] Nourriture insuffisante ({current_food}), abandon attente")
             return None
         
-        # Attendre tranquillement
         return None
 
     def _is_wait_timeout(self) -> bool:
@@ -130,7 +124,6 @@ class WaitIncantationState(State):
         """Détermine si on doit retourner en exploration."""
         current_food = self.state.get_food_count()
         
-        # Si timeout ou nourriture faible
         if self._is_wait_timeout() or current_food < 15:
             return True
             

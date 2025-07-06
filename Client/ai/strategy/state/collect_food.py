@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## collect_food - État de collecte de nourriture avec constantes centralisées
+## collect_food
 ##
 
 import time
@@ -46,17 +46,14 @@ class CollectFoodState(State):
         current_time = time.time()
         current_food = self.state.get_food_count()
 
-        # Timeout de sécurité pour éviter le blocage
         if current_time - self.collection_session_start > self.max_collection_time:
             logger.warning("[CollectFoodState] Timeout collecte nourriture")
             return self._force_transition()
 
-        # Vérification du seuil de sortie (hystérésis)
         if current_food >= StateTransitionThresholds.FOOD_TO_EXPLORATION_THRESHOLD:
             logger.info(f"[CollectFoodState] ✅ Nourriture suffisante ({current_food} >= {StateTransitionThresholds.FOOD_TO_EXPLORATION_THRESHOLD})")
             return self._transition_to_exploration()
 
-        # Vérifications périodiques
         if self._should_check_inventory(current_time):
             self.last_inventory_check = current_time
             return self.cmd_mgr.inventory()
@@ -65,17 +62,14 @@ class CollectFoodState(State):
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
 
-        # Priorité absolue : nourriture sur la tuile actuelle
         if self._food_on_current_tile():
             logger.info("[CollectFoodState] 🍖 Nourriture trouvée ici")
             return self.cmd_mgr.take(Constants.FOOD.value)
 
-        # Mouvement vers la nourriture
         if self.movement_commands:
             next_cmd = self.movement_commands.pop(0)
             return self._execute_movement_command(next_cmd)
 
-        # Recherche de nouvelle cible
         food_target = self._find_best_food_target()
         if food_target:
             if food_target != self.food_target:
@@ -88,7 +82,6 @@ class CollectFoodState(State):
                 next_cmd = self.movement_commands.pop(0)
                 return self._execute_movement_command(next_cmd)
 
-        # Exploration pour trouver de la nourriture
         return self._explore_for_food()
 
     def _should_check_inventory(self, current_time: float) -> bool:
@@ -244,14 +237,12 @@ class CollectFoodState(State):
         """
         current_food = self.state.get_food_count()
         
-        # Si nourriture critique, continuer en urgence
         if current_food <= StateTransitionThresholds.FOOD_EMERGENCY_THRESHOLD:
             from ai.strategy.state.emergency import EmergencyState
             new_state = EmergencyState(self.planner)
             self.planner.fsm.transition_to(new_state)
             return new_state.execute()
-        
-        # Sinon, aller en exploration
+
         return self._transition_to_exploration()
 
     def on_command_success(self, command_type, response=None):
@@ -331,7 +322,6 @@ class CollectFoodState(State):
         
         logger.info(f"[CollectFoodState] 🍖 ENTRÉE collecte nourriture - Food: {current_food}")
         
-        # Reset des variables
         self.food_target = None
         self.movement_commands.clear()
         self.collection_attempts = 0
@@ -347,6 +337,5 @@ class CollectFoodState(State):
         logger.info(f"[CollectFoodState] ✅ SORTIE collecte nourriture - "
                    f"Durée: {duration:.1f}s, Collecté: {self.food_collected}")
         
-        # Nettoyage
         self.food_target = None
         self.movement_commands.clear()

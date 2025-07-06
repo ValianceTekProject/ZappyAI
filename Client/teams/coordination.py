@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## coordination - Gestionnaire de coordination avec réponse automatique corrigé
+## coordination
 ##
 
 import time
@@ -14,21 +14,14 @@ from teams.message_checker import MessageBus
 from teams.message import Message, MessageType
 from constant import (
     CoordinationProtocol, IncantationRequirements, AgentRoles,
-    BroadcastDirections, FoodThresholds
+    BroadcastDirections, SafetyLimits, CoordinationHelperSettings
 )
 
+
 class CoordinationManager:
-    """Gestionnaire de coordination avec réponse automatique selon protocole Zappy corrigé."""
+    """Gestionnaire de coordination avec logique optimisée pour succès."""
     
     def __init__(self, bus: MessageBus, cmd_mgr: CommandManager, game_state: GameState):
-        """
-        Initialise le gestionnaire de coordination avec réponse automatique.
-        
-        Args:
-            bus: Bus de messages pour la communication
-            cmd_mgr: Gestionnaire de commandes
-            game_state: État du jeu de l'agent
-        """
         self.bus = bus
         self.cmd_mgr = cmd_mgr
         self.state = game_state
@@ -49,231 +42,178 @@ class CoordinationManager:
         self.pending_coordination_level: Optional[int] = None
         self.coordination_busy_until: float = 0.0
         
+        self.here_responses: Dict[str, Dict[str, Any]] = {}
+        self.coming_responses: Dict[str, Dict[str, Any]] = {}
+        self.last_cleanup = time.time()
+        
+        self.response_history: Dict[str, List[float]] = {}
+        self.max_response_history = 10
+        
         self._register_message_handlers()
         
-        logger.debug("[CoordinationManager] Initialisé avec réponse automatique corrigée")
+        logger.debug("[CoordinationManager] Initialisé avec protocole optimisé")
 
     def _register_message_handlers(self):
-        """Enregistre les handlers pour traiter les messages entrants automatiquement."""
+        """Enregistre les handlers pour les messages."""
         self.bus.subscribe(MessageType.INCANTATION_REQUEST, self._handle_incantation_request_message)
         self.bus.subscribe(MessageType.INCANTATION_RESPONSE, self._handle_incantation_response_message)
 
     def _handle_incantation_request_message(self, sender_id: int, data: Dict[str, Any], direction: int):
-        """
-        Handler automatique pour les requêtes d'incantation selon protocole Zappy CORRIGÉ.
-        
-        Args:
-            sender_id: ID de l'expéditeur
-            data: Données du message
-            direction: Direction du broadcast (1-8, 0 si même tuile)
-        """
+        """Handler optimisé pour les requêtes d'incantation."""
         try:
             sender_id_str = str(sender_id)
             level = data.get("level")
-            required_players = data.get("required_players") 
             timestamp = data.get("timestamp", time.time())
             
-            logger.info(f"[CoordinationManager] Requête reçue: sender={sender_id_str}, level={level}, dir={direction}")
+            logger.info(f"[CoordinationManager] 📩 Requête: {sender_id_str}, level={level}, K={direction}")
             
-            if self._should_auto_respond_to_request(sender_id_str, level, timestamp):
-                self._handle_incantation_request(sender_id_str, data, direction, timestamp)
+            if self._should_respond_to_request(sender_id_str, level, direction, timestamp):
+                self._send_protocol_response(sender_id_str, data, direction, timestamp)
             else:
-                logger.debug(f"[CoordinationManager] Requête ignorée: conditions non remplies")
+                logger.debug(f"[CoordinationManager] Requête ignorée de {sender_id_str}")
             
         except Exception as e:
             logger.error(f"[CoordinationManager] Erreur handler requête: {e}")
 
-    def _should_auto_respond_to_request(self, sender_id: str, level: int, timestamp: float) -> bool:
-        """
-        Détermine si on doit répondre automatiquement selon protocole Zappy CORRIGÉ.
-        
-        Args:
-            sender_id: ID de l'expéditeur
-            level: Niveau demandé
-            timestamp: Timestamp du message
-            
-        Returns:
-            True si réponse automatique requise
-        """
+    def _should_respond_to_request(self, sender_id: str, level: int, direction: int, timestamp: float) -> bool:
+        """Détermine si on doit répondre - logique CORRIGÉE."""
         current_time = time.time()
         
-        # Ne pas répondre à ses propres messages
         if sender_id == str(self.state.agent_id):
-            logger.debug(f"[CoordinationManager] Ignore propre message de {sender_id}")
             return False
             
-        # Niveau 1 ne nécessite pas de coordination
         if level == 1:
-            logger.debug(f"[CoordinationManager] Niveau 1 - pas de coordination")
             return False
             
-        # Vérifier l'âge du message
         if current_time - timestamp > CoordinationProtocol.BROADCAST_TIMEOUT:
-            logger.debug(f"[CoordinationManager] Message trop ancien: {current_time - timestamp}s")
+            logger.debug(f"[CoordinationManager] Message expiré de {sender_id}")
             return False
-            
-        # Éviter le spam de réponses
-        if current_time - self.last_auto_response_time < CoordinationProtocol.BROADCAST_COOLDOWN:
-            logger.debug(f"[CoordinationManager] Cooldown réponse: {current_time - self.last_auto_response_time}s")
+        
+        if self._is_response_too_frequent(sender_id, current_time):
+            return False
+        
+        if (self.chosen_incanter_id and 
+            self.chosen_incanter_id != sender_id and
+            current_time < self.coordination_busy_until):
+            logger.debug(f"[CoordinationManager] Occupé avec {self.chosen_incanter_id}")
             return False
         
         current_role = getattr(self.state, 'role', AgentRoles.SURVIVOR)
         if (current_role == AgentRoles.INCANTER and 
             self.pending_coordination_level is not None and
             self.pending_coordination_level != level):
-            logger.debug(f"[CoordinationManager] Déjà incanteur pour niveau {self.pending_coordination_level}")
             return False
             
-        logger.debug(f"[CoordinationManager] ✅ Doit répondre à {sender_id} (niveau demandé: {level})")
         return True
 
-    def _handle_incantation_request(self, sender_id: str, payload: Dict[str, Any], direction: int, timestamp: float):
-        """
-        Traite les requêtes d'incantation avec réponse automatique CORRIGÉE.
+    def _is_response_too_frequent(self, sender_id: str, current_time: float) -> bool:
+        """Vérifie le cooldown de réponse - CORRIGÉ."""
+        if sender_id not in self.response_history:
+            self.response_history[sender_id] = []
         
-        Args:
-            sender_id: ID de l'expéditeur
-            payload: Contenu du message
-            direction: Direction du broadcast
-            timestamp: Timestamp du message
-        """
+        history = self.response_history[sender_id]
+        
+        history[:] = [t for t in history if current_time - t < 20.0]
+        
+        min_interval = CoordinationHelperSettings.RESPONSE_DELAY_MIN
+        
+        if history and current_time - history[-1] < min_interval:
+            return True
+            
+        return False
+
+    def _send_protocol_response(self, sender_id: str, payload: Dict[str, Any], direction: int, timestamp: float):
+        """Envoie la réponse selon le protocole Zappy STRICT."""
         try:
             level = payload.get("level")
-            required_players = payload.get("required_players")
+            current_time = time.time()
             
             self.received_requests[sender_id] = {
                 "timestamp": timestamp,
                 "direction": direction,
-                "required_players": required_players,
                 "level": level
             }
 
-            logger.info(f"[CoordinationManager] 📩 Requête enregistrée: {sender_id} (dir={direction}, lvl={level})")
-
-            response = self._determine_response_according_to_protocol(sender_id, direction, level)
+            response = self._determine_zappy_response(sender_id, direction, level)
             if response:
-                self._send_automatic_response(sender_id, response, level)
-                self.last_auto_response_time = time.time()
-                logger.info(f"[CoordinationManager] 📤 Réponse '{response}' programmée pour {sender_id}")
-            else:
-                logger.warning(f"[CoordinationManager] ❌ Aucune réponse déterminée pour {sender_id}")
+                if sender_id not in self.response_history:
+                    self.response_history[sender_id] = []
+                self.response_history[sender_id].append(current_time)
+                
+                if len(self.response_history[sender_id]) > self.max_response_history:
+                    self.response_history[sender_id].pop(0)
+                
+                self._send_response_message(sender_id, response, level)
+                self.last_auto_response_time = current_time
+                logger.info(f"[CoordinationManager] 📤 '{response}' → {sender_id} (K={direction})")
 
-        except (ValueError, KeyError) as e:
-            logger.error(f"[CoordinationManager] Erreur parsing requête: {payload}, {e}")
+        except Exception as e:
+            logger.error(f"[CoordinationManager] Erreur envoi réponse: {e}")
 
-    def _determine_response_according_to_protocol(self, sender_id: str, direction: int, level: int) -> Optional[str]:
-        """
-        Détermine la réponse selon le protocole Zappy strict CORRIGÉ.
-        
-        Args:
-            sender_id: ID de l'incanteur
-            direction: Direction du broadcast
-            level: Niveau requis
-            
-        Returns:
-            Réponse selon protocole Zappy ou None
-        """
+    def _determine_zappy_response(self, sender_id: str, direction: int, level: int) -> Optional[str]:
+        """Détermine la réponse selon le protocole Zappy STRICT - CORRIGÉ."""
         current_food = self.state.get_food_count()
+        current_level = self.state.level
         current_role = getattr(self.state, 'role', AgentRoles.SURVIVOR)
-        current_time = time.time()
         
-        logger.debug(f"[CoordinationManager] Analyse réponse: food={current_food}, role={current_role}, level={level}")
-        
-        if current_time < self.coordination_busy_until:
-            logger.debug(f"[CoordinationManager] Temporairement occupé jusqu'à {self.coordination_busy_until - current_time:.1f}s")
+        if not self._can_help_optimized(level, current_food, current_level):
             return CoordinationProtocol.RESPONSE_BUSY
         
-        if not self._can_help_according_to_protocol(level):
-            logger.debug(f"[CoordinationManager] Ne peut pas aider selon protocole")
-            return CoordinationProtocol.RESPONSE_BUSY
-
         if current_role == AgentRoles.INCANTER:
-            if self.pending_coordination_level is not None and self.pending_coordination_level != level:
-                logger.debug(f"[CoordinationManager] Incanteur occupé niveau {self.pending_coordination_level}")
-                return CoordinationProtocol.RESPONSE_BUSY
-            elif self.pending_coordination_level == level:
-                logger.debug(f"[CoordinationManager] Incanteur même niveau {level}")
-            else:
-                logger.debug(f"[CoordinationManager] Incanteur pas occupé")
-                return CoordinationProtocol.RESPONSE_BUSY
-
+            return CoordinationProtocol.RESPONSE_BUSY
+        
         if (self.chosen_incanter_id and 
-            self.chosen_incanter_id != sender_id and
-            self.pending_coordination_level != level):
-            logger.debug(f"[CoordinationManager] Déjà engagé avec {self.chosen_incanter_id} niveau {self.pending_coordination_level}")
+            self.chosen_incanter_id != sender_id):
             return CoordinationProtocol.RESPONSE_BUSY
-
-        if self.state.level != level:
-            logger.debug(f"[CoordinationManager] Niveau incompatible: {self.state.level} != {level}")
-            return CoordinationProtocol.RESPONSE_BUSY
-
-        logger.info(f"[CoordinationManager] 🤝 Accepter aide pour {sender_id} (direction={direction}, niveau={level})")
+        
+        logger.info(f"[CoordinationManager] 🤝 Accepte aide {sender_id} (K={direction})")
         
         self.chosen_incanter_id = sender_id
         self.chosen_incanter_direction = direction
         self.pending_coordination_level = level
+        self.coordination_busy_until = time.time() + SafetyLimits.MAX_HELPER_WAIT_TIME
         
         if hasattr(self.state, 'set_role'):
             self.state.set_role(AgentRoles.HELPER)
         
-        if direction == BroadcastDirections.HERE:
-            return CoordinationProtocol.RESPONSE_HERE
-        else:
-            return CoordinationProtocol.RESPONSE_COMING
+        return self._determine_here_vs_coming_zappy_protocol(direction)
 
-    def _can_help_according_to_protocol(self, requested_level: int) -> bool:
-        """
-        Vérifie si l'agent peut aider selon le protocole Zappy strict CORRIGÉ.
-        
-        Args:
-            requested_level: Niveau demandé pour l'incantation
-            
-        Returns:
-            True si peut aider selon protocole
-        """
-        current_food = self.state.get_food_count()
-        current_level = self.state.level
-        
-        if current_level != requested_level:
-            logger.debug(f"[CoordinationManager] Niveau incorrect: {current_level} != {requested_level}")
+    def _can_help_optimized(self, level: int, current_food: int, current_level: int) -> bool:
+        """Vérifications OPTIMISÉES pour aider."""
+        if current_level != level:
             return False
         
-        if current_food < FoodThresholds.COORDINATION_MIN:
-            logger.debug(f"[CoordinationManager] Nourriture insuffisante: {current_food} < {FoodThresholds.COORDINATION_MIN}")
+        if current_food < SafetyLimits.MIN_FOOD_FOR_COORDINATION_SAFETY:
             return False
             
-        if current_level <= 1:
-            logger.debug(f"[CoordinationManager] Niveau trop bas: {current_level}")
-            return False
-            
-        if current_level >= 8:
-            logger.debug(f"[CoordinationManager] Niveau maximum atteint: {current_level}")
+        if current_level <= 1 or current_level >= 8:
             return False
         
         requirements = IncantationRequirements.REQUIRED_RESOURCES.get(current_level, {})
         inventory = self.state.get_inventory()
-        has_resources = True
+        
+        missing_critical = 0
         for resource, needed in requirements.items():
-            if inventory.get(resource, 0) < needed:
-                has_resources = False
-                break
-                
-        if not has_resources:
-            logger.debug(f"[CoordinationManager] Ressources manquantes pour niveau {current_level}")
+            current_amount = inventory.get(resource, 0)
+            if current_amount < needed:
+                missing_critical += (needed - current_amount)
+        
+        if missing_critical > 3:
             return False
-            
-        logger.debug(f"[CoordinationManager] ✅ Peut aider: level={current_level}, food={current_food}, ressources=OK")
+                
         return True
 
-    def _send_automatic_response(self, request_sender: str, response: str, level: int):
-        """
-        Envoie automatiquement une réponse d'incantation via Message.py.
-        
-        Args:
-            request_sender: ID de l'incanteur demandeur
-            response: Réponse à envoyer (here/coming/busy)
-            level: Niveau de l'incantation
-        """
+    def _determine_here_vs_coming_zappy_protocol(self, direction: int) -> str:
+        """Détermine 'here' vs 'coming'"""
+        if direction == BroadcastDirections.HERE:
+            logger.info(f"[CoordinationManager] 📍 K={direction} → 'here'")
+            return CoordinationProtocol.RESPONSE_HERE
+        else:
+            logger.info(f"[CoordinationManager] 🏃 K={direction} → 'coming'")
+            return CoordinationProtocol.RESPONSE_COMING
+
+    def _send_response_message(self, request_sender: str, response: str, level: int):
+        """Envoie le message de réponse."""
         try:
             encoded_message = Message.create_incantation_response(
                 sender_id=self.state.agent_id,
@@ -291,24 +231,22 @@ class CoordinationManager:
                 'level': level
             }
             
-            if response in [CoordinationProtocol.RESPONSE_HERE, CoordinationProtocol.RESPONSE_COMING]:
-                self.coordination_busy_until = time.time() + 15.0  # Occupé pour 15 secondes
-                logger.debug(f"[CoordinationManager] Marqué occupé pour {response}")
-            
-            logger.info(f"[CoordinationManager] 📤 Réponse AUTO '{response}' envoyée à {request_sender}")
+            if response == CoordinationProtocol.RESPONSE_HERE:
+                self.here_responses[request_sender] = {
+                    'timestamp': time.time(),
+                    'level': level
+                }
+            elif response == CoordinationProtocol.RESPONSE_COMING:
+                self.coming_responses[request_sender] = {
+                    'timestamp': time.time(),
+                    'level': level
+                }
             
         except Exception as e:
-            logger.error(f"[CoordinationManager] Erreur envoi réponse auto: {e}")
+            logger.error(f"[CoordinationManager] Erreur envoi message: {e}")
 
     def _handle_incantation_response_message(self, sender_id: int, data: Dict[str, Any], direction: int):
-        """
-        Handler pour les réponses d'incantation avec validation protocole strict.
-        
-        Args:
-            sender_id: ID de l'expéditeur de la réponse
-            data: Données de la réponse
-            direction: Direction du broadcast
-        """
+        """Handler CORRIGÉ pour les réponses d'incantation."""
         if not (hasattr(self.state, 'role') and self.state.role == AgentRoles.INCANTER):
             return
 
@@ -316,60 +254,72 @@ class CoordinationManager:
             sender_id_str = str(sender_id)
             request_sender = str(data.get("request_sender"))
             response = data.get("response")
+            level = data.get("level")
             timestamp = data.get("timestamp", time.time())
             
             if request_sender != str(self.state.agent_id):
                 return
 
-            current_time = time.time()
-            if current_time - timestamp > CoordinationProtocol.BROADCAST_TIMEOUT:
+            if time.time() - timestamp > CoordinationProtocol.BROADCAST_TIMEOUT:
                 return
 
-            logger.info(f"[CoordinationManager] 📨 Réponse reçue de {sender_id_str}: '{response}'")
+            logger.info(f"[CoordinationManager] 📨 Réponse {sender_id_str}: '{response}' (niveau {level})")
 
             if response == CoordinationProtocol.RESPONSE_HERE:
+                self.here_responses[sender_id_str] = {
+                    'timestamp': time.time(),
+                    'level': level
+                }
                 if sender_id_str not in self.confirmed_helpers:
                     self.confirmed_helpers.append(sender_id_str)
-                    logger.info(f"[CoordinationManager] ✅ Helper {sender_id_str} confirmé (HERE)")
+                logger.info(f"[CoordinationManager] ✅ Helper {sender_id_str} HERE confirmé")
                     
             elif response == CoordinationProtocol.RESPONSE_COMING:
-                logger.info(f"[CoordinationManager] 🏃 Helper {sender_id_str} en route (COMING)")
+                self.coming_responses[sender_id_str] = {
+                    'timestamp': time.time(),
+                    'level': level
+                }
+                logger.info(f"[CoordinationManager] 🏃 Helper {sender_id_str} COMING")
                 
             elif response == CoordinationProtocol.RESPONSE_BUSY:
-                logger.debug(f"[CoordinationManager] ❌ Helper {sender_id_str} occupé (BUSY)")
+                self._remove_helper(sender_id_str)
+                logger.debug(f"[CoordinationManager] ❌ Helper {sender_id_str} BUSY")
 
-        except (ValueError, KeyError) as e:
-            logger.error(f"[CoordinationManager] Erreur parsing réponse:{e}")
+        except Exception as e:
+            logger.error(f"[CoordinationManager] Erreur traitement réponse: {e}")
+
+    def _remove_helper(self, helper_id: str):
+        """Supprime un helper de toutes les listes."""
+        if helper_id in self.confirmed_helpers:
+            self.confirmed_helpers.remove(helper_id)
+        if helper_id in self.here_responses:
+            del self.here_responses[helper_id]
+        if helper_id in self.coming_responses:
+            del self.coming_responses[helper_id]
 
     def send_incantation_request(self):
-        """
-        Envoie une requête d'incantation avec vérifications protocole strict.
-        """
+        """Envoie une requête d'incantation."""
         if not (hasattr(self.state, 'role') and self.state.role == AgentRoles.INCANTER):
-            logger.warning("[CoordinationManager] Seuls les incanteurs peuvent envoyer des requêtes")
             return
 
         if self.state.level == 1:
-            logger.error("[CoordinationManager] ❌ Niveau 1 ne doit JAMAIS utiliser coordination")
+            logger.error("[CoordinationManager] ❌ Niveau 1 ne doit jamais utiliser coordination")
             return
 
         current_time = time.time()
         
-        # Respect du cooldown
         if current_time - self._last_broadcast_time < CoordinationProtocol.BROADCAST_COOLDOWN:
             return
 
-        # Vérification nourriture minimale
         current_food = self.state.get_food_count()
         if current_food < CoordinationProtocol.MIN_FOOD_TO_INITIATE:
-            logger.warning(f"[CoordinationManager] Nourriture insuffisante pour initier: {current_food}")
             return
 
         level = self.state.level
         required_players = IncantationRequirements.REQUIRED_PLAYERS.get(level, 1)
         
         if required_players <= 1:
-            logger.error(f"[CoordinationManager] ❌ Niveau {level} ne nécessite pas de coordination")
+            logger.error(f"[CoordinationManager] ❌ Niveau {level} ne nécessite pas coordination")
             return
         
         if self.coordination_start_time is None:
@@ -388,41 +338,47 @@ class CoordinationManager:
             self.cmd_mgr.broadcast(encoded_message)
             self._last_broadcast_time = current_time
             
-            logger.info(f"[CoordinationManager] 📢 Requête incantation envoyée pour niveau {level} ({required_players} joueurs)")
+            logger.info(f"[CoordinationManager] 📢 Requête incantation niveau {level}")
             
         except Exception as e:
             logger.error(f"[CoordinationManager] Erreur envoi requête: {e}")
 
     def get_helpers_here_count(self) -> int:
-        """
-        Retourne le nombre de helpers confirmés présents.
+        """Retourne le nombre de helpers confirmés présents."""
+        if not (hasattr(self.state, 'role') and self.state.role == AgentRoles.INCANTER):
+            return 0
+
+        self._cleanup_old_responses()
         
-        Returns:
-            Nombre de helpers confirmés ici
-        """
+        current_time = time.time()
+        valid_count = 0
+
+        for helper_id, response_data in self.here_responses.items():
+            if (current_time - response_data['timestamp'] <= CoordinationProtocol.BROADCAST_TIMEOUT and
+                response_data['level'] == self.state.level):
+                valid_count += 1
+
+        logger.debug(f"[CoordinationManager] Helpers HERE valides: {valid_count}")
+        return valid_count
+
+    def get_helpers_coming_count(self) -> int:
+        """Retourne le nombre de helpers en route."""
         if not (hasattr(self.state, 'role') and self.state.role == AgentRoles.INCANTER):
             return 0
 
         current_time = time.time()
-        valid_helpers = 0
+        valid_count = 0
 
-        for helper_id in self.confirmed_helpers:
-            if helper_id in self.sent_responses:
-                response_data = self.sent_responses[helper_id]
-                if (response_data['response'] == CoordinationProtocol.RESPONSE_HERE and
-                    current_time - response_data['timestamp'] <= CoordinationProtocol.BROADCAST_TIMEOUT):
-                    valid_helpers += 1
+        for helper_id, response_data in self.coming_responses.items():
+            if (current_time - response_data['timestamp'] <= CoordinationProtocol.BROADCAST_TIMEOUT and
+                response_data['level'] == self.state.level):
+                valid_count += 1
 
-        logger.debug(f"[CoordinationManager] Helpers valides ici: {valid_helpers}")
-        return valid_helpers
+        logger.debug(f"[CoordinationManager] Helpers COMING valides: {valid_count}")
+        return valid_count
 
     def has_enough_helpers(self) -> bool:
-        """
-        Vérifie si on a assez de helpers confirmés pour l'incantation.
-        
-        Returns:
-            True si assez de helpers selon protocole Zappy
-        """
+        """Vérifie si on a assez de helpers confirmés."""
         if not (hasattr(self.state, 'role') and self.state.role == AgentRoles.INCANTER):
             return False
 
@@ -430,34 +386,77 @@ class CoordinationManager:
             return True
 
         required = IncantationRequirements.REQUIRED_PLAYERS.get(self.state.level, 1)
+        helpers_needed = required - 1
+        
+        here_count = self.get_helpers_here_count()
         
         vision = self.state.get_vision()
         players_on_tile = 1
-        
         for data in vision.last_vision_data:
             if data.rel_pos == (0, 0):
                 players_on_tile = data.players
                 break
         
-        confirmed_helpers = self.get_helpers_here_count()
-        total_players = max(players_on_tile, confirmed_helpers + 1)
-
-        result = total_players >= required
-        logger.info(f"[CoordinationManager] 👥 Joueurs: physiques={players_on_tile}, confirmés={confirmed_helpers}, total={total_players}/{required}")
-
-        return result
+        has_enough = here_count >= helpers_needed or players_on_tile >= required
+        
+        if has_enough:
+            logger.info(f"[CoordinationManager] ✅ Assez helpers: HERE={here_count}, Physiques={players_on_tile}")
+        
+        return has_enough
 
     def get_chosen_incanter_direction(self) -> Optional[int]:
-        """
-        Retourne la direction vers l'incanteur choisi pour un helper.
-        
-        Returns:
-            Direction vers incanteur ou None
-        """
+        """Retourne la direction vers l'incanteur choisi."""
         if not (hasattr(self.state, 'role') and self.state.role == AgentRoles.HELPER):
             return None
-
         return self.chosen_incanter_direction
+
+    def _cleanup_old_responses(self):
+        """Nettoie les réponses anciennes."""
+        current_time = time.time()
+        
+        if current_time - self.last_cleanup < 2.0:
+            return
+            
+        self.last_cleanup = current_time
+
+        expired_here = [
+            helper_id for helper_id, data in self.here_responses.items()
+            if current_time - data['timestamp'] > CoordinationProtocol.BROADCAST_TIMEOUT
+        ]
+        
+        for helper_id in expired_here:
+            self._remove_helper(helper_id)
+
+        expired_coming = [
+            helper_id for helper_id, data in self.coming_responses.items()
+            if current_time - data['timestamp'] > CoordinationProtocol.BROADCAST_TIMEOUT
+        ]
+        
+        for helper_id in expired_coming:
+            del self.coming_responses[helper_id]
+
+        for sender_id in list(self.response_history.keys()):
+            self.response_history[sender_id] = [
+                t for t in self.response_history[sender_id] 
+                if current_time - t < 30.0
+            ]
+            if not self.response_history[sender_id]:
+                del self.response_history[sender_id]
+
+    def clear_coordination_data(self):
+        """Nettoie toutes les données de coordination."""
+        self.received_requests.clear()
+        self.sent_responses.clear()
+        self.confirmed_helpers.clear()
+        self.here_responses.clear()
+        self.coming_responses.clear()
+        self.response_history.clear()
+        self.coordination_start_time = None
+        self.chosen_incanter_id = None
+        self.chosen_incanter_direction = None
+        self.pending_coordination_level = None
+        self.coordination_busy_until = 0.0
+        logger.debug("[CoordinationManager] Données coordination nettoyées")
 
     def reset_helper_choice(self):
         """Reset le choix d'incanteur pour un helper."""
@@ -466,90 +465,9 @@ class CoordinationManager:
             self.chosen_incanter_direction = None
             self.pending_coordination_level = None
             self.coordination_busy_until = 0.0
-            logger.info("[CoordinationManager] Reset choix incanteur")
-
-    def cleanup_old_data(self, max_age: Optional[float] = None):
-        """
-        Nettoie les données trop anciennes.
-        
-        Args:
-            max_age: Âge maximum des données en secondes
-        """
-        if max_age is None:
-            max_age = CoordinationProtocol.BROADCAST_TIMEOUT
-
-        current_time = time.time()
-
-        # Nettoyer les requêtes anciennes
-        to_remove = []
-        for sender_id, data in self.received_requests.items():
-            if current_time - data.get('timestamp', 0) > max_age:
-                to_remove.append(sender_id)
-        for sender_id in to_remove:
-            del self.received_requests[sender_id]
-
-        # Nettoyer les réponses anciennes
-        to_remove = []
-        for sender_id, data in self.sent_responses.items():
-            if current_time - data.get('timestamp', 0) > max_age:
-                to_remove.append(sender_id)
-        for sender_id in to_remove:
-            del self.sent_responses[sender_id]
-
-        # Nettoyer les helpers confirmés
-        self.confirmed_helpers = [
-            helper_id for helper_id in self.confirmed_helpers
-            if helper_id in self.sent_responses
-        ]
-
-    def clear_coordination_data(self):
-        """Nettoie toutes les données de coordination."""
-        self.received_requests.clear()
-        self.sent_responses.clear()
-        self.confirmed_helpers.clear()
-        self.coordination_start_time = None
-        self.chosen_incanter_id = None
-        self.chosen_incanter_direction = None
-        self.pending_coordination_level = None
-        self.coordination_busy_until = 0.0
-        logger.debug("[CoordinationManager] Données de coordination nettoyées")
 
     def is_coordination_timeout(self) -> bool:
-        """
-        Vérifie si la coordination a expiré.
-        
-        Returns:
-            True si timeout dépassé
-        """
+        """Vérifie si la coordination a expiré."""
         if self.coordination_start_time is None:
             return False
         return time.time() - self.coordination_start_time > CoordinationProtocol.COORDINATION_TIMEOUT
-
-    def get_coordination_status(self) -> Dict[str, Any]:
-        """
-        Retourne le statut de la coordination pour debug.
-        
-        Returns:
-            Statut complet de la coordination
-        """
-        current_time = time.time()
-        
-        return {
-            'role': getattr(self.state, 'role', 'unknown'),
-            'level': self.state.level,
-            'food': self.state.get_food_count(),
-            'chosen_incanter': self.chosen_incanter_id,
-            'chosen_direction': self.chosen_incanter_direction,
-            'helpers_confirmed': len(self.confirmed_helpers),
-            'required_players': IncantationRequirements.REQUIRED_PLAYERS.get(self.state.level, 1),
-            'has_enough_helpers': self.has_enough_helpers(),
-            'coordination_timeout': self.is_coordination_timeout(),
-            'received_requests': len(self.received_requests),
-            'sent_responses': len(self.sent_responses),
-            'can_help': self._can_help_according_to_protocol(self.state.level),
-            'auto_response_enabled': self.auto_response_enabled,
-            'pending_coordination_level': self.pending_coordination_level,
-            'busy_until': max(0, self.coordination_busy_until - current_time),
-            'time_since_start': (current_time - self.coordination_start_time 
-                               if self.coordination_start_time else 0)
-        }

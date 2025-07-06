@@ -1,7 +1,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## protocol.message_manager (amélioré)
+## message_manager
 
 import time
 from typing import List, Any, Optional, Tuple

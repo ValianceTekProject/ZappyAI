@@ -48,29 +48,24 @@ class EventDetector:
         events = []
         current_time = time.time()
 
-        # Gestion des changements de niveau
         if self.last_level != self.state.level:
             self._handle_level_change(events)
             self.last_level = self.state.level
 
-        # Événements de nourriture avec seuils centralisés
         current_food = self.state.get_food_count()
         food_events = self._check_food_events(current_food)
         events.extend(food_events)
 
-        # Événements de progression
         if current_time - self.last_incant_check >= 8.0:
             progression_events = self._check_progression_events(current_food)
             events.extend(progression_events)
             self.last_incant_check = current_time
 
-        # Événements de reproduction
         if current_time - self.last_reproduction_check >= 12.0:
             reproduction_events = self._check_reproduction_events(current_food)
             events.extend(reproduction_events)
             self.last_reproduction_check = current_time
 
-        # Besoins de mise à jour
         if self._needs_vision_update(current_time):
             events.append(Event.NEED_VISION)
             self.last_vision_check = current_time
@@ -79,7 +74,6 @@ class EventDetector:
             events.append(Event.NEED_INVENTORY)
             self.last_inventory_check = current_time
 
-        # Ressources trouvées
         if self._resources_found_in_vision():
             events.append(Event.RESOURCES_FOUND)
 
@@ -171,7 +165,6 @@ class EventDetector:
         if self.state.level >= GameplayConstants.MAX_LEVEL:
             return False
 
-        # Vérifier la nourriture selon le niveau
         if self.state.level == 1:
             min_food_required = StateTransitionThresholds.MIN_FOOD_FOR_LEVEL_1_INCANTATION
         else:
@@ -229,7 +222,6 @@ class EventDetector:
             if self.last_food_count < FoodThresholds.ABUNDANT:
                 logger.info(f"[EventDetector] ✅ Nourriture suffisante: {current_food} >= {FoodThresholds.ABUNDANT}")
 
-        # Détection de la consommation
         if current_food < self.last_food_count:
             lost = self.last_food_count - current_food
             logger.debug(f"[EventDetector] Consommation détectée: -{lost} (reste: {current_food})")

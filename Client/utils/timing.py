@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## timing - Gestionnaire de timing optimisé
+## timing
 ##
 
 import time

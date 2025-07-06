@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## commands (version refactorisée)
+## commands
 ##
 
 import time
@@ -178,7 +178,6 @@ class CommandManager:
             new_level = Parser.parse_current_level(response)
             old_level = self.state.level
             
-            # CORRECTION CRITIQUE: Mise à jour du niveau dans GameState
             self.state.level = new_level
             
             logger.info(f"[CommandManager] Level up détecté: {old_level} → {new_level}")
