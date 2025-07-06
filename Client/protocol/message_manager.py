@@ -19,8 +19,6 @@ class MessageManager:
         self.state = state
         self.is_dead = False
         self.coordination_state = None
-        self.should_join_coordination = False
-        self.broadcast_direction = None
 
     def set_coordination_state(self, coordination_state):
         """Définit la référence vers l'état de coordination actuel"""
@@ -106,10 +104,11 @@ class MessageManager:
                 logger.info(f"[MessageManager] 📢 Transmis à la coordination active")
                 self.coordination_state.handle_broadcast_message(sender_id, payload, direction)
             else:
-                logger.info("[MessageManager] 📢 Pas en coordination, flag coordination à True si besoin")
+                logger.info(f"[MessageManager] 📢 Pas en coordination, flag coordination à True si besoin - level {self.state.level} : {payload.get('level')}")
                 if payload.get('level') == self.state.level:
-                    self.should_join_coordination = True
-                    self.broadcast_direction = direction
+                    logger.info("[MessageManager] 📢 Flag coordination déjà à True")
+                    self.join_incantation = True
+                    self.direction_incant = direction
 
         except Exception as e:
             logger.error(f"[MessageManager] Erreur transmission coordination: {e}")

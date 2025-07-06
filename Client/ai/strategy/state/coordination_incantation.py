@@ -106,6 +106,8 @@ class CoordinateIncantationState(State):
         
         if self.state.join_incantation:
             self.received_direction = self.state.direction_incant
+            logger.info(f"[CoordinateIncantationState] ✅ JOIN INCANTATION (K={self.received_direction})")
+            self.state.join_incantation = False
 
         # Si pas de direction reçue, attendre
         if self.received_direction is None:
@@ -168,7 +170,7 @@ class CoordinateIncantationState(State):
         
         command_func = command_map.get(command_name)
         if command_func:
-            logger.debug(f"[CoordinateIncantationState] ▶️ {command_name}")
+            logger.info(f"[CoordinateIncantationState] ▶️ {command_name}")
             return command_func()
         else:
             logger.error(f"[CoordinateIncantationState] ❌ Commande inconnue: {command_name}")

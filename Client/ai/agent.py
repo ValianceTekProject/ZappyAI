@@ -91,10 +91,6 @@ class Agent:
 
                 self._update_coordination_reference()
 
-                if self.msg_manager.should_join_coordination:
-                    self.state.direction_incant = self.msg_manager.broadcast_direction
-                    self.state.join_incantation = True
-
                 self._make_ia_decision(now)
 
                 self._adaptive_sleep()
