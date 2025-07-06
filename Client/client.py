@@ -14,14 +14,14 @@ from utils.logger import logger
 
 def main():
     try:
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--host', default=Constants.HOST.value)
-        parser.add_argument('--port', type=int, required=True)
-        parser.add_argument('--team', required=True)
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument('-h', default=Constants.HOST.value)
+        parser.add_argument('-p', type=int, required=True)
+        parser.add_argument('-n', required=True)
         parser.add_argument('--model', type=str, default="basic")
         args = parser.parse_args()
 
-        pool = AgentThreads(args.host, args.port, args.team, args.model)
+        pool = AgentThreads(args.h, args.p, args.n, args.model)
         pool.start_initial_agent()
 
         while True:

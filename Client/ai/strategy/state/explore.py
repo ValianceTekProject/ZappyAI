@@ -19,15 +19,9 @@ from utils.logger import logger
 
 
 class ExploreState(State):
-    """État d'exploration intelligente avec transitions optimisées."""
+    """État d'exploration intelligente avec transitions optimisées"""
     
     def __init__(self, planner):
-        """
-        Initialise l'état d'exploration.
-        
-        Args:
-            planner: Planificateur FSM
-        """
         super().__init__(planner)
         self.pathfinder = Pathfinder()
         self.exploration_pattern = "spiral"
@@ -42,7 +36,6 @@ class ExploreState(State):
         self.max_exploration_time = 25.0
         self.food_discoveries_ignored = 0
         
-        # État spiral optimisé
         self.spiral_state = {
             'direction': random.randint(0, 3),
             'steps_in_direction': 0,
@@ -53,26 +46,18 @@ class ExploreState(State):
         logger.info(f"[ExploreState] 🗺️ Exploration activée - Pattern: {self.exploration_pattern}")
 
     def execute(self) -> Optional[Any]:
-        """
-        Logique d'exploration intelligente avec transitions optimisées.
-        
-        Returns:
-            Commande d'exploration ou transition
-        """
+        """Logique d'exploration intelligente avec transitions optimisées"""
         current_time = time.time()
         current_food = self.state.get_food_count()
         
-        # Timeout d'exploration pour éviter de rester bloqué
         if current_time - self.exploration_start_time > self.max_exploration_time:
             logger.warning("[ExploreState] Timeout exploration, transition forcée")
             return self._force_transition()
         
-        # Vérification seuils critiques
         if current_food <= StateTransitionThresholds.FOOD_EMERGENCY_THRESHOLD:
             logger.warning(f"[ExploreState] Urgence alimentaire ({current_food})")
             return self._transition_to_emergency()
         
-        # Vérifications périodiques
         if self._should_check_inventory(current_time):
             self.last_inventory_check = current_time
             return self.cmd_mgr.inventory()
@@ -81,14 +66,12 @@ class ExploreState(State):
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
 
-        # Analyse de la vision actuelle avec transition appropriée
         discovery = self._analyze_current_vision()
         if discovery:
             transition_result = self._handle_discovery(discovery)
             if transition_result:
                 return transition_result
 
-        # Génération du mouvement d'exploration
         if self.exploration_commands:
             next_cmd = self.exploration_commands.pop(0)
             return self._execute_exploration_command(next_cmd)
@@ -96,15 +79,7 @@ class ExploreState(State):
         return self._generate_exploration_pattern()
 
     def _should_check_inventory(self, current_time: float) -> bool:
-        """
-        Détermine si un check d'inventaire est nécessaire.
-        
-        Args:
-            current_time: Temps actuel
-            
-        Returns:
-            True si vérification nécessaire
-        """
+        """Détermine si un check d'inventaire est nécessaire"""
         if self.context.get('needs_inventory_check', False):
             self.context['needs_inventory_check'] = False
             return True
@@ -113,12 +88,7 @@ class ExploreState(State):
         return time_since_last >= GameplayConstants.INVENTORY_CHECK_INTERVAL
 
     def _needs_vision_update(self) -> bool:
-        """
-        Détermine si une mise à jour de vision est nécessaire.
-        
-        Returns:
-            True si mise à jour nécessaire
-        """
+        """Détermine si une mise à jour de vision est nécessaire"""
         return (
             self.context.get('needs_vision_update', False) or
             not self.state.get_vision().last_vision_data or
@@ -126,12 +96,7 @@ class ExploreState(State):
         )
 
     def _analyze_current_vision(self) -> Optional[Dict[str, Any]]:
-        """
-        Analyse optimisée de la vision actuelle avec priorités claires.
-        
-        Returns:
-            Informations sur les découvertes ou None
-        """
+        """Analyse optimisée de la vision actuelle avec priorités claires"""
         vision = self.state.get_vision()
         if not vision.last_vision_data:
             return None
@@ -154,7 +119,6 @@ class ExploreState(State):
 
         current_food = self.state.get_food_count()
 
-        # Priorité 1: Ressources manquantes pour incantation
         if needed_resources_found:
             self.resources_discovered += len(needed_resources_found)
             self.steps_since_last_find = 0
@@ -165,21 +129,18 @@ class ExploreState(State):
                 'priority': 'high'
             }
 
-        # Priorité 2: Nourriture si vraiment nécessaire (seuil strict)
         if food_count > 0 and current_food <= StateTransitionThresholds.FOOD_LOW_THRESHOLD:
             self.food_discovered += food_count
             self.steps_since_last_find = 0
             logger.info(f"[ExploreState] 🍖 Nourriture trouvée (nécessaire): {food_count} unités")
             return {'type': 'food', 'count': food_count, 'priority': 'high'}
             
-        # Priorité 3: Ignorer la nourriture si pas nécessaire
         if food_count > 0 and current_food > StateTransitionThresholds.FOOD_LOW_THRESHOLD:
             self.food_discoveries_ignored += 1
-            if self.food_discoveries_ignored % 10 == 1:  # Log uniquement occasionnellement
+            if self.food_discoveries_ignored % 10 == 1:
                 logger.debug(f"[ExploreState] Nourriture ignorée ({current_food} > {StateTransitionThresholds.FOOD_LOW_THRESHOLD})")
-            return None  # Ne pas traiter cette découverte
+            return None
             
-        # Priorité 4: Autres ressources intéressantes
         if total_resources >= 3:
             self.resources_discovered += total_resources
             self.steps_since_last_find = 0
@@ -194,15 +155,7 @@ class ExploreState(State):
         return None
 
     def _handle_discovery(self, discovery: Dict[str, Any]) -> Optional[Any]:
-        """
-        Gère une découverte selon sa priorité avec transitions claires.
-        
-        Args:
-            discovery: Informations sur la découverte
-            
-        Returns:
-            Transition ou None
-        """
+        """Gère une découverte selon sa priorité avec transitions claires"""
         discovery_type = discovery['type']
         priority = discovery.get('priority', 'low')
         
@@ -214,22 +167,15 @@ class ExploreState(State):
                 logger.info("[ExploreState] → Transition collecte nourriture (nécessaire)")
                 return self._transition_to_food_collection()
         
-        # Pour les priorités moyennes, continuer l'exploration quelques pas puis évaluer
         if priority == 'medium' and self.steps_since_last_find < 5:
             return None
         
         return None
 
     def _generate_exploration_pattern(self) -> Optional[Any]:
-        """
-        Génère le prochain pattern d'exploration.
-        
-        Returns:
-            Commande d'exploration
-        """
+        """Génère le prochain pattern d'exploration"""
         self.steps_since_last_find += 1
         
-        # Changer de pattern si pas de découverte depuis longtemps
         if self.steps_since_last_find >= 15:
             self._change_exploration_pattern()
             
@@ -243,7 +189,7 @@ class ExploreState(State):
             return self._random_exploration()
 
     def _change_exploration_pattern(self):
-        """Change de pattern d'exploration de manière optimisée."""
+        """Change de pattern d'exploration de manière optimisée"""
         patterns = ["spiral", "random", "edge"]
         current_index = patterns.index(self.exploration_pattern)
         new_pattern = patterns[(current_index + 1) % len(patterns)]
@@ -252,7 +198,6 @@ class ExploreState(State):
         self.exploration_pattern = new_pattern
         self.steps_since_last_find = 0
         
-        # Reset du spiral
         if new_pattern == "spiral":
             self.spiral_state = {
                 'direction': random.randint(0, 3),
@@ -262,18 +207,13 @@ class ExploreState(State):
             }
 
     def _spiral_exploration(self) -> Optional[Any]:
-        """
-        Pattern d'exploration en spirale optimisé.
-        
-        Returns:
-            Commande d'exploration
-        """
+        """Pattern d'exploration en spirale optimisé"""
         state = self.spiral_state
         direction_commands = {
-            0: [CommandType.FORWARD],  # Nord
-            1: [CommandType.RIGHT, CommandType.FORWARD],  # Est
-            2: [CommandType.RIGHT, CommandType.RIGHT, CommandType.FORWARD],  # Sud
-            3: [CommandType.LEFT, CommandType.FORWARD]  # Ouest
+            0: [CommandType.FORWARD],
+            1: [CommandType.RIGHT, CommandType.FORWARD],
+            2: [CommandType.RIGHT, CommandType.RIGHT, CommandType.FORWARD],
+            3: [CommandType.LEFT, CommandType.FORWARD]
         }
         
         if state['steps_in_direction'] < state['steps_limit']:
@@ -281,12 +221,10 @@ class ExploreState(State):
             self.exploration_commands.extend(commands)
             state['steps_in_direction'] += 1
         else:
-            # Changement de direction
             state['direction'] = (state['direction'] + 1) % 4
             state['steps_in_direction'] = 0
             state['direction_changes'] += 1
             
-            # Augmenter la limite tous les 2 changements
             if state['direction_changes'] % 2 == 0:
                 state['steps_limit'] += 1
                 
@@ -297,12 +235,7 @@ class ExploreState(State):
         return self.cmd_mgr.forward()
 
     def _random_exploration(self) -> Optional[Any]:
-        """
-        Pattern d'exploration aléatoire pondéré.
-        
-        Returns:
-            Commande d'exploration
-        """
+        """Pattern d'exploration aléatoire pondéré"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return self.cmd_mgr.look()
@@ -312,7 +245,6 @@ class ExploreState(State):
             vision_data
         )
         
-        # 30% de chance de mouvement complètement aléatoire
         if random.random() < 0.3:
             random_commands = [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]
             exploration_cmd = random.choice(random_commands)
@@ -320,27 +252,13 @@ class ExploreState(State):
         return self._execute_exploration_command(exploration_cmd)
 
     def _edge_exploration(self) -> Optional[Any]:
-        """
-        Pattern d'exploration des bords.
-        
-        Returns:
-            Commande d'exploration
-        """
-        # Favorise les mouvements vers l'avant
+        """Pattern d'exploration des bords"""
         choices = [CommandType.FORWARD] * 4 + [CommandType.LEFT, CommandType.RIGHT]
         exploration_cmd = random.choice(choices)
         return self._execute_exploration_command(exploration_cmd)
 
     def _execute_exploration_command(self, command_type: CommandType) -> Optional[Any]:
-        """
-        Exécute une commande d'exploration.
-        
-        Args:
-            command_type: Type de commande
-            
-        Returns:
-            Commande exécutée
-        """
+        """Exécute une commande d'exploration"""
         self.total_moves += 1
         
         command_map = {
@@ -356,12 +274,7 @@ class ExploreState(State):
         return self.cmd_mgr.forward()
 
     def _get_missing_resources(self) -> Dict[str, int]:
-        """
-        Retourne les ressources manquantes pour l'incantation.
-        
-        Returns:
-            Dictionnaire des ressources manquantes
-        """
+        """Retourne les ressources manquantes pour l'incantation"""
         requirements = IncantationRequirements.REQUIRED_RESOURCES.get(self.state.level, {})
         inventory = self.state.get_inventory()
         missing = {}
@@ -374,51 +287,30 @@ class ExploreState(State):
         return missing
 
     def _transition_to_emergency(self) -> Optional[Any]:
-        """
-        Transition vers l'état d'urgence.
-        
-        Returns:
-            Exécution du nouvel état
-        """
+        """Transition vers l'état d'urgence"""
         from ai.strategy.state.emergency import EmergencyState
         new_state = EmergencyState(self.planner)
         self.planner.fsm.transition_to(new_state)
         return new_state.execute()
 
     def _transition_to_food_collection(self) -> Optional[Any]:
-        """
-        Transition vers la collecte de nourriture.
-        
-        Returns:
-            Exécution du nouvel état
-        """
+        """Transition vers la collecte de nourriture"""
         from ai.strategy.state.collect_food import CollectFoodState
         new_state = CollectFoodState(self.planner)
         self.planner.fsm.transition_to(new_state)
         return new_state.execute()
 
     def _transition_to_resource_collection(self) -> Optional[Any]:
-        """
-        Transition vers la collecte de ressources.
-        
-        Returns:
-            Exécution du nouvel état
-        """
+        """Transition vers la collecte de ressources"""
         from ai.strategy.state.collect_resources import CollectResourcesState
         new_state = CollectResourcesState(self.planner)
         self.planner.fsm.transition_to(new_state)
         return new_state.execute()
 
     def _force_transition(self) -> Optional[Any]:
-        """
-        Force une transition pour éviter de rester en exploration.
-        
-        Returns:
-            Transition forcée
-        """
+        """Force une transition pour éviter de rester en exploration"""
         current_food = self.state.get_food_count()
         
-        # Priorité 1: Reproduction si requise
         if self.state.should_reproduce():
             logger.info("[ExploreState] → Transition reproduction forcée")
             from ai.strategy.state.reproduction import ReproductionState
@@ -426,7 +318,6 @@ class ExploreState(State):
             self.planner.fsm.transition_to(new_state)
             return new_state.execute()
         
-        # Priorité 2: Incantation si possible
         if self._can_attempt_incantation():
             logger.info("[ExploreState] → Transition incantation forcée")
             if self.state.level == 1:
@@ -438,28 +329,20 @@ class ExploreState(State):
             self.planner.fsm.transition_to(new_state)
             return new_state.execute()
         
-        # Priorité 3: Collecte selon les besoins
         missing_resources = self._get_missing_resources()
         if missing_resources and current_food >= StateTransitionThresholds.FOOD_LOW_THRESHOLD:
             logger.info("[ExploreState] → Transition collecte ressources forcée")
             return self._transition_to_resource_collection()
         
-        # Priorité 4: Nourriture
         if current_food <= FoodThresholds.SUFFICIENT:
             logger.info("[ExploreState] → Transition collecte nourriture forcée")
             return self._transition_to_food_collection()
         
-        # Continuer l'exploration avec nouveau pattern
         self._change_exploration_pattern()
         return None
 
     def _can_attempt_incantation(self) -> bool:
-        """
-        Vérifie si une incantation est possible.
-        
-        Returns:
-            True si incantation possible
-        """
+        """Vérifie si une incantation est possible"""
         if self.state.level >= GameplayConstants.MAX_LEVEL:
             return False
             
@@ -475,26 +358,14 @@ class ExploreState(State):
         return current_food >= min_food
 
     def on_command_success(self, command_type, response=None):
-        """
-        Gestion du succès des commandes d'exploration.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion du succès des commandes d'exploration"""
         if command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
             self.context['needs_vision_update'] = True
         elif command_type == CommandType.INVENTORY:
             self.last_inventory_check = time.time()
 
     def on_command_failed(self, command_type, response=None):
-        """
-        Gestion des échecs en exploration.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion des échecs en exploration"""
         if command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
             stuck_counter = self.context.get('stuck_counter', 0) + 1
             self.context['stuck_counter'] = stuck_counter
@@ -504,15 +375,7 @@ class ExploreState(State):
                 self.context['stuck_counter'] = 0
 
     def on_event(self, event: Event) -> Optional[State]:
-        """
-        Gestion des événements en exploration.
-        
-        Args:
-            event: Événement reçu
-            
-        Returns:
-            Nouvel état ou None
-        """
+        """Gestion des événements en exploration"""
         if event == Event.FOOD_EMERGENCY:
             logger.warning("[ExploreState] Urgence alimentaire!")
             from ai.strategy.state.emergency import EmergencyState
@@ -535,13 +398,12 @@ class ExploreState(State):
         return None
 
     def on_enter(self):
-        """Actions à l'entrée de l'état d'exploration."""
+        """Actions à l'entrée de l'état d'exploration"""
         super().on_enter()
         current_food = self.state.get_food_count()
         
         logger.info(f"[ExploreState] 🗺️ ENTRÉE exploration - Food: {current_food}, Pattern: {self.exploration_pattern}")
         
-        # Reset des compteurs
         self.exploration_start_time = time.time()
         self.total_moves = 0
         self.resources_discovered = 0
@@ -551,7 +413,7 @@ class ExploreState(State):
         self.context['needs_vision_update'] = True
 
     def on_exit(self):
-        """Actions à la sortie de l'état d'exploration."""
+        """Actions à la sortie de l'état d'exploration"""
         super().on_exit()
         exploration_time = time.time() - self.exploration_start_time
         
@@ -560,5 +422,4 @@ class ExploreState(State):
                    f"Ressources: {self.resources_discovered}, Nourriture: {self.food_discovered}, "
                    f"Nourriture ignorée: {self.food_discoveries_ignored}")
         
-        # Nettoyage
         self.exploration_commands.clear()

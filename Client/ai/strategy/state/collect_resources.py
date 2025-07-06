@@ -2,31 +2,25 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## collect_resources
+## collect_resources - État de collecte ressources avec constantes centralisées
 ##
 
 import time
 from typing import Optional, Any, Dict, List
 from ai.strategy.fsm import State, Event
 from ai.strategy.pathfinding import Pathfinder
-from config import Constants, CommandType
+from config import CommandType
 from constant import (
     StateTransitionThresholds, GameplayConstants, 
-    IncantationRequirements, FoodThresholds
+    IncantationRequirements, FoodThresholds, ResourceNames
 )
 from utils.logger import logger
 
 
 class CollectResourcesState(State):
-    """État de collecte de ressources avec protection anti-boucles infinies."""
+    """État de collecte de ressources avec protection anti-boucles infinies"""
     
     def __init__(self, planner):
-        """
-        Initialise l'état de collecte de ressources.
-        
-        Args:
-            planner: Planificateur FSM
-        """
         super().__init__(planner)
         self.pathfinder = Pathfinder()
         self.resource_target = None
@@ -43,12 +37,7 @@ class CollectResourcesState(State):
         logger.info(f"[CollectResourcesState] ⚒️ Collecte ressources niveau {self.state.level} activée")
 
     def execute(self) -> Optional[Any]:
-        """
-        Logique de collecte avec protection renforcée contre les boucles infinies.
-        
-        Returns:
-            Commande à exécuter ou None
-        """
+        """Logique de collecte avec protection renforcée contre les boucles infinies"""
         current_time = time.time()
         current_food = self.state.get_food_count()
         
@@ -98,15 +87,7 @@ class CollectResourcesState(State):
         return self._explore_for_resources()
 
     def _should_check_inventory(self, current_time: float) -> bool:
-        """
-        Détermine si un check d'inventaire est nécessaire.
-        
-        Args:
-            current_time: Temps actuel
-            
-        Returns:
-            True si vérification nécessaire
-        """
+        """Détermine si un check d'inventaire est nécessaire"""
         if self.context.get('needs_inventory_check', False):
             self.context['needs_inventory_check'] = False
             return True
@@ -115,12 +96,7 @@ class CollectResourcesState(State):
         return time_since_last >= GameplayConstants.INVENTORY_CHECK_INTERVAL
 
     def _needs_vision_update(self) -> bool:
-        """
-        Détermine si une mise à jour de vision est nécessaire.
-        
-        Returns:
-            True si mise à jour nécessaire
-        """
+        """Détermine si une mise à jour de vision est nécessaire"""
         return (
             self.context.get('needs_vision_update', False) or
             not self.state.get_vision().last_vision_data or
@@ -128,12 +104,7 @@ class CollectResourcesState(State):
         )
 
     def _get_needed_resource_on_tile(self) -> Optional[str]:
-        """
-        Trouve une ressource nécessaire présente sur la tuile actuelle.
-        
-        Returns:
-            Nom de la ressource ou None
-        """
+        """Trouve une ressource nécessaire présente sur la tuile actuelle"""
         vision = self.state.get_vision()
         needed_resources = self._get_missing_resources()
         
@@ -145,12 +116,7 @@ class CollectResourcesState(State):
         return None
 
     def _get_missing_resources(self) -> Dict[str, int]:
-        """
-        Retourne les ressources manquantes pour l'incantation actuelle.
-        
-        Returns:
-            Dictionnaire des ressources manquantes
-        """
+        """Retourne les ressources manquantes pour l'incantation actuelle"""
         requirements = IncantationRequirements.REQUIRED_RESOURCES.get(self.state.level, {})
         inventory = self.state.get_inventory()
         missing = {}
@@ -163,12 +129,7 @@ class CollectResourcesState(State):
         return missing
 
     def _find_priority_resource_target(self):
-        """
-        Trouve la ressource prioritaire la plus proche avec validation.
-        
-        Returns:
-            Cible de ressource ou None
-        """
+        """Trouve la ressource prioritaire la plus proche avec validation"""
         missing_resources = self._get_missing_resources()
         if not missing_resources:
             return None
@@ -195,37 +156,21 @@ class CollectResourcesState(State):
         return None
 
     def _get_resource_priority_order(self, missing_resources: Dict[str, int]) -> List[str]:
-        """
-        Ordre de priorité pour la collecte de ressources (rareté décroissante).
-        
-        Args:
-            missing_resources: Ressources manquantes
-            
-        Returns:
-            Liste ordonnée par priorité
-        """
+        """Ordre de priorité pour la collecte de ressources (rareté décroissante)"""
         rarity_order = [
-            Constants.THYSTAME.value,
-            Constants.PHIRAS.value,
-            Constants.MENDIANE.value,
-            Constants.SIBUR.value,
-            Constants.DERAUMERE.value,
-            Constants.LINEMATE.value
+            ResourceNames.THYSTAME,
+            ResourceNames.PHIRAS,
+            ResourceNames.MENDIANE,
+            ResourceNames.SIBUR,
+            ResourceNames.DERAUMERE,
+            ResourceNames.LINEMATE
         ]
         
         priority_list = [res for res in rarity_order if res in missing_resources]
         return priority_list
 
     def _plan_resource_collection_path(self, target):
-        """
-        Planifie le chemin optimal vers la ressource.
-        
-        Args:
-            target: Cible de ressource
-            
-        Returns:
-            Liste des commandes de mouvement
-        """
+        """Planifie le chemin optimal vers la ressource"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return []
@@ -240,12 +185,7 @@ class CollectResourcesState(State):
         return commands[:max_commands] if commands else []
 
     def _all_resources_collected(self) -> bool:
-        """
-        Vérifie si toutes les ressources nécessaires sont collectées.
-        
-        Returns:
-            True si toutes les ressources sont disponibles
-        """
+        """Vérifie si toutes les ressources nécessaires sont collectées"""
         missing = self._get_missing_resources()
         is_complete = len(missing) == 0
         
@@ -256,12 +196,7 @@ class CollectResourcesState(State):
         return is_complete
 
     def _transition_to_incantation(self) -> Optional[Any]:
-        """
-        Transition vers l'incantation selon les règles du protocole.
-        
-        Returns:
-            Exécution du nouvel état
-        """
+        """Transition vers l'incantation selon les règles du protocole"""
         if self.state.level == 1:
             logger.info("[CollectResourcesState] → Incantation solo niveau 1")
             from ai.strategy.state.incantation import IncantationState
@@ -275,12 +210,7 @@ class CollectResourcesState(State):
         return new_state.execute()
 
     def _transition_to_food_collection(self) -> Optional[Any]:
-        """
-        Transition vers la collecte de nourriture.
-        
-        Returns:
-            Exécution du nouvel état
-        """
+        """Transition vers la collecte de nourriture"""
         logger.info("[CollectResourcesState] → Collecte nourriture")
         from ai.strategy.state.collect_food import CollectFoodState
         new_state = CollectFoodState(self.planner)
@@ -288,12 +218,7 @@ class CollectResourcesState(State):
         return new_state.execute()
 
     def _force_transition(self) -> Optional[Any]:
-        """
-        Force une transition pour éviter de rester bloqué.
-        
-        Returns:
-            Transition forcée
-        """
+        """Force une transition pour éviter de rester bloqué"""
         current_food = self.state.get_food_count()
         
         if current_food <= StateTransitionThresholds.FOOD_LOW_THRESHOLD:
@@ -309,15 +234,7 @@ class CollectResourcesState(State):
         return new_state.execute()
 
     def _execute_movement_command(self, command_type: CommandType) -> Optional[Any]:
-        """
-        Exécute une commande de mouvement.
-        
-        Args:
-            command_type: Type de commande
-            
-        Returns:
-            Commande exécutée
-        """
+        """Exécute une commande de mouvement"""
         command_map = {
             CommandType.FORWARD: self.cmd_mgr.forward,
             CommandType.LEFT: self.cmd_mgr.left,
@@ -331,12 +248,7 @@ class CollectResourcesState(State):
         return None
 
     def _explore_for_resources(self) -> Optional[Any]:
-        """
-        Exploration pour trouver des ressources.
-        
-        Returns:
-            Commande d'exploration
-        """
+        """Exploration pour trouver des ressources"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return self.cmd_mgr.look()
@@ -349,13 +261,7 @@ class CollectResourcesState(State):
         return self._execute_movement_command(exploration_cmd)
 
     def on_command_success(self, command_type, response=None):
-        """
-        Gestion du succès des commandes.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion du succès des commandes"""
         if command_type == CommandType.TAKE:
             resource = self.current_priority_resource
             if resource:
@@ -384,13 +290,7 @@ class CollectResourcesState(State):
                 logger.info("[CollectResourcesState] 🎯 COMPLET après inventaire!")
 
     def on_command_failed(self, command_type, response=None):
-        """
-        Gestion des échecs de commandes.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion des échecs de commandes"""
         if command_type == CommandType.TAKE:
             self.collection_attempts += 1
             resource = self.current_priority_resource
@@ -411,15 +311,7 @@ class CollectResourcesState(State):
                 self.movement_commands.clear()
 
     def on_event(self, event: Event) -> Optional[State]:
-        """
-        Gestion des événements.
-        
-        Args:
-            event: Événement reçu
-            
-        Returns:
-            Nouvel état ou None
-        """
+        """Gestion des événements"""
         if event == Event.FOOD_EMERGENCY:
             logger.warning("[CollectResourcesState] Urgence alimentaire!")
             from ai.strategy.state.emergency import EmergencyState
@@ -435,7 +327,7 @@ class CollectResourcesState(State):
         return None
 
     def on_enter(self):
-        """Actions à l'entrée de l'état."""
+        """Actions à l'entrée de l'état"""
         super().on_enter()
         missing = self._get_missing_resources()
         logger.info(f"[CollectResourcesState] ⚒️ ENTRÉE collecte - Manquants: {missing}")
@@ -450,7 +342,7 @@ class CollectResourcesState(State):
         self.context['needs_vision_update'] = True
 
     def on_exit(self):
-        """Actions à la sortie de l'état."""
+        """Actions à la sortie de l'état"""
         super().on_exit()
         session_time = time.time() - self.collection_session_start
         total_collected = sum(self.resources_collected.values())

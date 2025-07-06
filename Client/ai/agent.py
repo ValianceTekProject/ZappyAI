@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## Agent
+## Agent mis à jour avec système de coordination
 ##
 
 import time
@@ -20,16 +20,13 @@ from constant import FoodThresholds, GameplayConstants
 
 
 class Agent:
-    """
-    Agent unique, supportant DQN ou FSM via Planner.
-    Contient uniquement la logique commune de lecture, mise à jour d'état et délégation.
-    """
+    """Agent unique supportant coordination avec protocole simplifié"""
 
     _next_id = 0
 
     def __init__(self, connection: Connection, team_id: str, agent_thread, model: str):
         """
-        Initialise un nouvel agent.
+        Initialise un nouvel agent avec support de coordination
         
         Args:
             connection: Connexion au serveur
@@ -71,7 +68,7 @@ class Agent:
         logger.info(f"[Agent] Agent {self.agent_id} initialisé - Team: {team_id}")
 
     def run_loop(self):
-        """Boucle principale de l'agent."""
+        """Boucle principale de l'agent avec support de coordination"""
         while True:
             try:
                 now = time.time()
@@ -92,6 +89,8 @@ class Agent:
 
                 self.timing.update_from_food_level(self.state.get_food_count())
 
+                self._update_coordination_reference()
+
                 self._make_ia_decision(now)
 
                 self._adaptive_sleep()
@@ -100,8 +99,19 @@ class Agent:
                 logger.error(f"[Agent {self.agent_id}] Erreur critique: {e}")
                 self._handle_critical_error(e)
 
+    def _update_coordination_reference(self):
+        """Met à jour la référence de coordination dans le MessageManager"""
+        try:
+            current_state = self.planner.fsm.state
+            if hasattr(current_state, '__class__') and 'CoordinateIncantationState' in current_state.__class__.__name__:
+                self.msg_manager.set_coordination_state(current_state)
+            else:
+                self.msg_manager.set_coordination_state(None)
+        except Exception as e:
+            logger.debug(f"[Agent {self.agent_id}] Erreur mise à jour coordination: {e}")
+
     def _handle_agent_death(self):
-        """Gère la mort de l'agent."""
+        """Gère la mort de l'agent"""
         self.agent_thread.agent_dead(self)
         survival = time.time() - getattr(self, '_start_time', time.time())
         logger.info(f"[Agent {self.agent_id}] MORT niveau {self.state.level} - "
@@ -109,12 +119,15 @@ class Agent:
 
     def _process_completed_commands(self, completed: list, now: float):
         """
-        Traite les commandes terminées.
+        Traite les commandes terminées
         
         Args:
             completed: Liste des commandes terminées
             now: Temps actuel
         """
+        if completed is None:
+            return
+            
         for cmd in completed:
             self.state.update(cmd)
             self._last_command_time = now
@@ -128,7 +141,7 @@ class Agent:
 
     def _handle_initialization(self) -> bool:
         """
-        Initialisation en plusieurs étapes.
+        Initialisation en plusieurs étapes
         
         Returns:
             True si initialisation en cours, False si terminée
@@ -152,7 +165,7 @@ class Agent:
 
     def _make_ia_decision(self, now: float):
         """
-        Délégation de la décision au Planner (FSM ou DQN).
+        Délégation de la décision au Planner avec support coordination
         
         Args:
             now: Temps actuel
@@ -173,7 +186,7 @@ class Agent:
                 self._last_decision_time = now
 
     def _adaptive_sleep(self):
-        """Sleep adaptatif selon l'urgence de la situation."""
+        """Sleep adaptatif selon l'urgence de la situation"""
         sleep_time = self.timing.get_sleep_time()
 
         current_food = self.state.get_food_count()
@@ -187,7 +200,7 @@ class Agent:
 
     def _handle_critical_error(self, error: Exception):
         """
-        Gère les erreurs critiques avec récupération.
+        Gère les erreurs critiques avec récupération
         
         Args:
             error: Exception capturée
@@ -202,7 +215,7 @@ class Agent:
 
     def read_non_blocking(self) -> list:
         """
-        Lecture réseau non-bloquante optimisée.
+        Lecture réseau non-bloquante optimisée
         
         Returns:
             Liste des réponses reçues

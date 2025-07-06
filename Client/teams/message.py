@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## message
+## message - Système de messages nettoyé
 ##
 
 import json
@@ -14,19 +14,17 @@ from enum import Enum
 from utils.logger import logger
 
 class MessageType(Enum):
-    STATUS = "status"
+    """Types de messages supportés"""
     INCANTATION_REQUEST = "incant_req"
     INCANTATION_RESPONSE = "incant_resp"
-    RESOURCE_REQUEST = "resource_req"
-    RESOURCE_RESPONSE = "resource_resp"
-    DEFENSE_REQUEST = "defense_req"
 
 class Message:
+    """Gestionnaire de messages avec protocole simplifié"""
     _SECRET_KEY = b"s3cr3t_team_key_2025"
 
     @staticmethod
     def _derive_keystream(length: int) -> bytes:
-        """Dérive un keystream simple et robuste."""
+        """Dérive un keystream simple et robuste"""
         key = Message._SECRET_KEY
         buf = bytearray()
         t = int(time.time()) & 0xFFFF
@@ -39,7 +37,7 @@ class Message:
 
     @staticmethod
     def _xor_rotate(data: bytes) -> bytes:
-        """Chiffrement XOR + rotation robuste."""
+        """Chiffrement XOR + rotation robuste"""
         if not data:
             return b''
         
@@ -52,7 +50,7 @@ class Message:
 
     @staticmethod
     def _inv_xor_rotate(data: bytes) -> bytes:
-        """Déchiffrement inverse robuste."""
+        """Déchiffrement inverse robuste"""
         if not data:
             return b''
             
@@ -69,7 +67,7 @@ class Message:
 
     @staticmethod
     def encode_msg(msg_type: MessageType, sender_id: int, payload: Dict[str, Any]) -> str:
-        """Encode un message avec gestion d'erreur robuste."""
+        """Encode un message avec gestion d'erreur robuste"""
         try:
             message = {
                 "type": msg_type.value,
@@ -78,11 +76,8 @@ class Message:
             }
             
             raw = json.dumps(message, separators=(",", ":"), ensure_ascii=True).encode('utf-8')
-            
             compressed = zlib.compress(raw, level=1)
-            
             encrypted = Message._xor_rotate(compressed)
-            
             token = base64.b64encode(encrypted).decode('ascii')
             
             return token
@@ -93,13 +88,12 @@ class Message:
 
     @staticmethod
     def decode_msg(token: str) -> Optional[Tuple[MessageType, int, Dict[str, Any]]]:
-        """Décode un message avec validation robuste."""
+        """Décode un message avec validation robuste"""
         try:
             if not token or not token.strip():
                 return None
                 
             token = token.strip()
-            
             token = Message.fix_base64_padding(token)
             
             if len(token) < 4:
@@ -108,7 +102,6 @@ class Message:
             try:
                 encrypted = base64.b64decode(token, validate=True)
             except Exception:
-                logger.debug(f"[Message] Échec décodage base64")
                 return None
                 
             if not encrypted:
@@ -117,7 +110,6 @@ class Message:
             try:
                 compressed = Message._inv_xor_rotate(encrypted)
             except Exception:
-                logger.debug(f"[Message] Échec déchiffrement")
                 return None
                 
             if not compressed:
@@ -125,23 +117,17 @@ class Message:
                 
             try:
                 raw = zlib.decompress(compressed)
-            except zlib.error as e:
-                logger.debug(f"[Message] Échec décompression zlib: {e}")
-                return None
-            except Exception as e:
-                logger.debug(f"[Message] Erreur décompression: {e}")
+            except zlib.error:
                 return None
                 
             try:
                 json_str = raw.decode('utf-8')
             except UnicodeDecodeError:
-                logger.debug(f"[Message] Échec décodage UTF-8")
                 return None
                 
             try:
                 msg = json.loads(json_str)
             except json.JSONDecodeError:
-                logger.debug(f"[Message] Échec parsing JSON")
                 return None
                 
             if not isinstance(msg, dict):
@@ -154,7 +140,6 @@ class Message:
             try:
                 msg_type = MessageType(msg_type_str)
             except ValueError:
-                logger.debug(f"[Message] Type de message inconnu: {msg_type_str}")
                 return None
                 
             sender_id = msg.get("sender_id", 0)
@@ -163,16 +148,15 @@ class Message:
             if not isinstance(payload, dict):
                 payload = {}
                 
-            logger.debug(f"[Message] ✅ Message décodé: {msg_type_str} de {sender_id}")
             return msg_type, int(sender_id), payload
             
         except Exception as e:
-            logger.debug(f"[Message] Erreur générale décodage: {e}")
+            logger.debug(f"[Message] Erreur décodage: {e}")
             return None
 
     @staticmethod
     def fix_base64_padding(token: str) -> str:
-        """Corrige le padding base64."""
+        """Corrige le padding base64"""
         if not token:
             return token
         missing_padding = (4 - len(token) % 4) % 4
@@ -180,7 +164,7 @@ class Message:
 
     @staticmethod
     def create_incantation_request(sender_id: int, team_id: str, level: int, required_players: int, timestamp: Optional[float] = None) -> str:
-        """Crée une requête d'incantation."""
+        """Crée une requête d'incantation"""
         data = {
             "sender_id": sender_id,
             "team_id": team_id,
@@ -192,9 +176,9 @@ class Message:
         return Message.encode_msg(MessageType.INCANTATION_REQUEST, sender_id, data)
 
     @staticmethod
-    def create_incantation_response(sender_id: int, team_id: str, request_sender: int, response: str, level: int, eta: Optional[int] = None, timestamp: Optional[float] = None) -> str:
-        """Crée une réponse d'incantation."""
-        data: Dict[str, Any] = {
+    def create_incantation_response(sender_id: int, team_id: str, request_sender: int, response: str, level: int, timestamp: Optional[float] = None) -> str:
+        """Crée une réponse d'incantation"""
+        data = {
             "sender_id": sender_id,
             "team_id": team_id,
             "request_sender": request_sender,
@@ -203,57 +187,14 @@ class Message:
             "level": level,
             "timestamp": timestamp if timestamp is not None else time.time()
         }
-        if eta is not None:
-            data["eta"] = eta
         return Message.encode_msg(MessageType.INCANTATION_RESPONSE, sender_id, data)
 
     @staticmethod
-    def create_defense_request(sender_id: int, team_id: str, threat_level: str, timestamp: Optional[float] = None) -> str:
-        """Crée une demande de défense."""
-        data = {
-            "sender_id": sender_id,
-            "team_id": team_id,
-            "threat_level": threat_level,
-            "action": "defense_req",
-            "timestamp": timestamp if timestamp is not None else time.time()
-        }
-        return Message.encode_msg(MessageType.DEFENSE_REQUEST, sender_id, data)
-
-    @staticmethod
-    def create_resource_request(sender_id: int, team_id: str, resource: str, quantity: int, timestamp: Optional[float] = None) -> str:
-        """Crée une demande de ressources."""
-        data = {
-            "sender_id": sender_id,
-            "team_id": team_id,
-            "resource": resource,
-            "quantity": quantity,
-            "action": "resource_req",
-            "timestamp": timestamp if timestamp is not None else time.time()
-        }
-        return Message.encode_msg(MessageType.RESOURCE_REQUEST, sender_id, data)
-
-    @staticmethod
-    def create_resource_response(sender_id: int, team_id: str, request_sender: int, resource: str, status: str, eta: Optional[int] = None, timestamp: Optional[float] = None) -> str:
-        """Crée une réponse de ressources."""
-        data = {
-            "sender_id": sender_id,
-            "team_id": team_id,
-            "request_sender": request_sender,
-            "resource": resource,
-            "status": status,
-            "action": "resource_resp",
-            "timestamp": timestamp if timestamp is not None else time.time()
-        }
-        if eta is not None:
-            data["eta"] = eta
-        return Message.encode_msg(MessageType.RESOURCE_RESPONSE, sender_id, data)
-
-    @staticmethod
     def is_message_expired(timestamp: float, max_age: float = 60.0) -> bool:
-        """Vérifie si un message a expiré."""
+        """Vérifie si un message a expiré"""
         return (time.time() - timestamp) > max_age
 
     @staticmethod
     def get_message_age(timestamp: float) -> float:
-        """Retourne l'âge d'un message."""
+        """Retourne l'âge d'un message"""
         return time.time() - timestamp

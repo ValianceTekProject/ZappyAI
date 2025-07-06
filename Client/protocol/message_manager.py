@@ -1,66 +1,135 @@
+##
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## message_manager
+## message_manager - Gestionnaire de messages simplifié
 
 import time
-from typing import List, Any, Optional, Tuple
+from typing import List, Any, Optional
 from utils.logger import logger
 from teams.message import Message, MessageType
 from protocol.parser import Parser
 
 class MessageManager:
-    """
-    Gère l'envoi et la réception des commandes et des broadcasts.
-
-    - Remplace l'ancien usage direct de Parser et MessageBus à
-      l'aide de la nouvelle classe centralisée Message
-    """
+    """Gestionnaire des messages et broadcasts avec coordination simplifiée"""
+    
     def __init__(self, cmd_mgr, bus):
         self.cmd_mgr = cmd_mgr
         self.bus = bus
         self.is_dead = False
+        self.coordination_state = None
+
+    def set_coordination_state(self, coordination_state):
+        """Définit la référence vers l'état de coordination actuel"""
+        self.coordination_state = coordination_state
 
     def process_responses(self, raw_responses: List[str]) -> Optional[List[str]]:
         """
-        Parcourt la liste des réponses brutes du serveur :
-        - Si mort, marque is_dead
-        - Si broadcast, décapsule avec Message.decode_msg(), vérifie expiration,
-          puis publie sur le bus
-        - Sinon, conserve la réponse pour CommandManager
+        Traite les réponses du serveur et dispatche les broadcasts
+        
+        Args:
+            raw_responses: Liste des réponses brutes du serveur
+            
+        Returns:
+            Liste des réponses de commandes traitées ou None si mort
         """
         command_responses = []
+        
         for response in raw_responses:
             response = response.strip()
+            
             if Parser.is_dead_response(response):
                 self.is_dead = True
-                return
+                return None
+                
             if Parser.is_broadcast(response):
-                dir_, token = Parser.parse_broadcast_response(response).values()
-                self.bus.publish_raw(dir_, token)
+                self._handle_broadcast_message(response)
             else:
                 command_responses.append(response)
+                
         return self.cmd_mgr.process_responses(command_responses)
 
-    def broadcast_message(self,
-                          msg_type: MessageType,
-                          sender_id: str,
-                          team_id: str,
-                          **kwargs: Any) -> None:
+    def _handle_broadcast_message(self, response: str):
         """
-        Méthode utilitaire pour envoyer un broadcast via Message
-        Exemples:
-            broadcast_message(
-                MessageType.INCANTATION_REQUEST,
-                sender_id=self.state.team_id,
-                team_id=self.state.team_id,
-                level=self.state.level,
-                required_players=needed
-            )
+        Traite un message de broadcast reçu
+        
+        Args:
+            response: Réponse de broadcast brute du serveur
         """
-        token = Message.encode_msg(msg_type, sender_id, {
-            'team_id': team_id,
-            **kwargs,
-            'timestamp': time.time()
-        })
-        self.cmd_mgr.broadcast(token)
+        try:
+            broadcast_data = Parser.parse_broadcast_response(response)
+            if not broadcast_data:
+                return
+                
+            direction = broadcast_data.get("direction")
+            token = broadcast_data.get("message")
+            
+            if direction is None or not token:
+                return
+                
+            decoded = Message.decode_msg(token)
+            if not decoded:
+                self.bus.publish_raw(direction, token)
+                return
+                
+            msg_type, sender_id, payload = decoded
+            
+            if self._should_handle_coordination_message(msg_type):
+                self._handle_coordination_broadcast(sender_id, payload, direction)
+            
+            self.bus.publish_raw(direction, token)
+            
+        except Exception as e:
+            logger.error(f"[MessageManager] Erreur traitement broadcast: {e}")
+
+    def _should_handle_coordination_message(self, msg_type: MessageType) -> bool:
+        """
+        Détermine si un message doit être traité par la coordination
+        
+        Args:
+            msg_type: Type de message reçu
+            
+        Returns:
+            True si le message doit être traité par la coordination
+        """
+        return (self.coordination_state is not None and 
+                msg_type in [MessageType.INCANTATION_REQUEST, MessageType.INCANTATION_RESPONSE])
+
+    def _handle_coordination_broadcast(self, sender_id: int, payload: dict, direction: int):
+        """
+        Transmet un message de coordination à l'état approprié
+        
+        Args:
+            sender_id: ID de l'expéditeur
+            payload: Données du message
+            direction: Direction du broadcast (K)
+        """
+        try:
+            if hasattr(self.coordination_state, 'handle_broadcast_message'):
+                self.coordination_state.handle_broadcast_message(sender_id, payload, direction)
+                
+        except Exception as e:
+            logger.error(f"[MessageManager] Erreur transmission coordination: {e}")
+
+    def broadcast_message(self, msg_type: MessageType, sender_id: int, team_id: str, **kwargs: Any) -> None:
+        """
+        Envoie un message via broadcast
+        
+        Args:
+            msg_type: Type de message à envoyer
+            sender_id: ID de l'expéditeur
+            team_id: ID de l'équipe
+            **kwargs: Données additionnelles du message
+        """
+        try:
+            token = Message.encode_msg(msg_type, sender_id, {
+                'team_id': team_id,
+                **kwargs,
+                'timestamp': time.time()
+            })
+            
+            if token:
+                self.cmd_mgr.broadcast(token)
+                
+        except Exception as e:
+            logger.error(f"[MessageManager] Erreur envoi broadcast: {e}")

@@ -18,15 +18,9 @@ from utils.logger import logger
 
 
 class EmergencyState(State):
-    """État d'urgence critique - Survie immédiate avec priorité absolue."""
+    """État d'urgence critique - Survie immédiate avec priorité absolue"""
     
     def __init__(self, planner):
-        """
-        Initialise l'état d'urgence.
-        
-        Args:
-            planner: Planificateur FSM
-        """
         super().__init__(planner)
         self.pathfinder = Pathfinder()
         self.emergency_target = None
@@ -41,46 +35,34 @@ class EmergencyState(State):
         logger.error(f"[EmergencyState] 🚨 MODE URGENCE ACTIVÉ - Food: {self.state.get_food_count()}/{FoodThresholds.CRITICAL}")
 
     def execute(self) -> Optional[Any]:
-        """
-        Logique d'urgence optimisée pour la survie immédiate.
-        
-        Returns:
-            Commande d'urgence ou None
-        """
+        """Logique d'urgence optimisée pour la survie immédiate"""
         current_time = time.time()
         current_food = self.state.get_food_count()
 
-        # Log périodique de l'état critique
         if current_time - self.last_emergency_action > 2.0:
             logger.error(f"[EmergencyState] 💀 CRITIQUE! Food: {current_food}/{FoodThresholds.CRITICAL}")
             self.last_emergency_action = current_time
 
-        # Vérification si on sort de l'urgence
         if current_food > StateTransitionThresholds.EMERGENCY_EXIT_THRESHOLD:
             logger.info(f"[EmergencyState] ✅ Sortie d'urgence (food: {current_food})")
             return self._exit_emergency()
 
-        # Timeout de sécurité
         if current_time - self.emergency_start_time > self.max_emergency_time:
             logger.warning("[EmergencyState] ⏰ Timeout urgence")
             return self._exit_emergency()
 
-        # Mise à jour vision si nécessaire
         if self._needs_vision_update():
             self.context['needs_vision_update'] = False
             return self.cmd_mgr.look()
 
-        # Priorité absolue : nourriture sur la tuile actuelle
         if self._food_on_current_tile():
             logger.info("[EmergencyState] 🍖 NOURRITURE TROUVÉE ICI!")
             return self.cmd_mgr.take(ResourceNames.FOOD)
 
-        # Exécution des commandes de mouvement d'urgence
         if self.emergency_commands:
             next_cmd = self.emergency_commands.pop(0)
             return self._execute_emergency_command(next_cmd)
 
-        # Recherche de nourriture visible
         food_target = self._find_closest_food()
         if food_target:
             if not self.emergency_target or food_target.rel_position != self.emergency_target.rel_position:
@@ -93,21 +75,14 @@ class EmergencyState(State):
                 next_cmd = self.emergency_commands.pop(0)
                 return self._execute_emergency_command(next_cmd)
 
-        # Mode désespéré si aucune nourriture visible
         if not self.desperate_mode:
             self.desperate_mode = True
             logger.error("[EmergencyState] 😰 MODE DÉSESPÉRÉ ACTIVÉ")
 
-        # Exploration désespérée
         return self._desperate_exploration()
 
     def _needs_vision_update(self) -> bool:
-        """
-        Détermine si une mise à jour de vision est nécessaire.
-        
-        Returns:
-            True si mise à jour nécessaire
-        """
+        """Détermine si une mise à jour de vision est nécessaire"""
         return (
             not self.state.get_vision().last_vision_data or
             self.context.get('needs_vision_update', False) or
@@ -115,12 +90,7 @@ class EmergencyState(State):
         )
 
     def _food_on_current_tile(self) -> bool:
-        """
-        Vérifie si de la nourriture est présente sur la tuile actuelle.
-        
-        Returns:
-            True si nourriture présente
-        """
+        """Vérifie si de la nourriture est présente sur la tuile actuelle"""
         vision = self.state.get_vision()
         for data in vision.last_vision_data:
             if data.rel_pos == (0, 0):
@@ -128,12 +98,7 @@ class EmergencyState(State):
         return False
 
     def _find_closest_food(self) -> Optional[RelativeTarget]:
-        """
-        Trouve la nourriture la plus proche dans la vision.
-        
-        Returns:
-            Cible de nourriture ou None
-        """
+        """Trouve la nourriture la plus proche dans la vision"""
         vision = self.state.get_vision()
         closest_food_pos = vision.find_closest_resource(ResourceNames.FOOD)
         
@@ -143,15 +108,7 @@ class EmergencyState(State):
         return None
 
     def _plan_emergency_path(self, target: RelativeTarget) -> list:
-        """
-        Planifie le chemin d'urgence le plus court vers la cible.
-        
-        Args:
-            target: Cible de nourriture
-            
-        Returns:
-            Liste des commandes d'urgence
-        """
+        """Planifie le chemin d'urgence le plus court vers la cible"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return []
@@ -162,20 +119,11 @@ class EmergencyState(State):
             vision_data
         )
         
-        # Limiter à 4 commandes pour réaction rapide
         max_emergency_commands = 4
         return commands[:max_emergency_commands] if commands else []
 
     def _execute_emergency_command(self, command_type: CommandType) -> Optional[Any]:
-        """
-        Exécute une commande d'urgence spécifique.
-        
-        Args:
-            command_type: Type de commande
-            
-        Returns:
-            Commande exécutée
-        """
+        """Exécute une commande d'urgence spécifique"""
         command_map = {
             CommandType.FORWARD: self.cmd_mgr.forward,
             CommandType.LEFT: self.cmd_mgr.left,
@@ -190,17 +138,11 @@ class EmergencyState(State):
         return None
 
     def _desperate_exploration(self) -> Optional[Any]:
-        """
-        Exploration désespérée quand aucune nourriture n'est visible.
-        
-        Returns:
-            Commande d'exploration
-        """
+        """Exploration désespérée quand aucune nourriture n'est visible"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return self.cmd_mgr.look()
         
-        # Exploration agressive
         exploration_cmd = self.pathfinder.get_exploration_direction(
             self.state.get_orientation(), 
             vision_data
@@ -213,25 +155,17 @@ class EmergencyState(State):
         return self._execute_emergency_command(exploration_cmd)
 
     def _exit_emergency(self) -> Optional[Any]:
-        """
-        Sortie de l'état d'urgence vers un état approprié.
-        
-        Returns:
-            Transition vers nouvel état
-        """
+        """Sortie de l'état d'urgence vers un état approprié"""
         current_food = self.state.get_food_count()
         emergency_duration = time.time() - self.emergency_start_time
         
         logger.info(f"[EmergencyState] 🎉 SURVIE RÉUSSIE! Food: {current_food}, Durée: {emergency_duration:.1f}s")
         
-        # Transition selon le niveau de nourriture et les priorités
         if current_food >= FoodThresholds.SUFFICIENT:
-            # Assez de nourriture pour autres activités
             if self.state.should_reproduce():
                 from ai.strategy.state.reproduction import ReproductionState
                 new_state = ReproductionState(self.planner)
             elif not self.state.has_missing_resources() and current_food >= FoodThresholds.ABUNDANT:
-                # Assez pour incanter
                 if self.state.level == 1:
                     from ai.strategy.state.incantation import IncantationState
                     new_state = IncantationState(self.planner)
@@ -242,7 +176,6 @@ class EmergencyState(State):
                 from ai.strategy.state.explore import ExploreState
                 new_state = ExploreState(self.planner)
         else:
-            # Continuer la collecte de nourriture
             from ai.strategy.state.collect_food import CollectFoodState
             new_state = CollectFoodState(self.planner)
         
@@ -250,13 +183,7 @@ class EmergencyState(State):
         return new_state.execute()
 
     def on_command_success(self, command_type, response=None):
-        """
-        Gestion du succès des commandes en mode urgence.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion du succès des commandes en mode urgence"""
         self.failed_attempts = 0
         
         if command_type == CommandType.TAKE:
@@ -271,13 +198,7 @@ class EmergencyState(State):
             self.context['needs_vision_update'] = True
 
     def on_command_failed(self, command_type, response=None):
-        """
-        Gestion des échecs en mode urgence.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion des échecs en mode urgence"""
         self.failed_attempts += 1
         logger.error(f"[EmergencyState] ❌ Échec commande {command_type}, tentative {self.failed_attempts}")
         
@@ -293,15 +214,7 @@ class EmergencyState(State):
                 self.desperate_mode = True
 
     def on_event(self, event: Event) -> Optional[State]:
-        """
-        Gestion des événements en mode urgence.
-        
-        Args:
-            event: Événement reçu
-            
-        Returns:
-            Nouvel état ou None
-        """
+        """Gestion des événements en mode urgence"""
         if event == Event.FOOD_SUFFICIENT:
             current_food = self.state.get_food_count()
             if current_food > StateTransitionThresholds.EMERGENCY_EXIT_THRESHOLD:
@@ -310,13 +223,12 @@ class EmergencyState(State):
         return None
 
     def on_enter(self):
-        """Actions à l'entrée du mode urgence."""
+        """Actions à l'entrée du mode urgence"""
         super().on_enter()
         current_food = self.state.get_food_count()
         
         logger.error(f"[EmergencyState] 🚨 ENTRÉE MODE URGENCE - Food: {current_food}/{FoodThresholds.CRITICAL}")
         
-        # Reset des variables d'urgence
         self.emergency_target = None
         self.emergency_commands.clear()
         self.desperate_mode = False
@@ -326,14 +238,13 @@ class EmergencyState(State):
         self.context['needs_vision_update'] = True
 
     def on_exit(self):
-        """Actions à la sortie du mode urgence."""
+        """Actions à la sortie du mode urgence"""
         super().on_exit()
         emergency_duration = time.time() - self.emergency_start_time
         
         logger.info(f"[EmergencyState] ✅ SORTIE MODE URGENCE - "
                    f"Durée: {emergency_duration:.1f}s, Tentatives: {self.food_search_attempts}")
         
-        # Nettoyage
         self.emergency_target = None
         self.emergency_commands.clear()
         self.desperate_mode = False

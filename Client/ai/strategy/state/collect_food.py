@@ -2,28 +2,25 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## collect_food
+## collect_food - État de collecte nourriture avec constantes centralisées
 ##
 
 import time
 from typing import Optional, Any
 from ai.strategy.fsm import State, Event
 from ai.strategy.pathfinding import Pathfinder
-from config import Constants, CommandType
-from constant import FoodThresholds, StateTransitionThresholds, GameplayConstants
+from config import CommandType
+from constant import (
+    FoodThresholds, StateTransitionThresholds, GameplayConstants,
+    ResourceNames
+)
 from utils.logger import logger
 
 
 class CollectFoodState(State):
-    """État de collecte de nourriture avec seuils centralisés et hystérésis."""
+    """État de collecte de nourriture avec seuils centralisés"""
 
     def __init__(self, planner):
-        """
-        Initialise l'état de collecte de nourriture.
-        
-        Args:
-            planner: Planificateur FSM
-        """
         super().__init__(planner)
         self.pathfinder = Pathfinder()
         self.food_target = None
@@ -37,12 +34,7 @@ class CollectFoodState(State):
         logger.info("[CollectFoodState] 🍖 Collecte de nourriture activée")
 
     def execute(self) -> Optional[Any]:
-        """
-        Logique de collecte de nourriture avec hystérésis pour éviter les boucles.
-        
-        Returns:
-            Commande à exécuter ou None
-        """
+        """Logique de collecte de nourriture avec protection anti-boucles"""
         current_time = time.time()
         current_food = self.state.get_food_count()
 
@@ -64,7 +56,7 @@ class CollectFoodState(State):
 
         if self._food_on_current_tile():
             logger.info("[CollectFoodState] 🍖 Nourriture trouvée ici")
-            return self.cmd_mgr.take(Constants.FOOD.value)
+            return self.cmd_mgr.take(ResourceNames.FOOD)
 
         if self.movement_commands:
             next_cmd = self.movement_commands.pop(0)
@@ -85,15 +77,7 @@ class CollectFoodState(State):
         return self._explore_for_food()
 
     def _should_check_inventory(self, current_time: float) -> bool:
-        """
-        Détermine si un check d'inventaire est nécessaire.
-        
-        Args:
-            current_time: Temps actuel
-            
-        Returns:
-            True si vérification nécessaire
-        """
+        """Détermine si un check d'inventaire est nécessaire"""
         if self.context.get('needs_inventory_check', False):
             self.context['needs_inventory_check'] = False
             return True
@@ -102,12 +86,7 @@ class CollectFoodState(State):
         return time_since_last >= GameplayConstants.INVENTORY_CHECK_INTERVAL
 
     def _needs_vision_update(self) -> bool:
-        """
-        Détermine si une mise à jour de vision est nécessaire.
-        
-        Returns:
-            True si mise à jour nécessaire
-        """
+        """Détermine si une mise à jour de vision est nécessaire"""
         return (
             self.context.get('needs_vision_update', False) or
             not self.state.get_vision().last_vision_data or
@@ -115,27 +94,17 @@ class CollectFoodState(State):
         )
 
     def _food_on_current_tile(self) -> bool:
-        """
-        Vérifie si de la nourriture est présente sur la tuile actuelle.
-        
-        Returns:
-            True si nourriture présente
-        """
+        """Vérifie si de la nourriture est présente sur la tuile actuelle"""
         vision = self.state.get_vision()
         for data in vision.last_vision_data:
             if data.rel_pos == (0, 0):
-                return Constants.FOOD.value in data.resources and data.resources[Constants.FOOD.value] > 0
+                return ResourceNames.FOOD in data.resources and data.resources[ResourceNames.FOOD] > 0
         return False
 
     def _find_best_food_target(self):
-        """
-        Trouve la meilleure cible de nourriture dans la vision.
-        
-        Returns:
-            Cible de nourriture ou None
-        """
+        """Trouve la meilleure cible de nourriture dans la vision"""
         vision = self.state.get_vision()
-        food_resources = vision.get_visible_resources().get(Constants.FOOD.value, [])
+        food_resources = vision.get_visible_resources().get(ResourceNames.FOOD, [])
         
         if not food_resources:
             return None
@@ -149,20 +118,12 @@ class CollectFoodState(State):
         class FoodTarget:
             def __init__(self, pos):
                 self.rel_position = pos
-                self.resource_type = Constants.FOOD.value
+                self.resource_type = ResourceNames.FOOD
                 
         return FoodTarget(closest_pos)
 
     def _plan_food_collection_path(self, target):
-        """
-        Planifie le chemin optimal vers la nourriture.
-        
-        Args:
-            target: Cible de nourriture
-            
-        Returns:
-            Liste des commandes de mouvement
-        """
+        """Planifie le chemin optimal vers la nourriture"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return []
@@ -177,15 +138,7 @@ class CollectFoodState(State):
         return commands[:max_commands] if commands else []
 
     def _execute_movement_command(self, command_type: CommandType):
-        """
-        Exécute une commande de mouvement.
-        
-        Args:
-            command_type: Type de commande
-            
-        Returns:
-            Commande exécutée
-        """
+        """Exécute une commande de mouvement"""
         command_map = {
             CommandType.FORWARD: self.cmd_mgr.forward,
             CommandType.LEFT: self.cmd_mgr.left,
@@ -199,12 +152,7 @@ class CollectFoodState(State):
         return None
 
     def _explore_for_food(self):
-        """
-        Exploration ciblée pour trouver de la nourriture.
-        
-        Returns:
-            Commande d'exploration
-        """
+        """Exploration ciblée pour trouver de la nourriture"""
         vision_data = self.state.get_vision().last_vision_data
         if not vision_data:
             return self.cmd_mgr.look()
@@ -217,24 +165,14 @@ class CollectFoodState(State):
         return self._execute_movement_command(exploration_cmd)
 
     def _transition_to_exploration(self) -> Optional[Any]:
-        """
-        Transition vers l'exploration.
-        
-        Returns:
-            Exécution du nouvel état
-        """
+        """Transition vers l'exploration"""
         from ai.strategy.state.explore import ExploreState
         new_state = ExploreState(self.planner)
         self.planner.fsm.transition_to(new_state)
         return new_state.execute()
 
     def _force_transition(self) -> Optional[Any]:
-        """
-        Force une transition pour éviter le blocage.
-        
-        Returns:
-            Transition forcée
-        """
+        """Force une transition pour éviter le blocage"""
         current_food = self.state.get_food_count()
         
         if current_food <= StateTransitionThresholds.FOOD_EMERGENCY_THRESHOLD:
@@ -246,19 +184,13 @@ class CollectFoodState(State):
         return self._transition_to_exploration()
 
     def on_command_success(self, command_type, response=None):
-        """
-        Gestion du succès des commandes.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion du succès des commandes"""
         if command_type == CommandType.TAKE:
             self.food_collected += 1
             logger.info(f"[CollectFoodState] ✅ Nourriture collectée! Total: {self.food_collected}")
             
             vision = self.state.get_vision()
-            vision.remove_resource_at((0, 0), Constants.FOOD.value)
+            vision.remove_resource_at((0, 0), ResourceNames.FOOD)
             self.food_target = None
             self.movement_commands.clear()
             self.collection_attempts = 0
@@ -270,13 +202,7 @@ class CollectFoodState(State):
             self.last_inventory_check = time.time()
 
     def on_command_failed(self, command_type, response=None):
-        """
-        Gestion des échecs de commandes.
-        
-        Args:
-            command_type: Type de commande
-            response: Réponse du serveur
-        """
+        """Gestion des échecs de commandes"""
         if command_type == CommandType.TAKE:
             self.collection_attempts += 1
             logger.warning(f"[CollectFoodState] ❌ Échec collecte, tentative {self.collection_attempts}")
@@ -292,15 +218,7 @@ class CollectFoodState(State):
                 self.movement_commands.clear()
 
     def on_event(self, event: Event) -> Optional[State]:
-        """
-        Gestion des événements.
-        
-        Args:
-            event: Événement reçu
-            
-        Returns:
-            Nouvel état ou None
-        """
+        """Gestion des événements"""
         if event == Event.FOOD_EMERGENCY:
             logger.warning("[CollectFoodState] Transition vers mode urgence!")
             from ai.strategy.state.emergency import EmergencyState
@@ -316,7 +234,7 @@ class CollectFoodState(State):
         return None
 
     def on_enter(self):
-        """Actions à l'entrée de l'état."""
+        """Actions à l'entrée de l'état"""
         super().on_enter()
         current_food = self.state.get_food_count()
         
@@ -330,7 +248,7 @@ class CollectFoodState(State):
         self.context['needs_vision_update'] = True
 
     def on_exit(self):
-        """Actions à la sortie de l'état."""
+        """Actions à la sortie de l'état"""
         super().on_exit()
         duration = time.time() - self.collection_session_start
         
