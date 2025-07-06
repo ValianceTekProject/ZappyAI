@@ -120,7 +120,7 @@ class ppo_planner():
         elif action == CommandType.RIGHT:
             return self.cmd_manager.right()
         elif action == CommandType.TAKE:
-            return self.cmd_manager.take(Constants.FOOD)
+            return self.cmd_manager.take(Constants.FOOD.value)
         elif action == CommandType.LOOK:
             return self.cmd_manager.look()
         elif action == CommandType.INVENTORY:
@@ -253,7 +253,7 @@ class ppo_planner():
             'states': self.ppo.states,
             'actions': self.ppo.actions,
             'rewards': self.ppo.rewards,
-            'values': self.ppos,
+            'values': self.ppo.values,
             'log_probs': self.ppo.log_probs
         }
 
