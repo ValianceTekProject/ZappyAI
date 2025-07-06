@@ -72,10 +72,6 @@ class FSMPlanner:
             logger.info("[FSMPlanner] Démarrage reproduction (niveau 2)")
             return ReproductionState(self)
 
-        if current_food < FoodThresholds.COORDINATION_MIN:
-            logger.info(f"[FSMPlanner] Démarrage collecte nourriture (food: {current_food})")
-            return CollectFoodState(self)
-
         if self._can_attempt_incantation():
             if self.state.level == 1:
                 logger.info("[FSMPlanner] Démarrage incantation solo (niveau 1)")
@@ -83,6 +79,10 @@ class FSMPlanner:
             else:
                 logger.info(f"[FSMPlanner] Démarrage coordination (niveau {self.state.level})")
                 return CoordinateIncantationState(self)
+
+        if current_food < FoodThresholds.COORDINATION_MIN:
+            logger.info(f"[FSMPlanner] Démarrage collecte nourriture (food: {current_food})")
+            return CollectFoodState(self)
 
         if (current_food >= StateTransitionThresholds.FOOD_SUFFICIENT_THRESHOLD and 
             self.state.has_missing_resources()):
@@ -239,6 +239,9 @@ class FSMPlanner:
         current_state_name = self.fsm.get_current_state_name()
         current_time = time.time()
         current_food = self.state.get_food_count()
+        
+        if self.state.join_incantation:
+            self._transition_to_state(CoordinateIncantationState(self))
 
         if current_state_name in ['IncantationState', 'EmergencyState', 'ReproductionState']:
             return

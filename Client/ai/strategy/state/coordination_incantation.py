@@ -103,6 +103,9 @@ class CoordinateIncantationState(State):
         if current_time - self.coordination_start_time > SafetyLimits.MAX_HELPER_WAIT_TIME:
             logger.warning("[CoordinateIncantationState] Timeout helper")
             return self._handle_coordination_failure()
+        
+        if self.state.join_incantation:
+            self.received_direction = self.state.direction_incant
 
         # Si pas de direction reçue, attendre
         if self.received_direction is None:
@@ -152,7 +155,7 @@ class CoordinateIncantationState(State):
         commands = MovementConstants.DIRECTION_TO_COMMANDS.get(direction, [])
         limited_commands = commands[:MovementConstants.MAX_MOVEMENT_COMMANDS]
         
-        logger.debug(f"[CoordinateIncantationState] 🧭 Direction {direction} → {limited_commands}")
+        logger.info(f"[CoordinateIncantationState] 🧭 Direction {direction} → {limited_commands}")
         return limited_commands
 
     def _execute_movement_command(self, command_name: str) -> Optional[Any]:
@@ -310,6 +313,7 @@ class CoordinateIncantationState(State):
         required_players = IncantationRequirements.REQUIRED_PLAYERS.get(self.state.level, 1)
 
         if self.state.level == 1:
+            self.state.join_incantation = False
             logger.error("[CoordinateIncantationState] ❌ Niveau 1 interdit en coordination")
             return AgentRoles.SURVIVOR
 
@@ -338,8 +342,9 @@ class CoordinateIncantationState(State):
 
     def handle_broadcast_message(self, sender_id: int, data: Dict[str, Any], direction: int):
         """Traite les messages de broadcast reçus (pour les helpers)"""
-        if self.role != AgentRoles.HELPER:
-            return
+        # if self.role != AgentRoles.HELPER:
+        #     return
+        logger.info("[CoordinateIncantationState] 📨 Broadcast reçu")
             
         try:
             if sender_id == self.state.agent_id:
@@ -350,7 +355,7 @@ class CoordinateIncantationState(State):
                 return
                 
             self.received_direction = direction
-            logger.debug(f"[CoordinateIncantationState] Direction reçue: K={direction}")
+            logger.info(f"[CoordinateIncantationState] Direction reçue: K={direction}")
             
             # Envoi de confirmation "here" si sur la même case
             if direction == BroadcastDirections.HERE:

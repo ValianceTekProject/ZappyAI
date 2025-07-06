@@ -46,7 +46,7 @@ class Agent:
         self.state.agent_thread = self.agent_thread
         self.commands = CommandManager(self.conn, self.timing, self.state)
         self.msg_bus = MessageBus(self.state.level, team_id)
-        self.msg_manager = MessageManager(self.commands, self.msg_bus)
+        self.msg_manager = MessageManager(self.commands, self.msg_bus, self.state)
 
         self.planner = Planner(
             command_manager=self.commands,
@@ -91,6 +91,10 @@ class Agent:
 
                 self._update_coordination_reference()
 
+                if self.msg_manager.should_join_coordination:
+                    self.state.direction_incant = self.msg_manager.broadcast_direction
+                    self.state.join_incantation = True
+
                 self._make_ia_decision(now)
 
                 self._adaptive_sleep()
@@ -102,7 +106,7 @@ class Agent:
     def _update_coordination_reference(self):
         """Met à jour la référence de coordination dans le MessageManager"""
         try:
-            current_state = self.planner.fsm.state
+            current_state = self.planner.fsm_planner.fsm.state
             if hasattr(current_state, '__class__') and 'CoordinateIncantationState' in current_state.__class__.__name__:
                 self.msg_manager.set_coordination_state(current_state)
             else:

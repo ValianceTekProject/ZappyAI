@@ -70,6 +70,8 @@ class GameState:
         # ===== HISTORIQUE ET STATISTIQUES =====
         self.last_food_update = time.time()
         self.command_history = []
+        self.join_incantation = False
+        self.direction_incant = None
 
         logger.info(f"[GameState] Agent {agent_id} initialisé - Team: {team_id}, Food: {self.get_food_count()}")
 
