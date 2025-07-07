@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## fsm_planner - Planificateur FSM simplifié et nettoyé
+## fsm_planner - Planificateur FSM avec coordination stabilisée
 ##
 
 import time
@@ -26,7 +26,7 @@ from constant import (
 
 
 class FSMPlanner:
-    """Planificateur FSM simplifié avec coordination"""
+    """Planificateur FSM avec coordination stabilisée"""
 
     def __init__(self, command_manager, game_state, message_bus):
         self.cmd_mgr = command_manager
@@ -48,6 +48,7 @@ class FSMPlanner:
             'last_transition_reset': time.time(),
             'coordination_failures': 0,
             'emergency_transitions': 0,
+            'coordination_lock_time': 0.0,  # NOUVEAU: verrouillage coordination
         }
 
         initial_state = self._determine_initial_state()
@@ -93,7 +94,7 @@ class FSMPlanner:
         return ExploreState(self)
 
     def decide_next_action(self) -> Optional[Any]:
-        """Point d'entrée principal simplifié"""
+        """Point d'entrée principal avec coordination stabilisée"""
         self.decision_count += 1
 
         if not self._can_make_decision():
@@ -102,9 +103,15 @@ class FSMPlanner:
         try:
             current_time = time.time()
             current_food = self.state.get_food_count()
+            current_state_name = self.fsm.get_current_state_name()
 
             if current_time - self.context['last_transition_reset'] > 60.0:
                 self._reset_transition_counters()
+
+            # PROTECTION COORDINATION: éviter changements d'état intempestifs
+            if self._is_in_coordination_lock():
+                logger.debug("[FSMPlanner] 🔒 Coordination verrouillée - pas de changement d'état")
+                return self.fsm.run()
 
             survival_action = self._handle_critical_survival(current_food)
             if survival_action:
@@ -116,7 +123,16 @@ class FSMPlanner:
             if self._detect_transition_loops():
                 return self._handle_transition_loops()
 
-            self._check_progression_opportunities()
+            # Vérifier les demandes de coordination reçues (même si pas en coordination)
+            if (current_state_name != 'CoordinateIncantationState' and 
+                self.state.join_incantation and 
+                current_food >= FoodThresholds.COORDINATION_MIN):
+                logger.info("[FSMPlanner] 🤝 TRANSITION vers coordination (demande reçue)")
+                self._start_coordination_lock()
+                self._transition_to_state(CoordinateIncantationState(self))
+                return self.fsm.run()
+
+            self._check_progression_opportunities(current_state_name)
 
             return self.fsm.run()
 
@@ -124,8 +140,34 @@ class FSMPlanner:
             logger.error(f"[FSMPlanner] Erreur lors de la décision: {e}")
             return self.cmd_mgr.look()
 
+    def _is_in_coordination_lock(self) -> bool:
+        """Vérifie si on est en mode coordination verrouillée"""
+        current_state_name = self.fsm.get_current_state_name()
+        current_time = time.time()
+        
+        # Si on est en coordination, verrouiller pour éviter les changements d'état
+        if current_state_name == 'CoordinateIncantationState':
+            return True
+            
+        # Si on a un verrou de coordination actif
+        if (self.context['coordination_lock_time'] > 0 and 
+            current_time - self.context['coordination_lock_time'] < 10.0):
+            return True
+            
+        return False
+
+    def _start_coordination_lock(self):
+        """Démarre un verrou de coordination pour stabiliser l'état"""
+        self.context['coordination_lock_time'] = time.time()
+        logger.debug("[FSMPlanner] 🔒 Verrou coordination activé")
+
+    def _clear_coordination_lock(self):
+        """Supprime le verrou de coordination"""
+        self.context['coordination_lock_time'] = 0.0
+        logger.debug("[FSMPlanner] 🔓 Verrou coordination désactivé")
+
     def _handle_critical_survival(self, current_food: int) -> Optional[Any]:
-        """Gestion critique de la survie"""
+        """Gestion critique de la survie avec protection coordination"""
         current_state_name = self.fsm.get_current_state_name()
         current_time = time.time()
 
@@ -133,12 +175,15 @@ class FSMPlanner:
             if current_state_name != 'EmergencyState':
                 self.context['emergency_transitions'] += 1
                 logger.error(f"[FSMPlanner] 🚨 URGENCE CRITIQUE! Food: {current_food}")
+                self._clear_coordination_lock()  # Urgence = fin du verrou
                 self._transition_to_state(EmergencyState(self))
                 return self.fsm.run()
 
+        # Pour coordination, seuil plus bas que les autres états
         elif (current_state_name == 'CoordinateIncantationState' and 
-              current_food <= FoodThresholds.CRITICAL):
+              current_food <= StateTransitionThresholds.ABANDON_COORDINATION_THRESHOLD):
             logger.warning(f"[FSMPlanner] ⚠️ Abandon coordination (food: {current_food})")
+            self._clear_coordination_lock()
             self._transition_to_state(CollectFoodState(self))
             return self.fsm.run()
 
@@ -166,6 +211,7 @@ class FSMPlanner:
         
         self.context['coordination_failures'] = 0
         self._reset_transition_counters()
+        self._clear_coordination_lock()  # Level up = nouveau cycle
 
         if new_level == ReproductionRules.TRIGGER_LEVEL and not self.state.reproduction_completed:
             if current_food >= ReproductionRules.MIN_FOOD_REQUIRED:
@@ -186,6 +232,7 @@ class FSMPlanner:
                 self._transition_to_state(CollectResourcesState(self))
             else:
                 logger.info(f"[FSMPlanner] 🤝 Coordination niveau {new_level}")
+                self._start_coordination_lock()
                 self._transition_to_state(CoordinateIncantationState(self))
             return self.fsm.run()
 
@@ -204,12 +251,14 @@ class FSMPlanner:
         
         logger.warning(f"[FSMPlanner] 🔄 Boucle détectée! Food: {current_food}")
         self._reset_transition_counters()
+        self._clear_coordination_lock()
         
         if current_food >= FoodThresholds.ABUNDANT:
             if self._can_attempt_incantation():
                 if self.state.level == 1:
                     self._transition_to_state(IncantationState(self))
                 else:
+                    self._start_coordination_lock()
                     self._transition_to_state(CoordinateIncantationState(self))
             else:
                 self._transition_to_state(ExploreState(self))
@@ -234,25 +283,25 @@ class FSMPlanner:
             
         return current_food >= min_food_required
 
-    def _check_progression_opportunities(self):
-        """Vérification des opportunités de progression"""
-        current_state_name = self.fsm.get_current_state_name()
+    def _check_progression_opportunities(self, current_state_name: str):
+        """Vérification des opportunités de progression avec protection coordination"""
         current_time = time.time()
         current_food = self.state.get_food_count()
         
-        # Vérifier si une demande de coordination a été reçue
-        if (self.state.join_incantation and 
-            current_state_name != 'CoordinateIncantationState' and
-            current_food >= FoodThresholds.COORDINATION_MIN):
-            logger.info("[FSMPlanner] 🤝 TRANSITION vers coordination (demande reçue)")
-            self._transition_to_state(CoordinateIncantationState(self))
+        # PAS de changement d'état si en coordination (sauf urgence)
+        if current_state_name == 'CoordinateIncantationState':
             return
 
         if current_state_name in ['IncantationState', 'EmergencyState', 'ReproductionState']:
             return
 
-        if (current_state_name == 'CoordinateIncantationState' and 
-            current_time - self.context['state_change_time'] < 20.0):
+        # Vérifier si une demande de coordination a été reçue
+        if (self.state.join_incantation and 
+            current_state_name != 'CoordinateIncantationState' and
+            current_food >= FoodThresholds.COORDINATION_MIN):
+            logger.info("[FSMPlanner] 🤝 TRANSITION vers coordination (demande reçue)")
+            self._start_coordination_lock()
+            self._transition_to_state(CoordinateIncantationState(self))
             return
 
         if (self.state.should_reproduce() and 
@@ -276,6 +325,7 @@ class FSMPlanner:
                 else:
                     logger.info(f"[FSMPlanner] 🤝 TRANSITION vers coordination (niveau {self.state.level})")
                     self.context['last_coordination_attempt'] = current_time
+                    self._start_coordination_lock()
                     self._transition_to_state(CoordinateIncantationState(self))
                 return
 
@@ -312,6 +362,10 @@ class FSMPlanner:
         old_state_name = self.fsm.get_current_state_name()
         new_state_name = type(new_state).__name__
         
+        # Si on quitte la coordination, supprimer le verrou
+        if old_state_name == 'CoordinateIncantationState':
+            self._clear_coordination_lock()
+        
         self.context['last_state_type'] = old_state_name
         self.context['state_change_time'] = time.time()
         
@@ -340,6 +394,7 @@ class FSMPlanner:
         if command_type.value == 'Incantation':
             logger.info(f"[FSMPlanner] 🎉 INCANTATION RÉUSSIE! Nouveau niveau: {self.state.level}")
             self.context['coordination_failures'] = 0
+            self._clear_coordination_lock()
 
     def on_command_failed(self, command_type, response=None):
         """Appelé quand une commande échoue"""
@@ -349,6 +404,7 @@ class FSMPlanner:
             command_type.value == 'Incantation'):
             self.context['coordination_failures'] += 1
             logger.warning(f"[FSMPlanner] Échec incantation coordonnée {self.context['coordination_failures']}")
+            self._clear_coordination_lock()
 
         if hasattr(self.fsm.state, 'on_command_failed'):
             self.fsm.state.on_command_failed(command_type, response)
@@ -371,6 +427,7 @@ class FSMPlanner:
             'missing_resources': self.state.has_missing_resources(),
             'coordination_failures': self.context['coordination_failures'],
             'emergency_transitions': self.context['emergency_transitions'],
+            'coordination_locked': self._is_in_coordination_lock(),
             'transition_counters': {
                 'food_to_resources': self.context['food_to_resources_transitions'],
                 'resources_to_food': self.context['resources_to_food_transitions']
