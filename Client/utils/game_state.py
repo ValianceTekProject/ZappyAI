@@ -324,6 +324,18 @@ class GameState:
         """Retourne le nombre de joueurs requis pour l'incantation"""
         return IncantationRequirements.REQUIRED_PLAYERS.get(self.level, 1)
 
+    def reset_coordination_flags(self):
+        """Remet à zéro les flags de coordination"""
+        self.join_incantation = False
+        self.direction_incant = None
+        logger.debug("[GameState] Flags de coordination reset")
+
+    def set_coordination_request(self, direction: int):
+        """Définit une demande de coordination reçue"""
+        self.join_incantation = True
+        self.direction_incant = direction
+        logger.info(f"[GameState] Coordination demandée depuis direction {direction}")
+
     # ===== GESTION DU RÔLE =====
 
     def set_role(self, role: str):

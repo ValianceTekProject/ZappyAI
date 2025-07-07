@@ -11,9 +11,9 @@ from enum import Enum
 class FoodThresholds:
     """Seuils de nourriture centralisés selon spécifications"""
     CRITICAL = 10
-    SUFFICIENT = 30
-    ABUNDANT = 50
-    COORDINATION_MIN = 12
+    SUFFICIENT = 20  # Réduit de 25 à 20
+    ABUNDANT = 35
+    COORDINATION_MIN = 15  # Augmenté de 12 à 15 pour plus de sécurité incanteur
     REPRODUCTION_MIN = 25
 
 
@@ -43,14 +43,13 @@ class IncantationRequirements:
 class CoordinationProtocol:
     """Protocole de coordination simplifié et optimisé"""
     RESPONSE_HERE = "here"
-    INCANTER_BROADCAST_COOLDOWN = 1.0  # Spam continu mais contrôlé
+    INCANTER_BROADCAST_COOLDOWN = 2.0
     COORDINATION_TIMEOUT = 45.0
     MAX_COORDINATION_TIME = 60.0
-    MIN_FOOD_TO_COORDINATE = FoodThresholds.COORDINATION_MIN
+    MIN_FOOD_TO_COORDINATE = 15
     
-    # Nouveaux intervalles pour éviter les boucles infinies
-    VISION_CHECK_INTERVAL = 4.0  # Moins fréquent pour éviter la surcharge
-    INVENTORY_CHECK_INTERVAL = 6.0  # Check périodique d'inventaire
+    VISION_CHECK_INTERVAL = 4.0
+    INVENTORY_CHECK_INTERVAL = 6.0
 
 
 class ReproductionRules:
@@ -129,18 +128,18 @@ class BroadcastDirections:
 class MovementConstants:
     """Constantes pour les mouvements selon les directions Zappy"""
     DIRECTION_TO_COMMANDS = {
-        BroadcastDirections.HERE: [],
-        BroadcastDirections.FRONT: ["Forward"],
-        BroadcastDirections.FRONT_RIGHT: ["Right", "Forward"],
-        BroadcastDirections.RIGHT: ["Right", "Forward"],
-        BroadcastDirections.BACK_RIGHT: ["Right", "Right", "Forward"],
-        BroadcastDirections.BACK: ["Right", "Right", "Forward"],
-        BroadcastDirections.BACK_LEFT: ["Left", "Forward"],
-        BroadcastDirections.LEFT: ["Left", "Forward"],
-        BroadcastDirections.FRONT_LEFT: ["Left", "Forward"],
+        BroadcastDirections.HERE: [],  # 0 - Déjà sur place
+        BroadcastDirections.FRONT: ["Forward"],  # 1 - Devant
+        BroadcastDirections.FRONT_LEFT: ["Left", "Forward"],  # 2 - Devant-gauche
+        BroadcastDirections.LEFT: ["Left", "Forward"],  # 3 - Gauche
+        BroadcastDirections.BACK_LEFT: ["Left", "Left", "Forward"],  # 4 - Arrière-gauche
+        BroadcastDirections.BACK: ["Left", "Left", "Forward"],  # 5 - Arrière (demi-tour)
+        BroadcastDirections.BACK_RIGHT: ["Right", "Right", "Forward"],  # 6 - Arrière-droite
+        BroadcastDirections.RIGHT: ["Right", "Forward"],  # 7 - Droite
+        BroadcastDirections.FRONT_RIGHT: ["Right", "Forward"],  # 8 - Devant-droite
     }
     MAX_MOVEMENT_COMMANDS = 3
-    MOVEMENT_TIMEOUT = 12.0
+    MOVEMENT_TIMEOUT = 30.0
 
 
 class SafetyLimits:

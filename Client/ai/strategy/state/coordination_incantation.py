@@ -104,19 +104,24 @@ class CoordinateIncantationState(State):
             logger.warning("[CoordinateIncantationState] Timeout helper")
             return self._handle_coordination_failure()
         
-        if self.state.join_incantation:
+        # Vérifier si une demande de coordination a été reçue
+        if self.state.join_incantation and self.received_direction is None:
             self.received_direction = self.state.direction_incant
+            self.last_movement_time = current_time
             logger.info(f"[CoordinateIncantationState] ✅ JOIN INCANTATION (K={self.received_direction})")
-            self.state.join_incantation = False
+            self.state.reset_coordination_flags()
 
         # Si pas de direction reçue, attendre
         if self.received_direction is None:
-            # logger.info("[CoordinateIncantationState] 👂 En écoute des requêtes...")
             return None
 
-        # Si déjà sur la case de l'incanteur
+        # Si déjà sur la case de l'incanteur (K=0)
         if self.received_direction == BroadcastDirections.HERE:
-            # logger.info("[CoordinateIncantationState] ✅ DÉJÀ SUR CASE INCANTEUR (K=0)")
+            logger.info("[CoordinateIncantationState] ✅ DÉJÀ SUR CASE INCANTEUR")
+            return None
+
+        # Cooldown après mouvement pour éviter les boucles infinies
+        if hasattr(self, 'last_movement_time') and current_time - self.last_movement_time < 2.0:
             return None
 
         # Déplacement vers l'incanteur
@@ -142,11 +147,16 @@ class CoordinateIncantationState(State):
         """Déplace le helper vers l'incanteur selon la direction reçue"""
         if not self.movement_commands:
             self.movement_commands = self._plan_movement_to_incanter(self.received_direction)
+            logger.info(f"[CoordinateIncantationState] 🧭 Mouvement planifié vers direction {self.received_direction}")
             
         if self.movement_commands:
             next_cmd = self.movement_commands.pop(0)
+            logger.info(f"[CoordinateIncantationState] ▶️ Exécution: {next_cmd}")
             return self._execute_movement_command(next_cmd)
             
+        # Tous les mouvements terminés - attendre avant nouveau mouvement
+        logger.info("[CoordinateIncantationState] ✅ Mouvement vers incanteur terminé, attente...")
+        self.last_movement_time = time.time()
         return None
 
     def _plan_movement_to_incanter(self, direction: int) -> List[str]:
@@ -392,11 +402,11 @@ class CoordinateIncantationState(State):
             self.inventory_update_pending = False
             
         elif command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
-            # Après un mouvement, on a besoin de vision
             self.vision_update_pending = False
-            # Reset de la direction reçue après mouvement
-            if self.received_direction is not None:
-                self.received_direction = None
+            # Ne pas reset la direction immédiatement - laisser le cooldown gérer
+            if not self.movement_commands:
+                logger.info("[CoordinateIncantationState] ✅ Séquence de mouvement terminée")
+                self.last_movement_time = time.time()
 
         elif command_type == CommandType.INCANTATION:
             logger.info("[CoordinateIncantationState] 🎉 INCANTATION COORDONNÉE RÉUSSIE!")

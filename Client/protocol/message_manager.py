@@ -19,6 +19,8 @@ class MessageManager:
         self.state = state
         self.is_dead = False
         self.coordination_state = None
+        self.last_broadcast_direction = None
+        self.last_broadcast_time = 0.0
 
     def set_coordination_state(self, coordination_state):
         """Définit la référence vers l'état de coordination actuel"""
@@ -97,21 +99,39 @@ class MessageManager:
         return (msg_type in [MessageType.INCANTATION_REQUEST, MessageType.INCANTATION_RESPONSE])
 
     def _handle_coordination_broadcast(self, sender_id: int, payload: dict, direction: int):
+        """
+        Traite les messages de coordination reçus avec protection anti-spam
+        
+        Args:
+            sender_id: ID de l'expéditeur
+            payload: Données du message
+            direction: Direction du broadcast
+        """
         try:
+            current_time = time.time()
+            
+            # Protection contre les broadcasts répétés trop rapidement
+            if (self.last_broadcast_direction == direction and 
+                current_time - self.last_broadcast_time < 1.0):
+                logger.debug(f"[MessageManager] Broadcast ignoré (spam) direction {direction}")
+                return
+                
+            self.last_broadcast_direction = direction
+            self.last_broadcast_time = current_time
+            
             logger.info(f"[MessageManager] 📢 Broadcast coordination reçu: {payload}")
 
             if hasattr(self.coordination_state, 'handle_broadcast_message'):
                 logger.info(f"[MessageManager] 📢 Transmis à la coordination active")
                 self.coordination_state.handle_broadcast_message(sender_id, payload, direction)
             else:
-                logger.info(f"[MessageManager] 📢 Pas en coordination, flag coordination à True si besoin - level {self.state.level} : {payload.get('level')}")
+                logger.info(f"[MessageManager] 📢 Pas en coordination, vérification niveau {self.state.level} vs {payload.get('level')}")
                 if payload.get('level') == self.state.level:
-                    logger.info("[MessageManager] 📢 Flag coordination déjà à True")
-                    self.join_incantation = True
-                    self.direction_incant = direction
+                    logger.info("[MessageManager] 📢 Demande de coordination acceptée")
+                    self.state.set_coordination_request(direction)
 
         except Exception as e:
-            logger.error(f"[MessageManager] Erreur transmission coordination: {e}")
+            logger.error(f"[MessageManager] Erreur traitement broadcast: {e}")
 
 
     def broadcast_message(self, msg_type: MessageType, sender_id: int, team_id: str, **kwargs: Any) -> None:

@@ -240,8 +240,13 @@ class FSMPlanner:
         current_time = time.time()
         current_food = self.state.get_food_count()
         
-        if self.state.join_incantation:
+        # Vérifier si une demande de coordination a été reçue
+        if (self.state.join_incantation and 
+            current_state_name != 'CoordinateIncantationState' and
+            current_food >= FoodThresholds.COORDINATION_MIN):
+            logger.info("[FSMPlanner] 🤝 TRANSITION vers coordination (demande reçue)")
             self._transition_to_state(CoordinateIncantationState(self))
+            return
 
         if current_state_name in ['IncantationState', 'EmergencyState', 'ReproductionState']:
             return
