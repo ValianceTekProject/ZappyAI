@@ -11,8 +11,8 @@ from enum import Enum
 class FoodThresholds:
     """Seuils de nourriture centralisés selon spécifications"""
     CRITICAL = 10
-    SUFFICIENT = 20
-    ABUNDANT = 35
+    SUFFICIENT = 30
+    ABUNDANT = 50
     COORDINATION_MIN = 12
     REPRODUCTION_MIN = 25
 
