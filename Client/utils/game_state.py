@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## game_state - État du jeu nettoyé sans doublons
+## game_state - État du jeu avec gestion de la reproduction cyclique au niveau 2
 ##
 
 import time
@@ -19,7 +19,7 @@ from constant import (
 
 
 class GameState:
-    """Gère l'état du jeu pour un agent avec constantes centralisées et sans doublons"""
+    """Gère l'état du jeu pour un agent avec reproduction cyclique au niveau 2"""
 
     def __init__(self, team_id: str, dimension_map: Tuple[int, int], agent_id: int = 0):
         """
@@ -57,9 +57,10 @@ class GameState:
         # ===== ÉTAT DES COMMANDES =====
         self.command_already_send = False
 
-        # ===== REPRODUCTION (niveau 2 uniquement) =====
+        # ===== REPRODUCTION AVEC COOLDOWN NIVEAU 2 =====
         self.reproduction_triggered = False
-        self.reproduction_completed = False
+        # Suppression de reproduction_completed car on permet les reproductions cycliques
+        # À la place, on utilise last_reproduction_time pour le cooldown
 
         # ===== RÔLE DANS LA COORDINATION =====
         self.role = AgentRoles.SURVIVOR
@@ -199,16 +200,16 @@ class GameState:
             self.inventory[resource] -= 1
         self.vision.add_resource_at((0, 0), resource)
 
-    def _handle_successful_reproduction(self):
-        """Gère une reproduction réussie"""
-        self.reproduction_completed = True
-        logger.info("[GameState] Reproduction terminée avec succès")
-
     def _handle_level_up(self):
         """Gère les actions après un level up"""
         if self.level == ReproductionRules.TRIGGER_LEVEL and not self.reproduction_triggered:
             self.reproduction_triggered = True
-            logger.info(f"[GameState] 👶 Reproduction activée (niveau {ReproductionRules.TRIGGER_LEVEL} atteint)")
+            logger.info(f"[GameState] Reproduction activée niveau {ReproductionRules.TRIGGER_LEVEL}")
+
+    def _handle_successful_reproduction(self):
+        """Gère une reproduction réussie avec cooldown"""
+        self.last_reproduction_time = time.time()
+        logger.info(f"[GameState] Reproduction terminée - Prochaine dans {ReproductionRules.COOLDOWN_DURATION}s")
 
     def _handle_incantation_failure(self, command: Command):
         """Gère l'échec d'incantation avec log détaillé"""
@@ -284,13 +285,48 @@ class GameState:
         return self._players_on_current_tile() >= self.get_required_player_count()
 
     def should_reproduce(self) -> bool:
-        """Vérifie si l'agent devrait se reproduire selon les règles strictes"""
-        return (
-            self.reproduction_triggered and 
-            not self.reproduction_completed and
-            self.level == ReproductionRules.TRIGGER_LEVEL and
-            self.get_food_count() >= ReproductionRules.MIN_FOOD_REQUIRED
-        )
+        """Vérifie si l'agent devrait se reproduire selon les règles niveau 2 uniquement"""
+        if self.level != ReproductionRules.TRIGGER_LEVEL:
+            return False
+            
+        if not self.reproduction_triggered:
+            return False
+            
+        if self.get_food_count() < ReproductionRules.MIN_FOOD_REQUIRED:
+            return False
+        
+        if hasattr(self, 'last_reproduction_time'):
+            time_since_last = time.time() - self.last_reproduction_time
+            if time_since_last < ReproductionRules.COOLDOWN_DURATION:
+                return False
+                
+        return True
+
+    def can_reproduce_again(self) -> bool:
+        """Vérifie si l'agent peut reproduire à nouveau niveau 2 après cooldown"""
+        if self.level != ReproductionRules.TRIGGER_LEVEL:
+            return False
+            
+        if not self.reproduction_triggered:
+            return False
+            
+        if self.get_food_count() < ReproductionRules.MIN_FOOD_REQUIRED:
+            return False
+            
+        if not hasattr(self, 'last_reproduction_time'):
+            return True
+            
+        time_since_last = time.time() - self.last_reproduction_time
+        return time_since_last >= ReproductionRules.COOLDOWN_DURATION
+
+    def get_reproduction_cooldown_remaining(self) -> float:
+        """Retourne le temps restant avant la prochaine reproduction possible"""
+        if not hasattr(self, 'last_reproduction_time'):
+            return 0.0
+            
+        time_since_last = time.time() - self.last_reproduction_time
+        remaining = ReproductionRules.COOLDOWN_DURATION - time_since_last
+        return max(0.0, remaining)
 
     # ===== VÉRIFICATIONS DE NOURRITURE =====
 
@@ -354,6 +390,16 @@ class GameState:
 
     def get_state_summary(self) -> Dict[str, Any]:
         """Retourne un résumé de l'état pour debug"""
+        reproduction_info = {}
+        if hasattr(self, 'last_reproduction_time'):
+            time_since_last = time.time() - self.last_reproduction_time
+            reproduction_info = {
+                'last_reproduction_time': self.last_reproduction_time,
+                'time_since_last_reproduction': time_since_last,
+                'cooldown_remaining': self.get_reproduction_cooldown_remaining(),
+                'can_reproduce_again': self.can_reproduce_again()
+            }
+        
         return {
             'agent_id': self.agent_id,
             'level': self.level,
@@ -373,7 +419,7 @@ class GameState:
             'should_reproduce': self.should_reproduce(),
             'reproduction_status': {
                 'triggered': self.reproduction_triggered,
-                'completed': self.reproduction_completed
+                'reproduction_info': reproduction_info
             },
             'needs_look': self.needs_look,
             'command_pending': self.command_already_send,

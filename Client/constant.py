@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## ZappyAI
 ## File description:
-## constant - Constantes centralisées avec corrections pour la coordination
+## constant - Constantes centralisées optimisées pour reproduction niveau 2 uniquement
 ##
 
 from enum import Enum
@@ -13,8 +13,8 @@ class FoodThresholds:
     CRITICAL = 10
     SUFFICIENT = 20
     ABUNDANT = 35
-    COORDINATION_MIN = 12  # Réduit pour permettre plus de coordination
-    REPRODUCTION_MIN = 25
+    COORDINATION_MIN = 8
+    REPRODUCTION_MIN = 20
 
 
 class IncantationRequirements:
@@ -41,23 +41,24 @@ class IncantationRequirements:
 
 
 class CoordinationProtocol:
-    """Protocole de coordination simplifié et optimisé"""
+    """Protocole de coordination optimisé pour améliorer la réussite"""
     RESPONSE_HERE = "here"
-    INCANTER_BROADCAST_COOLDOWN = 2.0
-    COORDINATION_TIMEOUT = 45.0
-    MAX_COORDINATION_TIME = 60.0
-    MIN_FOOD_TO_COORDINATE = 12  # Réduit pour permettre plus de coordination
+    INCANTER_BROADCAST_COOLDOWN = 1.5
+    COORDINATION_TIMEOUT = 60.0
+    MAX_COORDINATION_TIME = 90.0
+    MIN_FOOD_TO_COORDINATE = 8
     
-    VISION_CHECK_INTERVAL = 4.0
-    INVENTORY_CHECK_INTERVAL = 6.0
+    VISION_CHECK_INTERVAL = 3.0
+    INVENTORY_CHECK_INTERVAL = 5.0
 
 
 class ReproductionRules:
-    """Règles de reproduction strictes"""
+    """Règles de reproduction niveau 2 uniquement avec cooldown 1 minute"""
     TRIGGER_LEVEL = 2
     MIN_FOOD_REQUIRED = FoodThresholds.REPRODUCTION_MIN
     MAX_ATTEMPTS = 3
     TIMEOUT = 30.0
+    COOLDOWN_DURATION = 60.0
 
 
 class AgentRoles:
@@ -80,9 +81,9 @@ class GameplayConstants:
 
 
 class TimingConstants:
-    """Constantes de timing"""
+    """Constantes de timing optimisées"""
     COMMAND_TIMEOUT = 6.0
-    INCANTATION_TIMEOUT = 60.0
+    INCANTATION_TIMEOUT = 90.0
     COORDINATION_TIMEOUT = CoordinationProtocol.COORDINATION_TIMEOUT
     FALLBACK_TIMEOUT = 20.0
 
@@ -109,7 +110,7 @@ class StateTransitionThresholds:
     FOOD_TO_EXPLORATION_THRESHOLD = FoodThresholds.ABUNDANT
     RESOURCES_TO_FOOD_THRESHOLD = FoodThresholds.SUFFICIENT
     EMERGENCY_EXIT_THRESHOLD = FoodThresholds.CRITICAL
-    ABANDON_COORDINATION_THRESHOLD = 5  # Réduit pour rester plus longtemps en coordination
+    ABANDON_COORDINATION_THRESHOLD = 5
 
 
 class BroadcastDirections:
@@ -126,28 +127,28 @@ class BroadcastDirections:
 
 
 class MovementConstants:
-    """Constantes pour les mouvements selon les directions Zappy - CORRIGÉES"""
+    """Constantes pour les mouvements selon les directions Zappy"""
     DIRECTION_TO_COMMANDS = {
-        BroadcastDirections.HERE: [],  # 0 - Déjà sur place
-        BroadcastDirections.FRONT: ["Forward"],  # 1 - Devant
-        BroadcastDirections.FRONT_RIGHT: ["Forward", "Left", "Forward"],  # 2 - CORRIGÉ selon utilisateur
-        BroadcastDirections.RIGHT: ["Right", "Forward"],  # 3 - Droite
-        BroadcastDirections.BACK_RIGHT: ["Right", "Right", "Forward"],  # 4 - Arrière-droite
-        BroadcastDirections.BACK: ["Right", "Right", "Forward"],  # 5 - Arrière (demi-tour)
-        BroadcastDirections.BACK_LEFT: ["Left", "Left", "Forward"],  # 6 - Arrière-gauche
-        BroadcastDirections.LEFT: ["Left", "Forward"],  # 7 - Gauche
-        BroadcastDirections.FRONT_LEFT: ["Forward", "Left", "Forward"],  # 8 - Cohérent
+        BroadcastDirections.HERE: [],
+        BroadcastDirections.FRONT: ["Forward"],
+        BroadcastDirections.FRONT_RIGHT: ["Forward", "Left", "Forward"],
+        BroadcastDirections.RIGHT: ["Right", "Forward"],
+        BroadcastDirections.BACK_RIGHT: ["Right", "Right", "Forward"],
+        BroadcastDirections.BACK: ["Right", "Right", "Forward"],
+        BroadcastDirections.BACK_LEFT: ["Left", "Left", "Forward"],
+        BroadcastDirections.LEFT: ["Left", "Forward"],
+        BroadcastDirections.FRONT_LEFT: ["Forward", "Left", "Forward"],
     }
     MAX_MOVEMENT_COMMANDS = 3
     MOVEMENT_TIMEOUT = 30.0
 
 
 class SafetyLimits:
-    """Limites de sécurité pour éviter la mort"""
-    MIN_FOOD_FOR_COORDINATION_SAFETY = 6  # Réduit pour permettre plus de coordination
+    """Limites de sécurité optimisées pour éviter la mort"""
+    MIN_FOOD_FOR_COORDINATION_SAFETY = 4
     MIN_FOOD_FOR_INCANTATION_SAFETY = FoodThresholds.COORDINATION_MIN
     ABANDON_COORDINATION_THRESHOLD = StateTransitionThresholds.ABANDON_COORDINATION_THRESHOLD
     EMERGENCY_TRANSITION_THRESHOLD = FoodThresholds.CRITICAL
     MAX_COORDINATION_TIME = CoordinationProtocol.MAX_COORDINATION_TIME
     MAX_INCANTATION_ATTEMPTS = 3
-    MAX_HELPER_WAIT_TIME = 40.0  # Augmenté pour laisser plus de temps
+    MAX_HELPER_WAIT_TIME = 60.0

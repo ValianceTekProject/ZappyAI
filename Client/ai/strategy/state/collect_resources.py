@@ -2,7 +2,7 @@
 ## EPITECH PROJECT, 2025
 ## Zappy
 ## File description:
-## collect_resources - État de collecte ressources avec constantes centralisées
+## collect_resources - État de collecte ressources avec pathfinding corrigé
 ##
 
 import time
@@ -18,7 +18,7 @@ from utils.logger import logger
 
 
 class CollectResourcesState(State):
-    """État de collecte de ressources avec protection anti-boucles infinies"""
+    """État de collecte de ressources avec pathfinding corrigé vers ressources visibles"""
     
     def __init__(self, planner):
         super().__init__(planner)
@@ -34,10 +34,10 @@ class CollectResourcesState(State):
         self.stuck_prevention_counter = 0
         self.max_collection_time = 30.0
         
-        logger.info(f"[CollectResourcesState] ⚒️ Collecte ressources niveau {self.state.level} activée")
+        logger.info(f"[CollectResourcesState] Collecte ressources niveau {self.state.level} activée")
 
     def execute(self) -> Optional[Any]:
-        """Logique de collecte avec protection renforcée contre les boucles infinies"""
+        """Logique de collecte avec pathfinding corrigé vers ressources visibles"""
         current_time = time.time()
         current_food = self.state.get_food_count()
         
@@ -50,7 +50,7 @@ class CollectResourcesState(State):
             return self._transition_to_food_collection()
 
         if self._all_resources_collected():
-            logger.info("[CollectResourcesState] ✅ TOUTES RESSOURCES COLLECTÉES!")
+            logger.info("[CollectResourcesState] TOUTES RESSOURCES COLLECTÉES!")
             return self._transition_to_incantation()
 
         if self._should_check_inventory(current_time):
@@ -63,17 +63,17 @@ class CollectResourcesState(State):
             
         needed_resource = self._get_needed_resource_on_tile()
         if needed_resource:
-            logger.info(f"[CollectResourcesState] ⚒️ {needed_resource} trouvé ici")
+            logger.info(f"[CollectResourcesState] {needed_resource} trouvé ici")
             return self.cmd_mgr.take(needed_resource)
             
         if not self.movement_commands:
-            priority_target = self._find_priority_resource_target()
+            priority_target = self._find_priority_resource_target_with_pathfinder()
             if priority_target:
                 self.resource_target = priority_target
                 self.current_priority_resource = priority_target.resource_type
                 self.movement_commands = self._plan_resource_collection_path(priority_target)
                 distance = abs(priority_target.rel_position[0]) + abs(priority_target.rel_position[1])
-                logger.info(f"[CollectResourcesState] 🎯 Cible {priority_target.resource_type} à distance {distance}")
+                logger.info(f"[CollectResourcesState] Cible {priority_target.resource_type} à distance {distance}: {priority_target.rel_position}")
                 
         if self.movement_commands:
             next_cmd = self.movement_commands.pop(0)
@@ -85,6 +85,33 @@ class CollectResourcesState(State):
             return self._force_transition()
             
         return self._explore_for_resources()
+
+    def _find_priority_resource_target_with_pathfinder(self):
+        """Trouve la ressource prioritaire la plus proche avec pathfinder corrigé"""
+        missing_resources = self._get_missing_resources()
+        if not missing_resources:
+            return None
+            
+        vision = self.state.get_vision()
+        vision_data = vision.last_vision_data
+        
+        if not vision_data:
+            logger.debug("[CollectResourcesState] Pas de données de vision disponibles")
+            return None
+        
+        priority_order = self._get_resource_priority_order(missing_resources)
+        
+        for resource in priority_order:
+            if resource in self.failed_resources:
+                continue
+                
+            target = self.pathfinder.find_target_in_vision(vision_data, resource)
+            if target:
+                logger.debug(f"[CollectResourcesState] Ressource {resource} détectée à {target.rel_position} (distance: {target.distance})")
+                return target
+                
+        logger.debug("[CollectResourcesState] Aucune ressource prioritaire visible dans la vision")
+        return None
 
     def _should_check_inventory(self, current_time: float) -> bool:
         """Détermine si un check d'inventaire est nécessaire"""
@@ -128,33 +155,6 @@ class CollectResourcesState(State):
                 
         return missing
 
-    def _find_priority_resource_target(self):
-        """Trouve la ressource prioritaire la plus proche avec validation"""
-        missing_resources = self._get_missing_resources()
-        if not missing_resources:
-            return None
-            
-        vision = self.state.get_vision()
-        visible_resources = vision.get_visible_resources()
-        priority_order = self._get_resource_priority_order(missing_resources)
-        
-        for resource in priority_order:
-            if resource in self.failed_resources:
-                continue
-            positions = visible_resources.get(resource, [])
-            valid_positions = [pos for pos in positions if pos != (0, 0)]
-            if valid_positions:
-                closest_pos = min(valid_positions, key=lambda pos: abs(pos[0]) + abs(pos[1]))
-                
-                class ResourceTarget:
-                    def __init__(self, pos, res_type):
-                        self.rel_position = pos
-                        self.resource_type = res_type
-                        
-                return ResourceTarget(closest_pos, resource)
-                
-        return None
-
     def _get_resource_priority_order(self, missing_resources: Dict[str, int]) -> List[str]:
         """Ordre de priorité pour la collecte de ressources (rareté décroissante)"""
         rarity_order = [
@@ -191,7 +191,7 @@ class CollectResourcesState(State):
         
         if is_complete:
             session_time = time.time() - self.collection_session_start
-            logger.info(f"[CollectResourcesState] ✅ COMPLET! Durée: {session_time:.1f}s")
+            logger.info(f"[CollectResourcesState] COMPLET! Durée: {session_time:.1f}s")
             
         return is_complete
 
@@ -266,7 +266,7 @@ class CollectResourcesState(State):
             resource = self.current_priority_resource
             if resource:
                 self.resources_collected[resource] = self.resources_collected.get(resource, 0) + 1
-                logger.info(f"[CollectResourcesState] ✅ {resource} collecté! Total: {self.resources_collected}")
+                logger.info(f"[CollectResourcesState] {resource} collecté! Total: {self.resources_collected}")
                 
                 vision = self.state.get_vision()
                 vision.remove_resource_at((0, 0), resource)
@@ -278,7 +278,7 @@ class CollectResourcesState(State):
                 self.stuck_prevention_counter = 0
                 
                 if self._all_resources_collected():
-                    logger.info("[CollectResourcesState] 🎯 COMPLET après collecte!")
+                    logger.info("[CollectResourcesState] COMPLET après collecte!")
                     
         elif command_type in [CommandType.FORWARD, CommandType.LEFT, CommandType.RIGHT]:
             self.context['needs_vision_update'] = True
@@ -287,14 +287,14 @@ class CollectResourcesState(State):
         elif command_type == CommandType.INVENTORY:
             self.last_inventory_check = time.time()
             if self._all_resources_collected():
-                logger.info("[CollectResourcesState] 🎯 COMPLET après inventaire!")
+                logger.info("[CollectResourcesState] COMPLET après inventaire!")
 
     def on_command_failed(self, command_type, response=None):
         """Gestion des échecs de commandes"""
         if command_type == CommandType.TAKE:
             self.collection_attempts += 1
             resource = self.current_priority_resource
-            logger.warning(f"[CollectResourcesState] ❌ Échec collecte {resource}")
+            logger.warning(f"[CollectResourcesState] Échec collecte {resource}")
             
             if resource and self.collection_attempts >= GameplayConstants.MAX_COLLECTION_ATTEMPTS:
                 self.failed_resources.add(resource)
@@ -330,7 +330,7 @@ class CollectResourcesState(State):
         """Actions à l'entrée de l'état"""
         super().on_enter()
         missing = self._get_missing_resources()
-        logger.info(f"[CollectResourcesState] ⚒️ ENTRÉE collecte - Manquants: {missing}")
+        logger.info(f"[CollectResourcesState] ENTRÉE collecte - Manquants: {missing}")
         
         self.resource_target = None
         self.movement_commands.clear()
@@ -347,7 +347,7 @@ class CollectResourcesState(State):
         session_time = time.time() - self.collection_session_start
         total_collected = sum(self.resources_collected.values())
         
-        logger.info(f"[CollectResourcesState] ✅ SORTIE collecte - "
+        logger.info(f"[CollectResourcesState] SORTIE collecte - "
                    f"Durée: {session_time:.1f}s, Collecté: {total_collected} ressources")
         
         self.resource_target = None

@@ -159,24 +159,26 @@ class EmergencyState(State):
         current_food = self.state.get_food_count()
         emergency_duration = time.time() - self.emergency_start_time
         
-        logger.info(f"[EmergencyState] 🎉 SURVIE RÉUSSIE! Food: {current_food}, Durée: {emergency_duration:.1f}s")
+        logger.info(f"[EmergencyState] SURVIE RÉUSSIE! Food: {current_food}, Durée: {emergency_duration:.1f}s")
+        
+        # Import des états nécessaires
+        from ai.strategy.state.reproduction import ReproductionState
+        from ai.strategy.state.incantation import IncantationState
+        from ai.strategy.state.coordination_incantation import CoordinateIncantationState
+        from ai.strategy.state.collect_food import CollectFoodState
+        from ai.strategy.state.explore import ExploreState
         
         if current_food >= FoodThresholds.SUFFICIENT:
             if self.state.should_reproduce():
-                from ai.strategy.state.reproduction import ReproductionState
                 new_state = ReproductionState(self.planner)
             elif not self.state.has_missing_resources() and current_food >= FoodThresholds.ABUNDANT:
                 if self.state.level == 1:
-                    from ai.strategy.state.incantation import IncantationState
                     new_state = IncantationState(self.planner)
                 else:
-                    from ai.strategy.state.coordination_incantation import CoordinateIncantationState
                     new_state = CoordinateIncantationState(self.planner)
             else:
-                from ai.strategy.state.explore import ExploreState
                 new_state = ExploreState(self.planner)
         else:
-            from ai.strategy.state.collect_food import CollectFoodState
             new_state = CollectFoodState(self.planner)
         
         self.planner.fsm.transition_to(new_state)
